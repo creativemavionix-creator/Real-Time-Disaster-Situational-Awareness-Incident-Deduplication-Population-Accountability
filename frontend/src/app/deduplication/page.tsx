@@ -1,13 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { fetchUnifiedTruth, UnifiedTruthResponse, UnifiedTruthRecord } from "@/lib/api";
+import {
+  fetchUnifiedTruth,
+  UnifiedTruthResponse,
+  UnifiedTruthRecord,
+} from "@/lib/api";
+import { useViewMode } from "@/context/ViewModeContext";
 
 export default function DeduplicationPage() {
   const [data, setData] = useState<UnifiedTruthResponse | null>(null);
   const [selectedRecord, setSelectedRecord] = useState<UnifiedTruthRecord | null>(null);
-  const [filter, setFilter] = useState<"ALL" | "CORROBORATED_TRUTH" | "DISPUTED_CLAIMS" | "UNVERIFIED_RUMOR">("ALL");
+  const [filterMode, setFilterMode] = useState<"ALL" | "DISPUTED" | "CORROBORATED">("ALL");
+  const [showTechnicalEvidence, setShowTechnicalEvidence] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isAnalysis } = useViewMode();
 
   const loadData = async () => {
     try {
@@ -17,83 +24,84 @@ export default function DeduplicationPage() {
         setSelectedRecord(res.unified_records[0]);
       }
     } catch (err: any) {
-      setError(err.message || "Failed to load deduplicated unified truth records");
+      setError(err.message || "Failed to load deduplicated unified truth");
     }
   };
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 3000);
+    const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
   }, []);
 
-  const filteredRecords = data?.unified_records.filter((r) => {
-    if (filter === "ALL") return true;
-    return r.verification_status === filter;
-  }) || [];
+  const filteredRecords = (data?.unified_records || []).filter((r) => {
+    if (filterMode === "DISPUTED") return r.has_conflicts;
+    if (filterMode === "CORROBORATED") return r.verification_status === "CORROBORATED_TRUTH";
+    return true;
+  });
 
   return (
-    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto w-full">
-      {/* Header */}
-      <div className="border-b-4 border-[#EDEDE8] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="p-6 sm:p-10 lg:p-14 space-y-8 max-w-7xl mx-auto w-full">
+      {/* Page Header */}
+      <div className="border-b border-[#EDEDE8]/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
-            CAPABILITY 02 // MULTI-AGENCY DEDUPLICATION
+            02 // INTELLIGENCE & VERIFICATION
           </div>
-          <h1 className="font-display text-3xl sm:text-5xl font-black uppercase text-[#EDEDE8]">
-            UNIFIED GROUND TRUTH
+          <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-[#EDEDE8]">
+            WHAT CAN WE TRUST?
           </h1>
-          <p className="font-body-prose text-xs sm:text-sm text-[#EDEDE8]/70 mt-1 max-w-2xl">
-            Cross-references conflicting casualty claims and damage reports from Police radios, Hospital triage desks, Citizen SOS calls, and Social Media feeds into a single reconciled ground-truth consensus.
+          <p className="font-body-prose text-sm text-[#EDEDE8]/70 mt-1 max-w-2xl leading-relaxed">
+            Multi-agency deduplication resolving conflicting casualty estimates, structural damage claims, and social media rumors into a verified operational record.
           </p>
         </div>
 
         {/* Filter Badges */}
-        <div className="flex flex-wrap gap-2 font-mono-data text-xs">
-          {(["ALL", "CORROBORATED_TRUTH", "DISPUTED_CLAIMS", "UNVERIFIED_RUMOR"] as const).map((f) => (
+        <div className="flex items-center gap-2 font-mono-data text-xs">
+          {(["ALL", "DISPUTED", "CORROBORATED"] as const).map((mode) => (
             <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 font-bold uppercase border-2 transition-colors ${
-                filter === f
-                  ? "bg-[#FFB800] text-[#0A0A0A] border-[#FFB800]"
-                  : "bg-[#0A0A0A] text-[#EDEDE8] border-[#EDEDE8]/30 hover:border-[#EDEDE8]"
+              key={mode}
+              onClick={() => setFilterMode(mode)}
+              className={`px-3 py-1.5 uppercase font-medium border transition-all cursor-pointer ${
+                filterMode === mode
+                  ? "bg-[#EDEDE8] text-[#0A0A0A] border-[#EDEDE8] font-bold"
+                  : "bg-transparent text-[#EDEDE8]/70 border-[#EDEDE8]/20 hover:border-[#EDEDE8]/40"
               }`}
             >
-              {f.replace("_", " ")}
+              {mode}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Summary KPI Badges */}
+      {/* Top Trust KPI Summary */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono-data text-xs">
-        <div className="border-4 border-[#EDEDE8] p-4 bg-[#0A0A0A]">
-          <span className="text-[#EDEDE8]/60 text-[10px] block">TOTAL FUSED CLUSTERS</span>
+        <div className="surface-card p-4">
+          <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">TOTAL FUSED CLUSTERS</span>
           <strong className="text-2xl text-[#EDEDE8] font-bold">{data?.total_clusters || 0}</strong>
         </div>
-        <div className="border-4 border-[#3FB950] p-4 bg-[#3FB950]/5">
-          <span className="text-[#3FB950] text-[10px] block font-bold">CORROBORATED MULTI-AGENCY TRUTH</span>
+        <div className="surface-card p-4">
+          <span className="text-[#3FB950] block text-[10px] uppercase font-bold">CONFIRMED CONSENSUS</span>
           <strong className="text-2xl text-[#3FB950] font-bold">{data?.corroborated_clusters_count || 0}</strong>
         </div>
-        <div className="border-4 border-[#E5484D] p-4 bg-[#E5484D]/5">
-          <span className="text-[#E5484D] text-[10px] block font-bold">DISPUTED / RUMOR CLUSTERS DETECTED</span>
+        <div className="surface-card p-4">
+          <span className="text-[#E5484D] block text-[10px] uppercase font-bold">DISPUTED / RUMORS DETECTED</span>
           <strong className="text-2xl text-[#E5484D] font-bold">{data?.disputed_clusters_count || 0}</strong>
         </div>
       </div>
 
       {error && (
-        <div className="bg-[#E5484D]/10 border-2 border-[#E5484D] p-4 font-mono-data text-xs text-[#E5484D]">
+        <div className="bg-[#E5484D]/10 border border-[#E5484D] p-4 font-mono-data text-xs text-[#E5484D]">
           [DEDUPLICATION_ERROR]: {error}
         </div>
       )}
 
       {/* Main Content Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Cluster List (7 Columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+        {/* Left Column: Cluster Stories List (7 Columns) */}
         <div className="lg:col-span-7 space-y-4">
           {filteredRecords.length === 0 ? (
-            <div className="border-4 border-[#EDEDE8]/30 p-8 text-center font-mono-data text-xs text-[#EDEDE8]/50">
+            <div className="surface-card p-8 text-center font-mono-data text-xs text-[#EDEDE8]/50">
               NO INCIDENT CLUSTERS MATCH CURRENT FILTER.
             </div>
           ) : (
@@ -107,20 +115,20 @@ export default function DeduplicationPage() {
                 <div
                   key={`${record.sector_id}-${record.cluster_id}-${index}`}
                   onClick={() => setSelectedRecord(record)}
-                  className={`border-4 p-5 cursor-pointer transition-all select-none ${
+                  className={`surface-card p-5 cursor-pointer transition-all ${
                     isSelected
-                      ? "border-[#FFB800] bg-[#EDEDE8]/10"
+                      ? "surface-card-active shadow-md"
                       : isDisputed
-                      ? "border-[#E5484D]/70 bg-[#0A0A0A] hover:border-[#E5484D]"
-                      : "border-[#EDEDE8] bg-[#0A0A0A] hover:border-[#EDEDE8]/80"
+                      ? "surface-card-critical"
+                      : ""
                   }`}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#EDEDE8]/20 pb-3 mb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#EDEDE8]/10 pb-3 mb-3">
                     <div className="flex items-center gap-2">
                       <span className="font-mono-data text-xs font-bold text-[#FFB800]">
                         #{record.cluster_id} // {record.sector_name.toUpperCase()}
                       </span>
-                      <span className="px-2 py-0.5 bg-[#EDEDE8]/10 border border-[#EDEDE8]/30 font-mono-data text-[10px] text-[#EDEDE8] uppercase">
+                      <span className="px-2 py-0.5 bg-[#EDEDE8]/5 border border-[#EDEDE8]/20 font-mono-data text-[10px] text-[#EDEDE8] uppercase">
                         {record.consensus_damage_type}
                       </span>
                     </div>
@@ -138,24 +146,22 @@ export default function DeduplicationPage() {
                     </span>
                   </div>
 
-                  <p className="font-body-prose text-xs sm:text-sm text-[#EDEDE8] mb-4 line-clamp-2">
-                    "{record.representative_truth_text}"
+                  <p className="font-body-prose text-sm text-[#EDEDE8] mb-3 line-clamp-2">
+                    &quot;{record.representative_truth_text}&quot;
                   </p>
 
-                  <div className="flex flex-wrap items-center justify-between gap-3 font-mono-data text-[11px] text-[#EDEDE8]/70 border-t border-[#EDEDE8]/20 pt-3">
-                    <div>
-                      UNIFIED CASUALTIES:{" "}
-                      <strong className="text-[#E5484D]">{record.unified_casualty_estimate}</strong>
-                      {record.has_conflicts && (
-                        <span className="text-[10px] text-[#E5484D]/80 ml-1">
-                          (Range: {record.casualty_dispute_range[0]} - {record.casualty_dispute_range[1]})
-                        </span>
-                      )}
+                  <div className="flex flex-wrap items-center justify-between text-xs font-mono-data text-[#EDEDE8]/60">
+                    <div className="flex items-center gap-3">
+                      <span>{record.agency_breakdown.reduce((sum, a) => sum + a.report_count, 0)} SOURCES</span>
+                      <span>•</span>
+                      <span>
+                        EST. CASUALTIES: <strong className="text-[#EDEDE8]">{record.unified_casualty_estimate ?? "NONE"}</strong>
+                      </span>
                     </div>
-                    <div>
-                      CONFIDENCE:{" "}
-                      <strong className="text-[#3FB950]">{(record.confidence_score * 100).toFixed(1)}%</strong>
-                    </div>
+
+                    <span className="text-[#3FB950] font-bold">
+                      CONFIDENCE: {(record.confidence_score * 100).toFixed(0)}%
+                    </span>
                   </div>
                 </div>
               );
@@ -163,78 +169,108 @@ export default function DeduplicationPage() {
           )}
         </div>
 
-        {/* Right Column: Dispute Resolution Dossier (5 Columns) */}
-        <div className="lg:col-span-5 border-4 border-[#EDEDE8] p-6 bg-[#0A0A0A] space-y-6">
-          <div className="border-b-2 border-[#EDEDE8]/30 pb-3">
-            <span className="font-mono-data text-[10px] text-[#FFB800] uppercase font-bold tracking-widest block mb-1">
-              DISPUTE RESOLUTION DOSSIER
-            </span>
-            <h3 className="font-display text-2xl font-black uppercase text-[#EDEDE8]">
-              CLUSTER #{selectedRecord?.cluster_id} DISSECTION
-            </h3>
-          </div>
-
+        {/* Right Column: Dispute Resolver & Evidence Dossier (5 Columns) */}
+        <div className="lg:col-span-5 surface-card p-6 space-y-6">
           {selectedRecord ? (
-            <div className="space-y-6 font-mono-data text-xs">
-              {/* Conflict Status Banner */}
+            <div className="space-y-6">
+              {/* Header */}
+              <div>
+                <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
+                  DISPUTE RESOLUTION DOSSIER
+                </div>
+                <h2 className="font-display text-2xl font-bold text-[#EDEDE8]">
+                  Cluster #{selectedRecord.cluster_id} // {selectedRecord.sector_name}
+                </h2>
+                <div className="text-xs font-mono-data text-[#EDEDE8]/60 mt-1">
+                  DAMAGE TAG: <strong className="text-[#EDEDE8] uppercase">{selectedRecord.consensus_damage_type}</strong>
+                </div>
+              </div>
+
+              {/* Verified Truth Statement */}
+              <div>
+                <span className="font-mono-data text-[10px] text-[#3FB950] font-bold uppercase block mb-1">
+                  RECONCILED OPERATIONAL TRUTH:
+                </span>
+                <blockquote className="bg-[#EDEDE8]/3 p-4 border-l-2 border-[#3FB950] text-sm font-body-prose text-[#EDEDE8] leading-relaxed">
+                  &quot;{selectedRecord.representative_truth_text}&quot;
+                </blockquote>
+              </div>
+
+              {/* Conflict Analysis Callout */}
               {selectedRecord.has_conflicts ? (
-                <div className="p-4 border-2 border-[#E5484D] bg-[#E5484D]/10 space-y-2">
-                  <div className="text-[#E5484D] font-bold flex items-center gap-2">
-                    <span>⚠ AGENCY CONFLICT DETECTED</span>
+                <div className="p-4 bg-[#E5484D]/10 border border-[#E5484D] space-y-2 font-mono-data text-xs">
+                  <div className="flex items-center gap-2 text-[#E5484D] font-bold uppercase">
+                    <span>⚠ CONFLICTING CASUALTY OR DAMAGE CLAIMS</span>
                   </div>
-                  <p className="text-[#EDEDE8] text-[11px]">{selectedRecord.conflict_summary}</p>
+                  <p className="font-body-prose text-xs text-[#EDEDE8]/90">
+                    {selectedRecord.conflict_summary}
+                  </p>
+                  <div className="text-[11px] text-[#EDEDE8]/60 pt-2 border-t border-[#E5484D]/30 flex justify-between">
+                    <span>DISPUTE RANGE: [{selectedRecord.casualty_dispute_range[0]} - {selectedRecord.casualty_dispute_range[1]}]</span>
+                    <span>RESOLVED CASUALTIES: <strong className="text-[#EDEDE8]">{selectedRecord.unified_casualty_estimate}</strong></span>
+                  </div>
                 </div>
               ) : (
-                <div className="p-4 border-2 border-[#3FB950] bg-[#3FB950]/10 space-y-1">
-                  <div className="text-[#3FB950] font-bold">✓ MULTI-AGENCY CONSENSUS CONFIRMED</div>
-                  <p className="text-[#EDEDE8] text-[11px]">All reporting channels corroborate the same ground truth facts.</p>
+                <div className="p-4 bg-[#3FB950]/10 border border-[#3FB950] font-mono-data text-xs text-[#3FB950] space-y-1">
+                  <div className="font-bold">✓ MULTI-AGENCY CONSENSUS ESTABLISHED</div>
+                  <p className="font-body-prose text-xs text-[#EDEDE8]/80">
+                    Reports from first responders, police, and hospitals corroborate this incident with no major disputes.
+                  </p>
                 </div>
               )}
 
-              {/* Multi-Agency Breakdown Table */}
-              <div>
-                <span className="font-bold text-[#FFB800] uppercase block mb-2">
-                  MULTI-SOURCE AGENCY CLAIMS & WEIGHTS:
+              {/* Multi-Agency Source Breakdown */}
+              <div className="space-y-2 font-mono-data text-xs">
+                <span className="text-[#EDEDE8]/50 uppercase font-bold block text-[10px]">
+                  REPORTING AGENCIES:
                 </span>
-                <div className="border-2 border-[#EDEDE8]/30 divide-y divide-[#EDEDE8]/20">
+                <div className="flex flex-wrap gap-2">
                   {selectedRecord.agency_breakdown.map((agency) => (
-                    <div key={agency.source_type} className="p-3 flex items-center justify-between text-xs">
-                      <div>
-                        <strong className="uppercase text-[#EDEDE8] block">{agency.source_type}</strong>
-                        <span className="text-[10px] text-[#EDEDE8]/60">
-                          {agency.report_count} report(s) • Trust Weight: {(agency.trust_weight * 100).toFixed(0)}%
-                        </span>
-                      </div>
-                      <div className="text-right font-bold">
-                        <span className="text-[#EDEDE8]/60 text-[10px] block">CASUALTY CLAIM</span>
-                        <span className="text-[#E5484D]">
-                          {agency.consensus_claim !== null && agency.consensus_claim !== undefined
-                            ? agency.consensus_claim
-                            : "NONE"}
-                        </span>
-                      </div>
-                    </div>
+                    <span
+                      key={agency.source_type}
+                      className="bg-[#EDEDE8]/5 border border-[#EDEDE8]/15 px-2.5 py-1 text-[#EDEDE8] text-[11px] uppercase"
+                    >
+                      {agency.source_type}: <strong className="text-[#FFB800]">{agency.report_count}</strong>
+                    </span>
                   ))}
                 </div>
               </div>
 
-              {/* Unified Consensus Ground Truth */}
-              <div className="border-2 border-[#EDEDE8] p-4 bg-[#EDEDE8]/5 space-y-2">
-                <span className="text-[#FFB800] font-bold block uppercase">
-                  UNIFIED RECONCILED TRUTH TEXT:
-                </span>
-                <p className="font-body-prose text-xs text-[#EDEDE8]">
-                  "{selectedRecord.representative_truth_text}"
-                </p>
-                <div className="border-t border-[#EDEDE8]/20 pt-2 flex justify-between text-[11px] text-[#EDEDE8]/70">
-                  <span>RESOLVED CASUALTIES: <strong className="text-[#EDEDE8]">{selectedRecord.unified_casualty_estimate}</strong></span>
-                  <span>DAMAGE TAG: <strong className="text-[#EDEDE8] uppercase">{selectedRecord.consensus_damage_type}</strong></span>
-                </div>
+              {/* Progressive Disclosure: Technical Evidence & Similarity Matrix */}
+              <div className="pt-3 border-t border-[#EDEDE8]/10 space-y-3 font-mono-data text-xs">
+                <button
+                  onClick={() => setShowTechnicalEvidence(!showTechnicalEvidence)}
+                  className="text-[#FFB800] text-xs font-bold hover:underline flex items-center justify-between w-full cursor-pointer"
+                >
+                  <span>{showTechnicalEvidence ? "▼ HIDE" : "► VIEW"} AI EMBEDDINGS & SCORING EVIDENCE</span>
+                  <span className="text-[#EDEDE8]/40 text-[10px]">
+                    {showTechnicalEvidence ? "COLLAPSE" : "EXPAND"}
+                  </span>
+                </button>
+
+                {(showTechnicalEvidence || isAnalysis) && (
+                  <div className="space-y-3 p-3 bg-[#EDEDE8]/3 border border-[#EDEDE8]/10 text-[11px] text-[#EDEDE8]/80 animate-fade-in">
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">DENSE EMBEDDING MODEL:</span>
+                      <strong className="text-[#EDEDE8]">all-MiniLM-L6-v2 (384-d)</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">COSINE SIMILARITY THRESHOLD:</span>
+                      <strong className="text-[#FFB800]">≥ 0.75 (Distance ≤ 0.25)</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">RELIABILITY SCORE:</span>
+                      <strong className="text-[#3FB950]">
+                        {(selectedRecord.confidence_score * 100).toFixed(1)}%
+                      </strong>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
             <p className="font-mono-data text-xs text-[#EDEDE8]/50">
-              Select an incident cluster to dissect agency dispute logs.
+              Select an incident cluster to view multi-agency dispute analysis.
             </p>
           )}
         </div>

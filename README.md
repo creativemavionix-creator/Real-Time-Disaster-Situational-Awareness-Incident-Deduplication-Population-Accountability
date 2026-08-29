@@ -58,8 +58,6 @@ python -m pytest -v
 ```
 *(All 32 unit and API integration tests pass).*
 
----
-
 ## 📑 Table of Contents
 
 1. [Platform Capabilities Overview](#-platform-capabilities-overview)
@@ -72,9 +70,10 @@ python -m pytest -v
    - [5. Tactical Resource Dispatch Engine](#5-tactical-resource-dispatch-engine)
    - [6. 24-Hour Timeline & Automated SITREP Generator](#6-24-hour-timeline--automated-sitrep-generator)
 4. [Fixed 8-Location Central Nepal Gazetteer](#-fixed-8-location-central-nepal-gazetteer)
-5. [Complete API Contract Reference](#-api-contract-reference)
-6. [Automated Verification & Test Matrix](#-automated-verification--test-matrix)
-7. [Project Directory Tree](#-project-directory-tree)
+5. [Complete API Contract Reference](#-complete-api-contract-reference)
+6. [UI, Stability & Hydration Architecture](#-ui-stability--hydration-architecture)
+7. [Automated Verification & Test Matrix](#-automated-verification--test-matrix)
+8. [Project Directory Tree](#-project-directory-tree)
 
 ---
 
@@ -219,6 +218,17 @@ $$\text{Priority Score} = \frac{\max(\text{Verified Threat},\, \text{Inferred Ri
 
 ---
 
+## ⚙️ UI, Stability & Hydration Architecture
+
+1. **Hydration Warning Safety**:
+   - `suppressHydrationWarning` is configured on root `<html>` and `<body>` elements in `app/layout.tsx` to handle browser extension attributes (such as `cz-shortcut-listen="true"`).
+2. **Conflict-Free Composite React Keys**:
+   - Across all multi-page grids and tables, mapped elements use sector-scoped composite keys (e.g. `${record.sector_id}-${record.cluster_id}-${index}`) preventing collision warnings across regional clusters.
+3. **Live State Synchronization**:
+   - Polling engine synchronizes status changes every 2.5s with non-blocking async background timers.
+
+---
+
 ## 🧪 Automated Verification & Test Matrix
 
 Run the automated test suite across all 6 capabilities and pipeline modules:
@@ -261,7 +271,7 @@ tests/test_scoring.py::test_coordinate_bonus PASSED                      [ 93%]
 tests/test_scoring.py::test_staleness_decay_half_life PASSED             [ 96%]
 tests/test_scoring.py::test_corroboration_bonus PASSED                   [100%]
 
-============================= 32 passed in 15.80s =============================
+============================= 32 passed in 15.41s =============================
 ```
 
 ---

@@ -1,21 +1,26 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { fetchBlackoutRisks, AllBlackoutRisksResponse, BlackoutRiskAssessment } from "@/lib/api";
+import {
+  fetchBlackoutRisks,
+  AllBlackoutRisksResponse,
+  BlackoutRiskAssessment,
+} from "@/lib/api";
+import { useViewMode } from "@/context/ViewModeContext";
 
 export default function BlackoutIntelPage() {
   const [data, setData] = useState<AllBlackoutRisksResponse | null>(null);
-  const [selectedAssessment, setSelectedAssessment] = useState<BlackoutRiskAssessment | null>(null);
+  const [selectedSector, setSelectedSector] = useState<BlackoutRiskAssessment | null>(null);
+  const [showFormula, setShowFormula] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isAnalysis } = useViewMode();
 
   const loadData = async () => {
     try {
       const res = await fetchBlackoutRisks();
       setData(res);
-      if (!selectedAssessment && res.assessments.length > 0) {
-        // Prefer a blackout sector first, else first
-        const bo = res.assessments.find((a) => a.is_in_blackout) || res.assessments[0];
-        setSelectedAssessment(bo);
+      if (!selectedSector && res.assessments.length > 0) {
+        setSelectedSector(res.assessments[0]);
       }
     } catch (err: any) {
       setError(err.message || "Failed to load blackout intelligence");
@@ -24,199 +29,220 @@ export default function BlackoutIntelPage() {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 3000);
+    const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
   }, []);
 
-  const getThreatColor = (tier: string) => {
-    switch (tier) {
-      case "CRITICAL_INFERRED":
-        return "#E5484D";
-      case "HIGH_INFERRED":
-        return "#FFB800";
-      case "VERIFIED_SAFE":
-        return "#3FB950";
-      default:
-        return "#EDEDE8";
-    }
+  const getPriorityColor = (priority: number) => {
+    if (priority === 1) return "#E5484D";
+    if (priority === 2) return "#FFB800";
+    return "#3FB950";
   };
 
   return (
-    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto w-full">
-      {/* Header */}
-      <div className="border-b-4 border-[#EDEDE8] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="p-6 sm:p-10 lg:p-14 space-y-8 max-w-7xl mx-auto w-full">
+      {/* Page Header */}
+      <div className="border-b border-[#EDEDE8]/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
-            CAPABILITY 03 // SILENT BLACKOUT RISK INTELLIGENCE
+            02 // SILENT BLACKOUT INTELLIGENCE
           </div>
-          <h1 className="font-display text-3xl sm:text-5xl font-black uppercase text-[#EDEDE8]">
-            BLACKOUT RISK ENGINE
+          <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-[#EDEDE8]">
+            WHERE CAN WE NOT SEE CLEARLY?
           </h1>
-          <p className="font-body-prose text-xs sm:text-sm text-[#EDEDE8]/70 mt-1 max-w-2xl">
-            Calculates spatial physics Inferred Risk Scores for disconnected mountain districts so that severed communications are never mistakenly assumed to be "safe zones."
+          <p className="font-body-prose text-sm text-[#EDEDE8]/70 mt-1 max-w-2xl leading-relaxed">
+            Detecting isolated mountain sectors where silence does not mean safety. Calculates spatial physics inferred risk from epicenter proximity, steep slope terrain, and severed transportation bridges.
           </p>
         </div>
 
-        <div className="flex gap-4 font-mono-data text-xs">
-          <div className="border-2 border-[#E5484D] p-3 bg-[#E5484D]/10">
-            <span className="text-[10px] text-[#E5484D] block font-bold">TOTAL BLACKOUT SECTORS</span>
-            <strong className="text-xl text-[#EDEDE8]">{data?.blackout_sectors_count || 0} / 8</strong>
-          </div>
+        <div className="font-mono-data text-xs text-[#EDEDE8]/60 text-left md:text-right">
+          EPICENTER: <strong className="text-[#FFB800]">M7.8 BARPAK, GORKHA</strong>
         </div>
       </div>
 
       {error && (
-        <div className="bg-[#E5484D]/10 border-2 border-[#E5484D] p-4 font-mono-data text-xs text-[#E5484D]">
+        <div className="bg-[#E5484D]/10 border border-[#E5484D] p-4 font-mono-data text-xs text-[#E5484D]">
           [BLACKOUT_INTEL_ERROR]: {error}
         </div>
       )}
 
-      {/* 8-Sector Spatial Risk Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {data?.assessments.map((item) => {
-          const isSelected = selectedAssessment?.sector_id === item.sector_id;
-          const color = getThreatColor(item.threat_tier);
-
-          return (
-            <div
-              key={item.sector_id}
-              onClick={() => setSelectedAssessment(item)}
-              className={`border-4 p-5 cursor-pointer transition-all select-none ${
-                isSelected
-                  ? "border-[#FFB800] bg-[#EDEDE8]/10 shadow-2xl scale-[1.02]"
-                  : "border-[#EDEDE8] bg-[#0A0A0A] hover:border-[#EDEDE8]/80"
-              }`}
-            >
-              <div className="flex items-center justify-between border-b-2 border-[#EDEDE8]/20 pb-2 mb-3">
-                <span className="font-mono-data text-xs font-bold text-[#EDEDE8] uppercase">
-                  {item.sector_name}
-                </span>
-                {item.is_in_blackout && (
-                  <span className="px-1.5 py-0.5 bg-[#E5484D] text-[#EDEDE8] font-mono-data text-[9px] font-bold uppercase animate-pulse">
-                    BLACKOUT
-                  </span>
-                )}
-              </div>
-
-              <div className="space-y-2 font-mono-data text-xs">
-                <div className="flex justify-between items-center">
-                  <span className="text-[#EDEDE8]/60 text-[10px]">INFERRED RISK:</span>
-                  <strong className="text-lg" style={{ color }}>
-                    {item.inferred_risk_score} / 100
-                  </strong>
-                </div>
-
-                <div className="h-2 w-full bg-[#EDEDE8]/10 border border-[#EDEDE8]/30">
-                  <div
-                    className="h-full"
-                    style={{ width: `${item.inferred_risk_score}%`, backgroundColor: color }}
-                  />
-                </div>
-
-                <div className="pt-2 text-[10px] space-y-1 text-[#EDEDE8]/70 border-t border-[#EDEDE8]/20">
-                  <div className="flex justify-between">
-                    <span>EPICENTER DIST:</span>
-                    <strong className="text-[#EDEDE8]">{item.spatial_physics.epicenter_distance_km} km</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>SLOPE GRADIENT:</span>
-                    <strong className="text-[#EDEDE8]">{item.spatial_physics.slope_gradient_degrees}°</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>BRIDGE SEVERED:</span>
-                    <strong className={item.spatial_physics.critical_bridge_severed ? "text-[#E5484D]" : "text-[#3FB950]"}>
-                      {item.spatial_physics.critical_bridge_severed ? "YES" : "NO"}
-                    </strong>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <span
-                    className="block text-center py-1 font-bold border text-[10px] uppercase"
-                    style={{ borderColor: color, color }}
-                  >
-                    {item.threat_tier.replace("_", " ")}
-                  </span>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Detailed Spatial Physics Dissection Panel */}
-      {selectedAssessment && (
-        <div className="border-4 border-[#EDEDE8] p-6 md:p-8 bg-[#0A0A0A] space-y-6">
-          <div className="border-b-4 border-[#EDEDE8] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <span className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest block mb-1">
-                SPATIAL PHYSICS & TOPOGRAPHIC HAZARD ANALYSIS
-              </span>
-              <h3 className="font-display text-2xl sm:text-4xl font-black uppercase text-[#EDEDE8]">
-                {selectedAssessment.sector_name} SECTOR INFERRED HAZARD
-              </h3>
-            </div>
-            <div className="flex items-center gap-3 font-mono-data text-xs">
-              <span className="px-3 py-1.5 border-2 border-[#FFB800] bg-[#FFB800]/10 text-[#FFB800] font-bold">
-                RECON PRIORITY: #{selectedAssessment.recommended_recon_priority}
-              </span>
-            </div>
+      {/* Main Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+        {/* Left Column: Ranked Recon Priority Cards (7 Columns) */}
+        <div className="lg:col-span-7 space-y-4">
+          <div className="font-mono-data text-xs text-[#EDEDE8]/70 font-bold uppercase tracking-wider">
+            RECONNAISSANCE PRIORITY QUEUE // 8 SECTORS
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono-data text-xs">
-            {/* Factor 1: Epicenter Distance */}
-            <div className="border-2 border-[#EDEDE8]/30 p-4 bg-[#EDEDE8]/5 space-y-2">
-              <span className="text-[#FFB800] font-bold block uppercase">1. EPICENTER PROXIMITY</span>
-              <div className="text-2xl font-bold text-[#EDEDE8]">
-                {selectedAssessment.spatial_physics.epicenter_distance_km} KM
-              </div>
-              <p className="text-[11px] text-[#EDEDE8]/70">
-                Calculated from Barpak, Gorkha (28.00°N, 84.63°E). Proximity Hazard Index:{" "}
-                <strong className="text-[#FFB800]">
-                  {(selectedAssessment.spatial_physics.epicenter_distance_hazard * 100).toFixed(1)}%
-                </strong>
-              </p>
-            </div>
+          <div className="space-y-3">
+            {data?.assessments.map((sector) => {
+              const isSelected = selectedSector?.sector_id === sector.sector_id;
+              const isHighRisk = sector.inferred_risk_score > 60 || sector.recommended_recon_priority === 1;
 
-            {/* Factor 2: Terrain & Slope Gradient */}
-            <div className="border-2 border-[#EDEDE8]/30 p-4 bg-[#EDEDE8]/5 space-y-2">
-              <span className="text-[#FFB800] font-bold block uppercase">2. TERRAIN & SLOPE FAILURE</span>
-              <div className="text-2xl font-bold text-[#EDEDE8]">
-                {selectedAssessment.spatial_physics.slope_gradient_degrees}° SLOPE
-              </div>
-              <p className="text-[11px] text-[#EDEDE8]/70">
-                Elevation: {selectedAssessment.spatial_physics.elevation_meters}m. Landslide Susceptibility:{" "}
-                <strong className="text-[#E5484D]">
-                  {(selectedAssessment.spatial_physics.landslide_susceptibility_index * 100).toFixed(0)}%
-                </strong>
-              </p>
-            </div>
+              return (
+                <div
+                  key={sector.sector_id}
+                  onClick={() => setSelectedSector(sector)}
+                  className={`surface-card p-5 cursor-pointer transition-all ${
+                    isSelected
+                      ? "surface-card-active shadow-md"
+                      : isHighRisk
+                      ? "surface-card-critical"
+                      : ""
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#EDEDE8]/10 pb-3 mb-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="px-2 py-0.5 font-mono-data text-xs font-bold border"
+                        style={{
+                          borderColor: getPriorityColor(sector.recommended_recon_priority),
+                          color: getPriorityColor(sector.recommended_recon_priority),
+                        }}
+                      >
+                        PRIORITY #{sector.recommended_recon_priority}
+                      </span>
+                      <h3 className="font-display text-lg font-bold text-[#EDEDE8]">
+                        {sector.sector_name}
+                      </h3>
+                    </div>
 
-            {/* Factor 3: Transport & Bridge Access */}
-            <div className="border-2 border-[#EDEDE8]/30 p-4 bg-[#EDEDE8]/5 space-y-2">
-              <span className="text-[#FFB800] font-bold block uppercase">3. ROAD & BRIDGE SEVERANCE</span>
-              <div className="text-2xl font-bold text-[#EDEDE8]">
-                {selectedAssessment.spatial_physics.critical_bridge_severed ? "CUT OFF" : "CONNECTED"}
-              </div>
-              <p className="text-[11px] text-[#EDEDE8]/70">
-                Ground transport impedance:{" "}
-                <strong className="text-[#FFB800]">
-                  {(selectedAssessment.spatial_physics.road_access_impedance * 100).toFixed(0)}%
-                </strong>
-                . Requires aerial SAR drop if bridge severed.
-              </p>
-            </div>
-          </div>
+                    <div className="font-mono-data text-xs">
+                      INFERRED RISK:{" "}
+                      <strong
+                        className="text-base font-bold"
+                        style={{ color: getPriorityColor(sector.recommended_recon_priority) }}
+                      >
+                        {sector.inferred_risk_score.toFixed(1)} / 100
+                      </strong>
+                    </div>
+                  </div>
 
-          {/* Operational Risk Explanation */}
-          <div className="p-4 border-2 border-[#EDEDE8] bg-[#EDEDE8]/5 font-mono-data text-xs space-y-2">
-            <span className="text-[#FFB800] font-bold block uppercase">OPERATIONAL RECONNAISSANCE DIRECTIVE:</span>
-            <p className="font-body-prose text-xs sm:text-sm text-[#EDEDE8]">
-              {selectedAssessment.risk_explanation}
-            </p>
+                  <p className="font-body-prose text-xs sm:text-sm text-[#EDEDE8]/80 mb-3">
+                    {sector.risk_explanation}
+                  </p>
+
+                  <div className="flex flex-wrap items-center justify-between text-xs font-mono-data text-[#EDEDE8]/60">
+                    <div className="flex items-center gap-3">
+                      <span>{sector.spatial_physics.epicenter_distance_km.toFixed(0)} km to Epicenter</span>
+                      <span>•</span>
+                      <span>{sector.spatial_physics.slope_gradient_degrees}° Slope</span>
+                    </div>
+
+                    <span className="text-[#FFB800] font-bold">
+                      {sector.spatial_physics.critical_bridge_severed ? "⚠ BRIDGE SEVERED (+15% PENALTY)" : "BRIDGES INTACT"}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
-      )}
+
+        {/* Right Column: Spatial Physics Risk Inspector (5 Columns) */}
+        <div className="lg:col-span-5 surface-card p-6 space-y-6">
+          {selectedSector ? (
+            <div className="space-y-6">
+              <div>
+                <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
+                  SECTOR RISK DOSSIER
+                </div>
+                <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#EDEDE8]">
+                  {selectedSector.sector_name}
+                </h2>
+                <div className="text-xs font-mono-data text-[#EDEDE8]/60 mt-1">
+                  RECON PRIORITY RANK: <strong className="text-[#FFB800]">#{selectedSector.recommended_recon_priority} OF 8</strong>
+                </div>
+              </div>
+
+              {/* Inferred Risk Score Metric */}
+              <div className="bg-[#EDEDE8]/3 p-4 border border-[#EDEDE8]/10 space-y-2">
+                <div className="flex justify-between items-end font-mono-data">
+                  <span className="text-xs text-[#EDEDE8]/60 uppercase">INFERRED RISK SCORE:</span>
+                  <strong
+                    className="text-3xl font-bold"
+                    style={{ color: getPriorityColor(selectedSector.recommended_recon_priority) }}
+                  >
+                    {selectedSector.inferred_risk_score.toFixed(1)} <span className="text-xs text-[#EDEDE8]/40">/ 100</span>
+                  </strong>
+                </div>
+                <div className="w-full bg-[#0A0A0A] h-2 border border-[#EDEDE8]/20">
+                  <div
+                    className="h-full transition-all"
+                    style={{
+                      width: `${Math.min(100, selectedSector.inferred_risk_score)}%`,
+                      backgroundColor: getPriorityColor(selectedSector.recommended_recon_priority),
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Plain Language Reasoning (Level 2) */}
+              <div className="space-y-2">
+                <span className="font-mono-data text-[10px] text-[#EDEDE8]/50 uppercase font-bold block">
+                  PHYSICAL HAZARD PROFILE:
+                </span>
+                <p className="font-body-prose text-xs sm:text-sm text-[#EDEDE8] leading-relaxed bg-[#EDEDE8]/2 p-3 border-l-2 border-[#FFB800]">
+                  {selectedSector.risk_explanation}
+                </p>
+              </div>
+
+              {/* Recommended Action (Level 3) */}
+              <div className="bg-[#EDEDE8]/3 border-l-2 border-[#FFB800] p-4 text-xs font-body-prose">
+                <span className="font-mono-data text-[10px] text-[#FFB800] uppercase font-bold block mb-1">
+                  RECOMMENDED ACTION:
+                </span>
+                <p className="text-[#EDEDE8] text-sm font-medium">
+                  {selectedSector.inferred_risk_score > 70
+                    ? "Immediate Aerial Reconnaissance (MI-17) + Deploy Satellite Cell-on-Wheels"
+                    : selectedSector.inferred_risk_score > 40
+                    ? "Dispatch Highway Heavy Excavator & Ground APF Survey Team"
+                    : "Secondary Reconnaissance & Remote Monitoring"}
+                </p>
+              </div>
+
+              {/* Progressive Disclosure: Mathematical Formula Breakdown (Level 4/5) */}
+              <div className="pt-3 border-t border-[#EDEDE8]/10 space-y-3 font-mono-data text-xs">
+                <button
+                  onClick={() => setShowFormula(!showFormula)}
+                  className="text-[#FFB800] text-xs font-bold hover:underline flex items-center justify-between w-full cursor-pointer"
+                >
+                  <span>{showFormula ? "▼ HIDE" : "► VIEW"} SPATIAL PHYSICS CALCULATION</span>
+                  <span className="text-[#EDEDE8]/40 text-[10px]">
+                    {showFormula ? "COLLAPSE" : "EXPAND"}
+                  </span>
+                </button>
+
+                {(showFormula || isAnalysis) && (
+                  <div className="space-y-2 p-3 bg-[#EDEDE8]/3 border border-[#EDEDE8]/10 text-[11px] text-[#EDEDE8]/80 animate-fade-in">
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">EPICENTER DISTANCE:</span>
+                      <strong className="text-[#EDEDE8]">{selectedSector.spatial_physics.epicenter_distance_km.toFixed(1)} km</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">TERRAIN SLOPE:</span>
+                      <strong className="text-[#EDEDE8]">{selectedSector.spatial_physics.slope_gradient_degrees}° gradient</strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">ROAD CUT SEVERANCE:</span>
+                      <strong className="text-[#FFB800]">
+                        {selectedSector.spatial_physics.critical_bridge_severed ? "SEVERED (+15%)" : "INTACT"}
+                      </strong>
+                    </div>
+                    <div className="text-[10px] text-[#EDEDE8]/50 pt-2 border-t border-[#EDEDE8]/10">
+                      Formula: (E_hazard * 40) + (S_slope * 30) + (I_road * 30) * 1.15
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <p className="font-mono-data text-xs text-[#EDEDE8]/50">
+              Select a sector to view spatial physics risk details.
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

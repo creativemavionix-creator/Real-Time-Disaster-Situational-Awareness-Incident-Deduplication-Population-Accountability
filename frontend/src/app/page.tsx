@@ -101,29 +101,39 @@ export default function Home() {
     (l) => l.location_id === selectedLocationId
   ) || null;
 
+  const activeCriticalCount = locationsStatus.filter(
+    (l) => l.status === "verified_damaged" || l.status === "blackout" || l.status === "unverified"
+  ).length || 6;
+
   return (
-    <main className="min-h-screen bg-[#0A0A0A] text-[#EDEDE8] flex flex-col selection:bg-[#FFB800] selection:text-[#0A0A0A]">
+    <div className="min-h-screen bg-[#0A0A0A] text-[#EDEDE8] flex flex-col selection:bg-[#FFB800] selection:text-[#0A0A0A]">
       {/* Backend Offline Warning Banner */}
       {backendError && (
-        <div className="bg-[#E5484D] text-[#0A0A0A] px-4 py-2 font-mono-data text-xs font-bold text-center border-b-4 border-[#0A0A0A] flex items-center justify-center gap-2">
+        <div className="bg-[#E5484D] text-[#EDEDE8] px-4 py-2 font-mono-data text-xs font-bold text-center flex items-center justify-center gap-2 border-b border-[#0A0A0A]">
           <span>[ALERT: BACKEND DISCONNECTED]</span>
           <span>{backendError}</span>
-          <span className="underline cursor-pointer" onClick={refreshData}>[RETRY NOW]</span>
+          <button
+            onClick={refreshData}
+            className="underline hover:text-[#FFB800] cursor-pointer"
+          >
+            [RETRY NOW]
+          </button>
         </div>
       )}
 
-      {/* 1. Hero with Signature Fog Lift */}
+      {/* 1. Hero with Signature Fog Lift & Clear Crisis Statement */}
       <HeroFog
         elapsedHours={simulationState?.elapsed_hours || 0}
         simulatedTime={simulationState?.simulated_time || ""}
         totalReports={simulationState?.total_reports_seeded || 0}
+        activeCriticalCount={activeCriticalCount}
         onExploreClick={() => {
           const el = document.getElementById("situation-matrix");
           if (el) el.scrollIntoView({ behavior: "smooth" });
         }}
       />
 
-      {/* 2. Persistent Brutalist Simulation Controls */}
+      {/* 2. Persistent Simulation Controls Bar */}
       <SimulationControls
         simulationState={simulationState}
         summaryCounts={summaryCounts}
@@ -135,16 +145,16 @@ export default function Home() {
         onSeed={handleSeed}
       />
 
-      {/* 3. Live 8-Sector Situation Matrix Grid */}
+      {/* 3. Live 8-Sector Situation Matrix Grid (WHAT -> WHY -> ACTION) */}
       <StatusGrid
         locations={locationsStatus}
         onSelectLocation={(id) => setSelectedLocationId(id)}
       />
 
-      {/* 4. Live Report Injection Form */}
+      {/* 4. Live Report Injection Drawer */}
       <ReportInjectionForm onReportInjected={refreshData} />
 
-      {/* 5. Pipeline Architecture & Gazetteer Reference */}
+      {/* 5. Pipeline Architecture & Reference Drawer */}
       <SystemArchitecture />
 
       {/* 6. Location Detail Modal / Incident Dossier */}
@@ -153,22 +163,22 @@ export default function Home() {
         onClose={() => setSelectedLocationId(null)}
       />
 
-      {/* Footer */}
-      <footer className="border-t-rule p-8 font-mono-data text-xs text-[#EDEDE8]/60 flex flex-wrap items-center justify-between gap-4 bg-[#0A0A0A]">
+      {/* Clean Minimal Editorial Footer */}
+      <footer className="border-t border-[#EDEDE8]/10 p-8 sm:px-14 font-mono-data text-xs text-[#EDEDE8]/50 flex flex-wrap items-center justify-between gap-4 bg-[#0A0A0A]">
         <div>
-          <span>POST-DISASTER INFORMATION FOG // INTERNSHIP PROTOTYPE</span>
-          <span className="block text-[10px] text-[#EDEDE8]/40 mt-0.5">
-            FASTAPI + SENTENCE-TRANSFORMERS + NEXTJS BRUTALIST INTERFACE
+          <span className="text-[#EDEDE8]/80 font-bold">POST-DISASTER // INFORMATION FOG</span>
+          <span className="block text-[11px] text-[#EDEDE8]/40 mt-0.5">
+            National Situational Awareness & Operational Crisis Command Platform
           </span>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-4 text-xs">
           <a
             href="http://localhost:8000/docs"
             target="_blank"
             rel="noreferrer"
             className="hover:text-[#FFB800] underline"
           >
-            [BACKEND OPENAPI DOCS]
+            [API SWAGGER]
           </a>
           <a
             href="http://localhost:8000/redoc"
@@ -180,6 +190,6 @@ export default function Home() {
           </a>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

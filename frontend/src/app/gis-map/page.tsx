@@ -2,12 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import { fetchGisTelemetry, GisFeatureCollection, GisSectorTelemetry } from "@/lib/api";
+import { useViewMode } from "@/context/ViewModeContext";
 
 export default function GisMapPage() {
   const [data, setData] = useState<GisFeatureCollection | null>(null);
   const [selectedSector, setSelectedSector] = useState<GisSectorTelemetry | null>(null);
   const [activeLayer, setActiveLayer] = useState<"severity" | "epicenter" | "isolation">("severity");
+  const [showEvidence, setShowEvidence] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { isAnalysis } = useViewMode();
 
   const loadData = async () => {
     try {
@@ -39,33 +42,45 @@ export default function GisMapPage() {
     }
   };
 
+  const getRecommendedAction = (sector: GisSectorTelemetry) => {
+    if (sector.status === "verified_damaged") {
+      return "Deploy Urban SAR Heavy Battalion + Emergency Field Hospital";
+    } else if (sector.status === "blackout" || sector.isolation_index > 0.7) {
+      return "Deploy MI-17 Aerial Reconnaissance + Satellite Comms Restoration";
+    } else if (sector.status === "unverified") {
+      return "Dispatch APF First-Responder Reconnaissance Patrol";
+    } else {
+      return "Maintain Standing Monitoring & Staging Logistics Hub";
+    }
+  };
+
   return (
-    <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto w-full">
-      {/* Page Header */}
-      <div className="border-b-4 border-[#EDEDE8] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div className="p-6 sm:p-10 lg:p-14 space-y-8 max-w-7xl mx-auto w-full">
+      {/* Page Header: WHAT IS HAPPENING */}
+      <div className="border-b border-[#EDEDE8]/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
-            CAPABILITY 01 // GEOSPATIAL TELEMETRY
+            01 // SITUATION MAP
           </div>
-          <h1 className="font-display text-3xl sm:text-5xl font-black uppercase text-[#EDEDE8]">
-            SITUATIONAL GIS MATRIX
+          <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-[#EDEDE8]">
+            WHERE IS THE PROBLEM?
           </h1>
-          <p className="font-body-prose text-xs sm:text-sm text-[#EDEDE8]/70 mt-1 max-w-2xl">
-            Live geospatial satellite telemetry and hazard projection across 8 Central Nepal strategic sectors. Tracks epicenter proximity, road isolation index, and real-time casualty concentrations.
+          <p className="font-body-prose text-sm text-[#EDEDE8]/70 mt-1 max-w-2xl leading-relaxed">
+            Real-time geospatial radar tracking earthquake epicenter impact, road isolation impedance, and critical population centers across Central Nepal.
           </p>
         </div>
 
         {/* Layer Filters */}
         <div className="flex items-center gap-2 font-mono-data text-xs">
-          <span className="text-[#EDEDE8]/60 text-[10px] uppercase font-bold mr-1">OVERLAY:</span>
+          <span className="text-[#EDEDE8]/50 text-[11px] uppercase mr-1">OVERLAY:</span>
           {(["severity", "epicenter", "isolation"] as const).map((layer) => (
             <button
               key={layer}
               onClick={() => setActiveLayer(layer)}
-              className={`px-3 py-1.5 font-bold uppercase border-2 transition-colors ${
+              className={`px-3 py-1.5 font-medium uppercase border transition-all cursor-pointer ${
                 activeLayer === layer
-                  ? "bg-[#FFB800] text-[#0A0A0A] border-[#FFB800]"
-                  : "bg-[#0A0A0A] text-[#EDEDE8] border-[#EDEDE8]/30 hover:border-[#EDEDE8]"
+                  ? "bg-[#EDEDE8] text-[#0A0A0A] border-[#EDEDE8] font-bold"
+                  : "bg-transparent text-[#EDEDE8]/70 border-[#EDEDE8]/20 hover:border-[#EDEDE8]/40"
               }`}
             >
               {layer}
@@ -75,43 +90,49 @@ export default function GisMapPage() {
       </div>
 
       {error && (
-        <div className="bg-[#E5484D]/10 border-2 border-[#E5484D] p-4 font-mono-data text-xs text-[#E5484D]">
+        <div className="bg-[#E5484D]/10 border border-[#E5484D] p-4 font-mono-data text-xs text-[#E5484D]">
           [GIS_TELEMETRY_ERROR]: {error}
         </div>
       )}
 
-      {/* Main GIS Display Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Visual Spatial Map Canvas (8 Columns) */}
-        <div className="lg:col-span-8 border-4 border-[#EDEDE8] p-6 bg-[#0A0A0A] relative">
-          <div className="flex items-center justify-between border-b-2 border-[#EDEDE8]/30 pb-3 mb-6 font-mono-data text-xs">
+      {/* Main Map & Detail Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+        {/* Visual Spatial Radar Canvas (7 Columns) */}
+        <div className="lg:col-span-7 surface-card p-6 relative">
+          <div className="flex items-center justify-between border-b border-[#EDEDE8]/10 pb-3 mb-4 font-mono-data text-xs">
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 bg-[#FFB800] animate-ping inline-block" />
-              <span className="font-bold text-[#EDEDE8]">SATELLITE POSITIONING RADAR // CENTRAL NEPAL</span>
+              <span className="w-2 h-2 bg-[#FFB800] inline-block" />
+              <span className="font-bold text-[#EDEDE8]">SPATIAL RADAR // 8 SECTORS</span>
             </div>
-            <span className="text-[#EDEDE8]/60">EPICENTER: 28.00°N, 84.63°E [GORKHA]</span>
+            <span className="text-[#EDEDE8]/50 text-[11px]">EPICENTER: BARPAK, GORKHA</span>
           </div>
 
-          {/* Spatial Grid Representation */}
-          <div className="relative aspect-[4/3] bg-[#0A0A0A] border-2 border-[#EDEDE8]/20 p-6 overflow-hidden flex flex-col justify-between">
-            {/* Coordinate Grid Background Lines */}
-            <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-10 pointer-events-none">
+          {/* Radar Map Canvas */}
+          <div className="relative aspect-[4/3] bg-[#0A0A0A] border border-[#EDEDE8]/15 p-6 overflow-hidden flex flex-col justify-between">
+            {/* Subtle Grid Lines */}
+            <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-5 pointer-events-none">
               {Array.from({ length: 36 }).map((_, i) => (
                 <div key={i} className="border border-[#EDEDE8]" />
               ))}
             </div>
 
-            {/* Epicenter Hazard Rings */}
-            <div className="absolute left-[20%] top-[30%] -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-[#E5484D]/30 rounded-full animate-ping pointer-events-none" />
-            <div className="absolute left-[20%] top-[30%] -translate-x-1/2 -translate-y-1/2 w-24 h-24 border-2 border-[#E5484D]/60 rounded-full pointer-events-none" />
-            <div className="absolute left-[20%] top-[30%] -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-[#E5484D] font-mono-data text-[9px] text-[#E5484D] whitespace-nowrap">
-              <span className="ml-4 font-bold bg-[#0A0A0A] px-1 border border-[#E5484D]">★ EPICENTER (M7.8)</span>
+            {/* Epicenter Target Mark */}
+            <div
+              className="absolute pointer-events-none z-10 -translate-x-1/2 -translate-y-1/2"
+              style={{ left: "15%", top: "35%" }}
+            >
+              <div className="w-8 h-8 rounded-full border border-[#E5484D] opacity-40 animate-ping absolute inset-0" />
+              <div className="w-3 h-3 bg-[#E5484D] flex items-center justify-center font-mono-data text-[8px] text-[#EDEDE8] font-bold">
+                ✕
+              </div>
+              <span className="absolute left-4 top-0 whitespace-nowrap font-mono-data text-[9px] text-[#E5484D] font-bold bg-[#0A0A0A]/90 px-1 border border-[#E5484D]/40">
+                M7.8 EPICENTER
+              </span>
             </div>
 
-            {/* Render 8 Sector Nodes Positioned Geographically */}
+            {/* Render 8 Sector Pins */}
             <div className="relative w-full h-full">
               {data?.sectors.map((sector, idx) => {
-                // Coordinate normalization for Nepal box: Lat 27.2 to 28.2, Lon 84.5 to 86.2
                 const normX = ((sector.longitude - 84.5) / 1.7) * 85 + 5;
                 const normY = (1 - (sector.latitude - 27.2) / 1.0) * 85 + 5;
                 const isSelected = selectedSector?.sector_id === sector.sector_id;
@@ -122,121 +143,134 @@ export default function GisMapPage() {
                     key={`${sector.sector_id}-${idx}`}
                     onClick={() => setSelectedSector(sector)}
                     style={{ left: `${normX}%`, top: `${normY}%` }}
-                    className={`absolute -translate-x-1/2 -translate-y-1/2 p-2 border-2 transition-all select-none text-left ${
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 p-2 border transition-all select-none text-left cursor-pointer ${
                       isSelected
-                        ? "bg-[#EDEDE8] text-[#0A0A0A] border-[#FFB800] scale-110 z-20 shadow-2xl"
-                        : "bg-[#0A0A0A] text-[#EDEDE8] border-[#EDEDE8]/40 hover:border-[#EDEDE8] z-10"
+                        ? "bg-[#EDEDE8] text-[#0A0A0A] border-[#FFB800] z-30 shadow-lg scale-105"
+                        : "bg-[#0A0A0A]/90 text-[#EDEDE8] border-[#EDEDE8]/20 hover:border-[#EDEDE8] z-20"
                     }`}
                   >
                     <div className="flex items-center gap-1.5 font-mono-data text-[10px] font-bold">
-                      <span className="w-2 h-2" style={{ backgroundColor: color }} />
+                      <span className="w-1.5 h-1.5" style={{ backgroundColor: color }} />
                       <span className="uppercase">{sector.sector_name}</span>
                     </div>
 
-                    <div className="font-mono-data text-[9px] opacity-75 mt-0.5">
-                      {activeLayer === "severity" && `SEV: ${sector.severity_index}/10`}
-                      {activeLayer === "epicenter" && `DIST: ${sector.distance_to_epicenter_km}km`}
-                      {activeLayer === "isolation" && `ISOL: ${(sector.isolation_index * 100).toFixed(0)}%`}
+                    <div
+                      className={`text-[9px] font-mono-data mt-0.5 ${
+                        isSelected ? "text-[#0A0A0A]/70" : "text-[#EDEDE8]/60"
+                      }`}
+                    >
+                      {activeLayer === "severity" && `Sev: ${sector.severity_index.toFixed(1)}/10`}
+                      {activeLayer === "epicenter" && `${sector.distance_to_epicenter_km.toFixed(0)} km`}
+                      {activeLayer === "isolation" && `${(sector.isolation_index * 100).toFixed(0)}% cut`}
                     </div>
                   </button>
                 );
               })}
             </div>
 
-            {/* Bottom Scale & Telemetry Readout */}
-            <div className="border-t border-[#EDEDE8]/20 pt-3 flex items-center justify-between font-mono-data text-[10px] text-[#EDEDE8]/60">
-              <span>PROJECTION: WGS84 // UTM ZONE 45N</span>
-              <span>GRID RESOLUTION: 10KM CELL</span>
-              <span>SIMULATED TIME: {data?.simulated_time ? new Date(data.simulated_time).toLocaleTimeString() : "--"}</span>
+            {/* Radar Footer */}
+            <div className="flex justify-between items-center text-[10px] font-mono-data text-[#EDEDE8]/40 border-t border-[#EDEDE8]/10 pt-2 z-10">
+              <span>LAT: 27.2°N - 28.2°N</span>
+              <span>LON: 84.5°E - 86.2°E</span>
             </div>
           </div>
         </div>
 
-        {/* Selected Sector Telemetry Inspector (4 Columns) */}
-        <div className="lg:col-span-4 border-4 border-[#EDEDE8] p-6 bg-[#0A0A0A] space-y-6">
-          <div className="border-b-2 border-[#EDEDE8]/30 pb-3">
-            <span className="font-mono-data text-[10px] text-[#FFB800] uppercase font-bold tracking-widest block mb-1">
-              SECTOR TELEMETRY DOSSIER
-            </span>
-            <h3 className="font-display text-2xl font-black uppercase text-[#EDEDE8]">
-              {selectedSector?.sector_name || "SELECT SECTOR"}
-            </h3>
-          </div>
-
+        {/* Selected Sector Inspector Panel (5 Columns) */}
+        <div className="lg:col-span-5 surface-card p-6 space-y-6">
           {selectedSector ? (
-            <div className="space-y-4 font-mono-data text-xs">
-              {/* Status Badge */}
-              <div
-                className="p-3 border-2 font-bold uppercase text-center"
-                style={{
-                  borderColor: getStatusColor(selectedSector.status),
-                  color: selectedSector.status === "verified_safe" ? "#0A0A0A" : "#EDEDE8",
-                  backgroundColor: selectedSector.status === "verified_safe" ? "#3FB950" : `${getStatusColor(selectedSector.status)}20`,
-                }}
-              >
-                [ STATUS: {selectedSector.status.replace("_", " ")} ]
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2 border border-[#EDEDE8]/20 bg-[#EDEDE8]/5">
-                  <span className="text-[#EDEDE8]/60 text-[10px] block">LATITUDE</span>
-                  <span className="font-bold">{selectedSector.latitude.toFixed(4)}°N</span>
+            <div className="space-y-6">
+              {/* Sector Title & Status */}
+              <div>
+                <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
+                  SECTOR TELEMETRY DOSSIER
                 </div>
-                <div className="p-2 border border-[#EDEDE8]/20 bg-[#EDEDE8]/5">
-                  <span className="text-[#EDEDE8]/60 text-[10px] block">LONGITUDE</span>
-                  <span className="font-bold">{selectedSector.longitude.toFixed(4)}°E</span>
-                </div>
-                <div className="p-2 border border-[#EDEDE8]/20 bg-[#EDEDE8]/5">
-                  <span className="text-[#EDEDE8]/60 text-[10px] block">ELEVATION</span>
-                  <span className="font-bold">{selectedSector.elevation_meters} M</span>
-                </div>
-                <div className="p-2 border border-[#EDEDE8]/20 bg-[#EDEDE8]/5">
-                  <span className="text-[#EDEDE8]/60 text-[10px] block">EPICENTER DIST</span>
-                  <span className="font-bold text-[#FFB800]">{selectedSector.distance_to_epicenter_km} KM</span>
+                <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#EDEDE8]">
+                  {selectedSector.sector_name}
+                </h2>
+                <div className="flex items-center gap-2 mt-2">
+                  <span
+                    className="px-2.5 py-0.5 font-mono-data text-xs font-bold border uppercase"
+                    style={{
+                      borderColor: getStatusColor(selectedSector.status),
+                      color: getStatusColor(selectedSector.status),
+                      backgroundColor: `${getStatusColor(selectedSector.status)}15`,
+                    }}
+                  >
+                    {selectedSector.status.replace("_", " ")}
+                  </span>
+                  <span className="text-xs font-mono-data text-[#EDEDE8]/50">
+                    THREAT: {selectedSector.threat_tier}
+                  </span>
                 </div>
               </div>
 
-              <div className="space-y-3 pt-2">
-                <div>
-                  <div className="flex justify-between text-[11px] mb-1">
-                    <span>SEVERITY INDEX:</span>
-                    <strong className="text-[#E5484D]">{selectedSector.severity_index} / 10.0</strong>
-                  </div>
-                  <div className="h-2 w-full bg-[#EDEDE8]/10 border border-[#EDEDE8]/30">
-                    <div
-                      className="h-full bg-[#E5484D]"
-                      style={{ width: `${(selectedSector.severity_index / 10) * 100}%` }}
-                    />
-                  </div>
+              {/* Human Impact Summary */}
+              <div className="grid grid-cols-2 gap-3 font-mono-data text-xs">
+                <div className="bg-[#EDEDE8]/3 p-3 border border-[#EDEDE8]/10">
+                  <span className="text-[#EDEDE8]/50 text-[10px] block uppercase">EST. CASUALTIES</span>
+                  <strong className="text-[#E5484D] text-lg font-bold">
+                    {selectedSector.estimated_casualties}
+                  </strong>
                 </div>
+                <div className="bg-[#EDEDE8]/3 p-3 border border-[#EDEDE8]/10">
+                  <span className="text-[#EDEDE8]/50 text-[10px] block uppercase">ROAD ISOLATION</span>
+                  <strong className="text-[#FFB800] text-lg font-bold">
+                    {(selectedSector.isolation_index * 100).toFixed(0)}%
+                  </strong>
+                </div>
+              </div>
 
-                <div>
-                  <div className="flex justify-between text-[11px] mb-1">
-                    <span>ROAD ISOLATION IMPEDANCE:</span>
-                    <strong className="text-[#FFB800]">{(selectedSector.isolation_index * 100).toFixed(0)}%</strong>
-                  </div>
-                  <div className="h-2 w-full bg-[#EDEDE8]/10 border border-[#EDEDE8]/30">
-                    <div
-                      className="h-full bg-[#FFB800]"
-                      style={{ width: `${selectedSector.isolation_index * 100}%` }}
-                    />
-                  </div>
-                </div>
+              {/* Operational Recommended Action (Level 3) */}
+              <div className="bg-[#EDEDE8]/3 border-l-2 border-[#FFB800] p-4 text-xs font-body-prose">
+                <span className="font-mono-data text-[10px] text-[#FFB800] uppercase font-bold block mb-1">
+                  RECOMMENDED ACTION:
+                </span>
+                <p className="text-[#EDEDE8] text-sm font-medium">
+                  {getRecommendedAction(selectedSector)}
+                </p>
+              </div>
 
-                <div className="p-3 border border-[#EDEDE8]/20 bg-[#EDEDE8]/5 space-y-1">
-                  <div className="flex justify-between">
-                    <span className="text-[#EDEDE8]/60">ACTIVE INCIDENTS:</span>
-                    <strong>{selectedSector.active_incidents_count}</strong>
+              {/* Progressive Disclosure: Why This Risk? */}
+              <div className="pt-2 border-t border-[#EDEDE8]/10 space-y-3 font-mono-data text-xs">
+                <button
+                  onClick={() => setShowEvidence(!showEvidence)}
+                  className="text-[#FFB800] text-xs font-bold hover:underline flex items-center justify-between w-full cursor-pointer"
+                >
+                  <span>{showEvidence ? "▼ HIDE" : "► VIEW"} WHY THIS RISK?</span>
+                  <span className="text-[#EDEDE8]/40 text-[10px]">
+                    {showEvidence ? "COLLAPSE" : "EXPAND"}
+                  </span>
+                </button>
+
+                {(showEvidence || isAnalysis) && (
+                  <div className="space-y-2 p-3 bg-[#EDEDE8]/3 border border-[#EDEDE8]/10 text-[11px] text-[#EDEDE8]/80 animate-fade-in">
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">EPICENTER DISTANCE:</span>
+                      <strong className="text-[#EDEDE8]">
+                        {selectedSector.distance_to_epicenter_km.toFixed(1)} km
+                      </strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">SEVERITY INDEX:</span>
+                      <strong className="text-[#FFB800]">
+                        {selectedSector.severity_index.toFixed(1)} / 10.0
+                      </strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">ACTIVE INCIDENT CLUSTERS:</span>
+                      <strong className="text-[#EDEDE8]">
+                        {selectedSector.active_incidents_count}
+                      </strong>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">COORDINATES:</span>
+                      <span>
+                        {selectedSector.latitude.toFixed(4)}°N, {selectedSector.longitude.toFixed(4)}°E
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#EDEDE8]/60">EST. CASUALTIES:</span>
-                    <strong className="text-[#E5484D]">{selectedSector.estimated_casualties}</strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[#EDEDE8]/60">THREAT TIER:</span>
-                    <strong className="text-[#FFB800]">{selectedSector.threat_tier}</strong>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           ) : (
@@ -247,31 +281,31 @@ export default function GisMapPage() {
         </div>
       </div>
 
-      {/* Comprehensive Telemetry Table */}
-      <div className="border-4 border-[#EDEDE8] p-6 bg-[#0A0A0A]">
+      {/* Comprehensive Sector Ledger Table */}
+      <div className="surface-card p-6 sm:p-8">
         <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-3">
           SECTOR TELEMETRY LEDGER // ALL 8 REGIONS
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left font-mono-data text-xs border-collapse">
             <thead>
-              <tr className="bg-[#EDEDE8]/10 border-b-2 border-[#EDEDE8] text-[#EDEDE8]">
+              <tr className="bg-[#EDEDE8]/5 border-b border-[#EDEDE8]/15 text-[#EDEDE8]">
                 <th className="p-3">SECTOR</th>
                 <th className="p-3">STATUS</th>
                 <th className="p-3">SEVERITY</th>
                 <th className="p-3">EPICENTER DIST</th>
                 <th className="p-3">ISOLATION</th>
-                <th className="p-3">CASUALTIES</th>
-                <th className="p-3">INCIDENTS</th>
+                <th className="p-3">EST. CASUALTIES</th>
+                <th className="p-3">CLUSTERS</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#EDEDE8]/20">
+            <tbody className="divide-y divide-[#EDEDE8]/10">
               {data?.sectors.map((s, idx) => (
                 <tr
                   key={`${s.sector_id}-${idx}`}
                   onClick={() => setSelectedSector(s)}
-                  className={`hover:bg-[#EDEDE8]/10 cursor-pointer transition-colors ${
-                    selectedSector?.sector_id === s.sector_id ? "bg-[#EDEDE8]/15 font-bold" : ""
+                  className={`hover:bg-[#EDEDE8]/5 cursor-pointer transition-colors ${
+                    selectedSector?.sector_id === s.sector_id ? "bg-[#EDEDE8]/10 font-bold" : ""
                   }`}
                 >
                   <td className="p-3 uppercase font-bold text-[#EDEDE8]">{s.sector_name}</td>
@@ -280,18 +314,17 @@ export default function GisMapPage() {
                       className="px-2 py-0.5 border text-[10px] font-bold uppercase"
                       style={{
                         borderColor: getStatusColor(s.status),
-                        color: s.status === "verified_safe" ? "#0A0A0A" : getStatusColor(s.status),
-                        backgroundColor: s.status === "verified_safe" ? "#3FB950" : "transparent",
+                        color: getStatusColor(s.status),
                       }}
                     >
                       {s.status.replace("_", " ")}
                     </span>
                   </td>
-                  <td className="p-3 font-bold text-[#E5484D]">{s.severity_index}/10</td>
-                  <td className="p-3 text-[#FFB800]">{s.distance_to_epicenter_km} km</td>
+                  <td className="p-3 text-[#FFB800]">{s.severity_index.toFixed(1)}/10</td>
+                  <td className="p-3">{s.distance_to_epicenter_km.toFixed(0)} km</td>
                   <td className="p-3">{(s.isolation_index * 100).toFixed(0)}%</td>
-                  <td className="p-3 text-[#E5484D] font-bold">{s.estimated_casualties}</td>
-                  <td className="p-3 text-[#EDEDE8]">{s.active_incidents_count}</td>
+                  <td className="p-3 text-[#E5484D]">{s.estimated_casualties}</td>
+                  <td className="p-3">{s.active_incidents_count}</td>
                 </tr>
               ))}
             </tbody>

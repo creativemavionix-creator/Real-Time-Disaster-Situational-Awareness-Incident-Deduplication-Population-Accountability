@@ -34,35 +34,35 @@ export function SimulationControls({
   const simTime = simulationState ? simulationState.simulated_time : "";
 
   return (
-    <div className="sticky top-0 z-40 bg-[#0A0A0A] border-b-rule p-4 md:px-8">
+    <div className="sticky top-0 z-40 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-[#EDEDE8]/10 p-4 sm:px-10 lg:px-14">
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
         
         {/* Left: Replay Clock & Timeline Status */}
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="bg-[#EDEDE8] text-[#0A0A0A] px-4 py-2 font-mono-data text-sm font-bold flex items-center gap-2 border-2 border-[#EDEDE8]">
-            <span className="inline-block w-2.5 h-2.5 bg-[#FFB800] animate-ping" />
-            <span>REPLAY CLOCK:</span>
-            <span className="text-[#0A0A0A] font-extrabold">
+        <div className="flex flex-wrap items-center gap-3 font-mono-data text-xs">
+          <div className="bg-[#EDEDE8]/10 border border-[#EDEDE8]/20 text-[#EDEDE8] px-3.5 py-1.5 font-bold flex items-center gap-2">
+            <span className="w-2 h-2 bg-[#FFB800]" />
+            <span>TIMELINE:</span>
+            <span className="text-[#FFB800] font-bold">
               T+{elapsed.toFixed(1)}h / 24.0h
             </span>
           </div>
 
-          <div className="font-mono-data text-xs text-[#EDEDE8]/80 hidden sm:block">
-            SIM_TIMESTAMP: <strong className="text-[#EDEDE8]">{simTime ? new Date(simTime).toISOString().replace(".000Z", "Z") : "2026-08-30T06:00:00Z"}</strong>
+          <div className="text-[11px] text-[#EDEDE8]/60 hidden md:block">
+            SIMULATED TIME: <strong className="text-[#EDEDE8]">{simTime ? new Date(simTime).toISOString().replace(".000Z", "Z") : "2026-08-30T06:00:00Z"}</strong>
           </div>
 
           {/* Status Counts Badges */}
-          <div className="flex flex-wrap items-center gap-2 font-mono-data text-xs">
-            <span className="bg-[#3FB950]/20 text-[#3FB950] border-2 border-[#3FB950] px-2.5 py-1 font-bold">
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+            <span className="bg-[#3FB950]/10 text-[#3FB950] border border-[#3FB950]/30 px-2 py-0.5 font-medium">
               SAFE: {summaryCounts.verified_safe ?? 0}
             </span>
-            <span className="bg-[#E5484D]/20 text-[#E5484D] border-2 border-[#E5484D] px-2.5 py-1 font-bold">
+            <span className="bg-[#E5484D]/10 text-[#E5484D] border border-[#E5484D]/30 px-2 py-0.5 font-medium">
               DAMAGED: {summaryCounts.verified_damaged ?? 0}
             </span>
-            <span className="bg-[#FFB800]/20 text-[#FFB800] border-2 border-[#FFB800] px-2.5 py-1 font-bold">
+            <span className="bg-[#FFB800]/10 text-[#FFB800] border border-[#FFB800]/30 px-2 py-0.5 font-medium">
               UNVERIFIED: {summaryCounts.unverified ?? 0}
             </span>
-            <span className="bg-[#E5484D]/20 text-[#E5484D] border-2 border-[#E5484D] px-2.5 py-1 font-bold">
+            <span className="bg-[#E5484D]/10 text-[#E5484D] border border-[#E5484D]/30 px-2 py-0.5 font-medium">
               BLACKOUT: {summaryCounts.blackout ?? 0}
             </span>
           </div>
@@ -73,7 +73,7 @@ export function SimulationControls({
           <button
             onClick={() => onAdvanceHours(1.0)}
             disabled={isLoading}
-            className="bg-[#EDEDE8] text-[#0A0A0A] hover:bg-[#FFB800] hover:text-[#0A0A0A] px-3.5 py-2 font-bold uppercase transition-colors border-2 border-[#EDEDE8] active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
+            className="bg-[#EDEDE8]/10 text-[#EDEDE8] hover:bg-[#EDEDE8] hover:text-[#0A0A0A] px-3 py-1.5 font-bold uppercase transition-colors border border-[#EDEDE8]/20 disabled:opacity-50 cursor-pointer"
             title="Advance simulated time by 1 hour"
           >
             +1.0H STEP
@@ -82,7 +82,7 @@ export function SimulationControls({
           <button
             onClick={() => onAdvanceHours(4.0)}
             disabled={isLoading}
-            className="bg-[#EDEDE8] text-[#0A0A0A] hover:bg-[#FFB800] hover:text-[#0A0A0A] px-3.5 py-2 font-bold uppercase transition-colors border-2 border-[#EDEDE8] active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
+            className="bg-[#EDEDE8]/10 text-[#EDEDE8] hover:bg-[#EDEDE8] hover:text-[#0A0A0A] px-3 py-1.5 font-bold uppercase transition-colors border border-[#EDEDE8]/20 disabled:opacity-50 cursor-pointer"
             title="Advance simulated time by 4 hours"
           >
             +4.0H JUMP
@@ -91,7 +91,7 @@ export function SimulationControls({
           <button
             onClick={onReset}
             disabled={isLoading}
-            className="bg-transparent text-[#EDEDE8] hover:bg-[#EDEDE8] hover:text-[#0A0A0A] px-3.5 py-2 font-bold uppercase transition-colors border-2 border-[#EDEDE8] active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
+            className="bg-transparent text-[#EDEDE8]/70 hover:text-[#EDEDE8] hover:bg-[#EDEDE8]/10 px-3 py-1.5 uppercase transition-colors border border-[#EDEDE8]/20 disabled:opacity-50 cursor-pointer"
             title="Reset replay clock back to disaster start T0"
           >
             RESET T0
@@ -100,7 +100,7 @@ export function SimulationControls({
           <button
             onClick={onSeed}
             disabled={isLoading}
-            className="bg-transparent text-[#FFB800] hover:bg-[#FFB800] hover:text-[#0A0A0A] px-3 py-2 font-bold uppercase transition-colors border-2 border-[#FFB800] active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
+            className="bg-transparent text-[#FFB800] hover:bg-[#FFB800]/10 px-3 py-1.5 uppercase transition-colors border border-[#FFB800]/30 disabled:opacity-50 cursor-pointer"
             title="Re-seed synthetic dataset into database"
           >
             RE-SEED
@@ -108,13 +108,13 @@ export function SimulationControls({
 
           <button
             onClick={onToggleAutoPoll}
-            className={`px-3 py-2 font-bold uppercase transition-colors border-2 ${
+            className={`px-3 py-1.5 font-bold uppercase transition-colors border cursor-pointer ${
               autoPoll
-                ? "bg-[#3FB950] text-[#0A0A0A] border-[#3FB950]"
-                : "bg-transparent text-[#EDEDE8]/60 border-[#EDEDE8]/40"
+                ? "bg-[#3FB950]/15 text-[#3FB950] border-[#3FB950]/40"
+                : "bg-transparent text-[#EDEDE8]/40 border-[#EDEDE8]/20"
             }`}
           >
-            POLLING: {autoPoll ? "LIVE (2.5s)" : "PAUSED"}
+            POLL: {autoPoll ? "LIVE" : "PAUSED"}
           </button>
         </div>
 

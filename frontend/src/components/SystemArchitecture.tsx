@@ -1,137 +1,115 @@
 "use client";
 
 import React, { useState } from "react";
+import { useViewMode } from "@/context/ViewModeContext";
 
 export function SystemArchitecture() {
   const [isOpen, setIsOpen] = useState(false);
+  const { isAnalysis } = useViewMode();
 
   return (
-    <section className="p-6 md:p-12 border-t-rule bg-[#0A0A0A]">
-      <div className="max-w-5xl mx-auto border-4 border-[#EDEDE8] p-6 bg-[#0A0A0A]">
+    <section className="p-6 sm:p-10 lg:p-14 border-t border-[#EDEDE8]/10 bg-[#0A0A0A]">
+      <div className="max-w-4xl mx-auto surface-card p-6 sm:p-8">
         {/* Toggle Header */}
         <div
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-between cursor-pointer select-none"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer select-none"
         >
           <div>
-            <span className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest block mb-1">
-              SPECIFICATION // ALGORITHMIC FORMULATION
-            </span>
-            <h3 className="font-display text-2xl sm:text-3xl font-bold uppercase text-[#EDEDE8]">
-              PIPELINE ARCHITECTURE & GAZETTEER REFERENCE
+            <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
+              TECHNICAL SPECIFICATION // ALGORITHMIC FORMULATION
+            </div>
+            <h3 className="font-display text-xl sm:text-2xl font-bold text-[#EDEDE8]">
+              PIPELINE ARCHITECTURE & FORMULA REFERENCE
             </h3>
+            <p className="font-body-prose text-xs text-[#EDEDE8]/70 mt-0.5">
+              Mathematical scoring rules, spatial physics constants, and fixed 8-centroid gazetteer definitions.
+            </p>
           </div>
-          <button className="bg-[#EDEDE8] text-[#0A0A0A] px-4 py-2 font-mono-data text-xs font-bold uppercase hover:bg-[#FFB800]">
+
+          <button
+            type="button"
+            className="px-4 py-2 bg-[#EDEDE8]/10 hover:bg-[#EDEDE8] hover:text-[#0A0A0A] font-mono-data text-xs font-bold uppercase transition-colors border border-[#EDEDE8]/20 cursor-pointer self-start sm:self-auto"
+          >
             {isOpen ? "COLLAPSE [-]" : "EXPAND [+]"}
           </button>
         </div>
 
-        {isOpen && (
-          <div className="mt-6 pt-6 border-t-4 border-[#EDEDE8] space-y-8 font-mono-data text-xs">
+        {(isOpen || isAnalysis) && (
+          <div className="mt-6 pt-6 border-t border-[#EDEDE8]/10 space-y-6 font-mono-data text-xs animate-fade-in">
             {/* Mathematical Formulas */}
             <div>
-              <h4 className="text-sm font-bold text-[#FFB800] uppercase mb-3">
+              <h4 className="text-xs font-bold text-[#FFB800] uppercase mb-2">
                 1. EXPLAINABLE RELIABILITY SCORING & STALENESS DECAY
               </h4>
-              <div className="bg-[#EDEDE8]/5 border-2 border-[#EDEDE8]/30 p-4 space-y-3">
+              <div className="bg-[#EDEDE8]/3 border border-[#EDEDE8]/15 p-4 space-y-3">
                 <div>
-                  <strong className="text-[#EDEDE8]">BASE RELIABILITY FORMULA:</strong>
-                  <div className="bg-[#0A0A0A] p-2.5 border border-[#EDEDE8]/30 text-[#EDEDE8] mt-1">
+                  <strong className="text-[#EDEDE8] text-[11px]">BASE RELIABILITY FORMULA:</strong>
+                  <div className="bg-[#0A0A0A] p-2 border border-[#EDEDE8]/20 text-[#FFB800] mt-1 font-mono text-[11px]">
                     BaseScore = min(1.0, (SourceTrustWeight + CoordBonus) * (1.0 + CorroborationBonus))
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[#EDEDE8]/80">
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-[#EDEDE8]/70 text-[11px]">
                   <div>
-                    <span className="text-[#FFB800] font-bold">SOURCE TRUST WEIGHTS:</span>
-                    <ul className="list-disc pl-5 mt-1 space-y-0.5">
-                      <li>Hospital: 0.95</li>
-                      <li>Police: 0.90</li>
-                      <li>Citizen: 0.60</li>
+                    <span className="text-[#EDEDE8] font-bold">SOURCE TRUST WEIGHTS:</span>
+                    <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                      <li>Hospital Triage: 0.95</li>
+                      <li>Police Radio: 0.90</li>
+                      <li>Citizen SOS: 0.60</li>
                       <li>Social Media: 0.35</li>
                     </ul>
                   </div>
                   <div>
-                    <span className="text-[#FFB800] font-bold">BONUSES:</span>
-                    <ul className="list-disc pl-5 mt-1 space-y-0.5">
-                      <li>GPS Coordinate Present: +0.10</li>
-                      <li>Corroboration: min(0.25, 0.08 * log2(ClusterSize))</li>
+                    <span className="text-[#EDEDE8] font-bold">BONUSES & DECAY:</span>
+                    <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                      <li>GPS Present: +0.10</li>
+                      <li>Corroboration: min(0.25, 0.08 * log2(N))</li>
+                      <li>Half-Life Decay: λ = 6.0 hours</li>
                     </ul>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <div>
-                  <strong className="text-[#EDEDE8]">EXPONENTIAL STALENESS DECAY:</strong>
-                  <div className="bg-[#0A0A0A] p-2.5 border border-[#EDEDE8]/30 text-[#EDEDE8] mt-1">
-                    EffectiveScore = BaseScore * exp(-ln(2) * (ElapsedHours / HalfLifeHours [6.0h]))
-                  </div>
+            {/* Spatial Physics Inferred Risk */}
+            <div>
+              <h4 className="text-xs font-bold text-[#FFB800] uppercase mb-2">
+                2. SILENT BLACKOUT SPATIAL PHYSICS FORMULA
+              </h4>
+              <div className="bg-[#EDEDE8]/3 border border-[#EDEDE8]/15 p-4 space-y-2 text-[11px] text-[#EDEDE8]/80">
+                <div className="bg-[#0A0A0A] p-2 border border-[#EDEDE8]/20 text-[#FFB800] font-mono">
+                  InferredRisk = (E_hazard * 40.0) + (S_slope * 30.0) + (I_road * 30.0)
                 </div>
+                <p className="font-body-prose text-xs text-[#EDEDE8]/70">
+                  Where Epicenter Hazard E_hazard = exp(-d_epi / 75km) relative to Barpak (28.0°N, 84.63°E), adjusted by +15% penalty if upstream transportation bridges are severed.
+                </p>
               </div>
             </div>
 
-            {/* Situational Status Thresholds */}
+            {/* Fixed Central Nepal Gazetteer */}
             <div>
-              <h4 className="text-sm font-bold text-[#FFB800] uppercase mb-3">
-                2. SITUATIONAL STATUS DECISION MATRIX
+              <h4 className="text-xs font-bold text-[#FFB800] uppercase mb-2">
+                3. FIXED 8-CENTROID CENTRAL NEPAL GAZETTEER
               </h4>
-              <div className="border-2 border-[#EDEDE8]/30 overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+              <div className="border border-[#EDEDE8]/15 overflow-x-auto">
+                <table className="w-full text-left border-collapse text-[11px]">
                   <thead>
-                    <tr className="bg-[#EDEDE8]/10 border-b-2 border-[#EDEDE8]/30 text-[#EDEDE8]">
-                      <th className="p-2.5">STATUS</th>
-                      <th className="p-2.5">COLOR</th>
-                      <th className="p-2.5">CRITERIA / TRIGGER RULE</th>
+                    <tr className="bg-[#EDEDE8]/5 border-b border-[#EDEDE8]/15 text-[#EDEDE8]">
+                      <th className="p-2">SECTOR</th>
+                      <th className="p-2">CENTROID (LAT, LON)</th>
+                      <th className="p-2">KEY MUNICIPALITIES & LANDMARKS</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#EDEDE8]/20 text-[#EDEDE8]/90">
-                    <tr>
-                      <td className="p-2.5 font-bold text-[#3FB950]">VERIFIED_SAFE</td>
-                      <td className="p-2.5 font-mono">#3FB950</td>
-                      <td className="p-2.5">Official safe/clear inspections confirmed with Confidence ≥ 0.60 and no severe damage.</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold text-[#E5484D]">VERIFIED_DAMAGED</td>
-                      <td className="p-2.5 font-mono">#E5484D</td>
-                      <td className="p-2.5">Corroborated damage cluster with Confidence ≥ 0.60 (structural, flood, fire, landslide, road).</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold text-[#FFB800]">UNVERIFIED</td>
-                      <td className="p-2.5 font-mono">#FFB800</td>
-                      <td className="p-2.5">Reports received within silence window, but overall Confidence &lt; 0.60 or uncorroborated rumors.</td>
-                    </tr>
-                    <tr>
-                      <td className="p-2.5 font-bold text-[#E5484D]">COMM_BLACKOUT</td>
-                      <td className="p-2.5 font-mono">#E5484D</td>
-                      <td className="p-2.5">Silence window exceeded (Δt &gt; 3.0h since last report) or 0 total reports received.</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* 8 Centroids Reference */}
-            <div>
-              <h4 className="text-sm font-bold text-[#FFB800] uppercase mb-3">
-                3. FIXED 8-LOCATION NEPAL GAZETTEER
-              </h4>
-              <div className="border-2 border-[#EDEDE8]/30 overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-[#EDEDE8]/10 border-b-2 border-[#EDEDE8]/30 text-[#EDEDE8]">
-                      <th className="p-2.5">ID</th>
-                      <th className="p-2.5">SECTOR NAME</th>
-                      <th className="p-2.5">CENTROID LAT / LON</th>
-                      <th className="p-2.5">LOCAL ALIASES & LANDMARKS</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#EDEDE8]/20 text-[#EDEDE8]/80">
-                    <tr><td className="p-2.5 font-bold text-[#FFB800]">kathmandu</td><td className="p-2.5">Kathmandu</td><td className="p-2.5">27.7172° N, 85.3240° E</td><td className="p-2.5">KTM, Kantipur, Thamel, New Road, Bhotahiti, Kalanki, Singha Durbar</td></tr>
-                    <tr><td className="p-2.5 font-bold text-[#FFB800]">bhaktapur</td><td className="p-2.5">Bhaktapur</td><td className="p-2.5">27.6710° N, 85.4298° E</td><td className="p-2.5">Bhadgaon, Durbar Square, Sallaghari, Thimi, Madhyapur</td></tr>
-                    <tr><td className="p-2.5 font-bold text-[#FFB800]">sindhupalchok</td><td className="p-2.5">Sindhupalchok</td><td className="p-2.5">27.9500° N, 85.7000° E</td><td className="p-2.5">Melamchi, Bahrabise, Chautara, Helambu, Tatopani, Araniko Highway</td></tr>
-                    <tr><td className="p-2.5 font-bold text-[#FFB800]">dolakha</td><td className="p-2.5">Dolakha</td><td className="p-2.5">27.7500° N, 86.1000° E</td><td className="p-2.5">Charikot, Jiri, Tama Koshi, Singati, Bhimeshwor</td></tr>
-                    <tr><td className="p-2.5 font-bold text-[#FFB800]">nuwakot</td><td className="p-2.5">Nuwakot</td><td className="p-2.5">27.9167° N, 85.1667° E</td><td className="p-2.5">Bidur, Trishuli, Battar, Devighat, Kakani</td></tr>
-                    <tr><td className="p-2.5 font-bold text-[#FFB800]">gorkha</td><td className="p-2.5">Gorkha</td><td className="p-2.5">28.0000° N, 84.6333° E</td><td className="p-2.5">Barpak, Arughat, Laprak, Manakamana, Palungtar</td></tr>
-                    <tr><td className="p-2.5 font-bold text-[#FFB800]">rasuwa</td><td className="p-2.5">Rasuwa</td><td className="p-2.5">28.1500° N, 85.3000° E</td><td className="p-2.5">Dhunche, Syabrubesi, Langtang, Timure, Betrawati</td></tr>
-                    <tr><td className="p-2.5 font-bold text-[#FFB800]">sindhuli</td><td className="p-2.5">Sindhuli</td><td className="p-2.5">27.2500° N, 85.9500° E</td><td className="p-2.5">Kamalamai, Sindhulimadhi, BP Highway, Khurkot</td></tr>
+                  <tbody className="divide-y divide-[#EDEDE8]/10 text-[#EDEDE8]/80">
+                    <tr><td className="p-2 font-bold text-[#EDEDE8]">Kathmandu</td><td className="p-2">27.7172°N, 85.3240°E</td><td className="p-2">Thamel, New Road, Kalanki, Singha Durbar, Balaju</td></tr>
+                    <tr><td className="p-2 font-bold text-[#EDEDE8]">Bhaktapur</td><td className="p-2">27.6710°N, 85.4298°E</td><td className="p-2">Durbar Square, Sallaghari, Thimi, Suryabinayak</td></tr>
+                    <tr><td className="p-2 font-bold text-[#EDEDE8]">Sindhupalchok</td><td className="p-2">27.9500°N, 85.7000°E</td><td className="p-2">Chautara, Melamchi, Bahrabise, Tatopani, Araniko Hwy</td></tr>
+                    <tr><td className="p-2 font-bold text-[#EDEDE8]">Dolakha</td><td className="p-2">27.7500°N, 86.1000°E</td><td className="p-2">Charikot, Jiri, Tama Koshi, Singati, Bhimeshwor</td></tr>
+                    <tr><td className="p-2 font-bold text-[#EDEDE8]">Nuwakot</td><td className="p-2">27.9167°N, 85.1667°E</td><td className="p-2">Bidur, Trishuli, Battar, Devighat, Kakani</td></tr>
+                    <tr><td className="p-2 font-bold text-[#EDEDE8]">Gorkha</td><td className="p-2">28.0000°N, 84.6333°E</td><td className="p-2">Barpak (Epicenter), Arughat, Laprak, Manakamana</td></tr>
+                    <tr><td className="p-2 font-bold text-[#EDEDE8]">Rasuwa</td><td className="p-2">28.1500°N, 85.3000°E</td><td className="p-2">Dhunche, Syabrubesi, Langtang Valley, Timure</td></tr>
+                    <tr><td className="p-2 font-bold text-[#EDEDE8]">Sindhuli</td><td className="p-2">27.2500°N, 85.9500°E</td><td className="p-2">Kamalamai, Sindhulimadhi, BP Highway, Khurkot</td></tr>
                   </tbody>
                 </table>
               </div>

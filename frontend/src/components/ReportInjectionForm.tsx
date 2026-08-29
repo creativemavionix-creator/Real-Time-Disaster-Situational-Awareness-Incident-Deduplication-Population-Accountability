@@ -8,6 +8,7 @@ interface ReportInjectionFormProps {
 }
 
 export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [sourceType, setSourceType] = useState<"citizen" | "police" | "hospital" | "social_media">("citizen");
   const [rawText, setRawText] = useState("");
   const [useCoords, setUseCoords] = useState(false);
@@ -56,177 +57,163 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
   };
 
   return (
-    <section className="p-6 md:p-12 border-t-rule bg-[#0A0A0A]">
-      <div className="max-w-5xl mx-auto border-4 border-[#EDEDE8] p-6 md:p-8 bg-[#0A0A0A]">
-        {/* Header */}
-        <div className="border-b-4 border-[#EDEDE8] pb-4 mb-6">
-          <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
-            DEMO TOOLING // LIVE REPORT INJECTION
-          </div>
-          <h3 className="font-display text-2xl sm:text-4xl font-bold uppercase text-[#EDEDE8]">
-            INJECT FIELD REPORT
-          </h3>
-          <p className="font-body-prose text-xs sm:text-sm text-[#EDEDE8]/70 mt-1">
-            Test the live AI pipeline: inject a raw incident report, watch the regex extractor parse casualties/damage, sentence-transformers cluster duplicates, and the situation matrix update immediately.
-          </p>
-        </div>
-
-        {/* Quick Demo Presets */}
-        <div className="mb-6">
-          <span className="font-mono-data text-[10px] text-[#EDEDE8]/60 uppercase font-bold block mb-2">
-            PRELOAD TEST SIGNALS:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setPreset("police", "Police patrol in Sindhupalchok confirms Melamchi river bridge completely washed away, 2 dead.", "27.9500", "85.7000")}
-              className="bg-[#EDEDE8]/10 hover:bg-[#EDEDE8] hover:text-[#0A0A0A] text-[#EDEDE8] text-xs font-mono-data px-3 py-1.5 border border-[#EDEDE8]/40 transition-colors uppercase"
-            >
-              [POLICE: SINDHUPALCHOK BRIDGE COLLAPSE]
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset("hospital", "Kathmandu Hospital trauma update: 14 injured from New Road structural collapse receiving treatment.", "27.7172", "85.3240")}
-              className="bg-[#EDEDE8]/10 hover:bg-[#EDEDE8] hover:text-[#0A0A0A] text-[#EDEDE8] text-xs font-mono-data px-3 py-1.5 border border-[#EDEDE8]/40 transition-colors uppercase"
-            >
-              [HOSPITAL: KATHMANDU CASUALTIES]
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset("social_media", "Black smoke rising over Thamel Kathmandu! Huge fire spreading after tremor!", undefined, undefined)}
-              className="bg-[#EDEDE8]/10 hover:bg-[#EDEDE8] hover:text-[#0A0A0A] text-[#EDEDE8] text-xs font-mono-data px-3 py-1.5 border border-[#EDEDE8]/40 transition-colors uppercase"
-            >
-              [SOCIAL: THAMEL FIRE RUMOR]
-            </button>
-            <button
-              type="button"
-              onClick={() => setPreset("police", "Bhaktapur municipal engineers inspected all historical monuments: 0 casualties, completely safe and operational.", "27.6710", "85.4298")}
-              className="bg-[#EDEDE8]/10 hover:bg-[#EDEDE8] hover:text-[#0A0A0A] text-[#EDEDE8] text-xs font-mono-data px-3 py-1.5 border border-[#EDEDE8]/40 transition-colors uppercase"
-            >
-              [POLICE: BHAKTAPUR ALL CLEAR]
-            </button>
-          </div>
-        </div>
-
-        {/* Injection Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Source Type Selector */}
+    <section className="p-6 sm:p-10 lg:p-14 border-t border-[#EDEDE8]/10 bg-[#0A0A0A]">
+      <div className="max-w-4xl mx-auto surface-card p-6 sm:p-8">
+        {/* Collapsible Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <label className="font-mono-data text-xs text-[#EDEDE8] uppercase font-bold block mb-2">
-              SOURCE TYPE (GOVERNS INITIAL TRUST WEIGHT):
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono-data text-xs">
-              {(["hospital", "police", "citizen", "social_media"] as const).map((src) => (
-                <button
-                  key={src}
-                  type="button"
-                  onClick={() => setSourceType(src)}
-                  className={`p-3 font-bold uppercase border-2 transition-colors ${
-                    sourceType === src
-                      ? "bg-[#FFB800] text-[#0A0A0A] border-[#FFB800]"
-                      : "bg-[#0A0A0A] text-[#EDEDE8] border-[#EDEDE8]/30 hover:border-[#EDEDE8]"
-                  }`}
-                >
-                  {src.replace("_", " ")}
-                  <span className="block text-[10px] opacity-75">
-                    {src === "hospital" ? "WT: 0.95" : src === "police" ? "WT: 0.90" : src === "citizen" ? "WT: 0.60" : "WT: 0.35"}
-                  </span>
-                </button>
-              ))}
+            <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
+              FIELD TEST CONSOLE // LIVE REPORT INJECTION
             </div>
+            <h3 className="font-display text-xl sm:text-2xl font-bold text-[#EDEDE8]">
+              INJECT DISASTER SIGNAL
+            </h3>
+            <p className="font-body-prose text-xs text-[#EDEDE8]/70 mt-0.5">
+              Simulate incoming radio, citizen, or hospital reports to test semantic deduplication and real-time matrix updates.
+            </p>
           </div>
 
-          {/* Coordinates Toggle */}
-          <div className="border border-[#EDEDE8]/20 p-3 bg-[#EDEDE8]/5">
-            <div className="flex items-center gap-3">
-              <input
-                id="coords-toggle"
-                type="checkbox"
-                checked={useCoords}
-                onChange={(e) => setUseCoords(e.target.checked)}
-                className="w-4 h-4 accent-[#FFB800]"
-              />
-              <label htmlFor="coords-toggle" className="font-mono-data text-xs font-bold text-[#EDEDE8] cursor-pointer">
-                ATTACH RAW GPS COORDINATES (+0.10 RELIABILITY BONUS)
-              </label>
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="px-4 py-2 bg-[#EDEDE8]/10 hover:bg-[#EDEDE8] hover:text-[#0A0A0A] font-mono-data text-xs font-bold uppercase transition-colors border border-[#EDEDE8]/20 cursor-pointer self-start sm:self-auto"
+          >
+            {isOpen ? "HIDE CONSOLE ▲" : "OPEN CONSOLE ▼"}
+          </button>
+        </div>
+
+        {isOpen && (
+          <div className="mt-6 pt-6 border-t border-[#EDEDE8]/10 space-y-6 animate-fade-in">
+            {/* Quick Demo Presets */}
+            <div>
+              <span className="font-mono-data text-[10px] text-[#EDEDE8]/50 uppercase font-bold block mb-2">
+                PRELOAD TEST SIGNALS:
+              </span>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPreset("police", "Police patrol in Sindhupalchok confirms Melamchi river bridge completely washed away, 2 dead.", "27.9500", "85.7000")}
+                  className="bg-[#EDEDE8]/5 hover:bg-[#EDEDE8]/15 text-[#EDEDE8] text-xs font-mono-data px-2.5 py-1 border border-[#EDEDE8]/20 transition-colors cursor-pointer"
+                >
+                  [POLICE: SINDHUPALCHOK BRIDGE COLLAPSE]
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreset("hospital", "Kathmandu Hospital trauma update: 14 injured from New Road structural collapse receiving treatment.", "27.7172", "85.3240")}
+                  className="bg-[#EDEDE8]/5 hover:bg-[#EDEDE8]/15 text-[#EDEDE8] text-xs font-mono-data px-2.5 py-1 border border-[#EDEDE8]/20 transition-colors cursor-pointer"
+                >
+                  [HOSPITAL: KATHMANDU CASUALTIES]
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreset("social_media", "Black smoke rising over Thamel Kathmandu! Huge fire spreading after tremor!", undefined, undefined)}
+                  className="bg-[#EDEDE8]/5 hover:bg-[#EDEDE8]/15 text-[#EDEDE8] text-xs font-mono-data px-2.5 py-1 border border-[#EDEDE8]/20 transition-colors cursor-pointer"
+                >
+                  [SOCIAL: THAMEL FIRE RUMOR]
+                </button>
+              </div>
             </div>
 
-            {useCoords && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3 pt-3 border-t border-[#EDEDE8]/20 font-mono-data text-xs">
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#EDEDE8]/70 mb-1">LATITUDE:</label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={lat}
-                    onChange={(e) => setLat(e.target.value)}
-                    className="w-full bg-[#0A0A0A] border-2 border-[#EDEDE8] p-2 text-[#EDEDE8] font-mono-data"
-                  />
+                  <label className="block font-mono-data text-xs text-[#EDEDE8]/70 mb-1">
+                    SOURCE CHANNEL:
+                  </label>
+                  <select
+                    value={sourceType}
+                    onChange={(e: any) => setSourceType(e.target.value)}
+                    className="w-full bg-[#0A0A0A] border border-[#EDEDE8]/30 p-2.5 text-[#EDEDE8] font-mono-data text-xs focus:border-[#FFB800] focus:outline-none"
+                  >
+                    <option value="citizen">CITIZEN SOS (Weight: 0.60)</option>
+                    <option value="police">POLICE RADIO (Weight: 0.90)</option>
+                    <option value="hospital">HOSPITAL TRIAGE LOG (Weight: 0.95)</option>
+                    <option value="social_media">SOCIAL MEDIA FEED (Weight: 0.35)</option>
+                  </select>
                 </div>
-                <div>
-                  <label className="block text-[#EDEDE8]/70 mb-1">LONGITUDE:</label>
-                  <input
-                    type="number"
-                    step="any"
-                    value={lon}
-                    onChange={(e) => setLon(e.target.value)}
-                    className="w-full bg-[#0A0A0A] border-2 border-[#EDEDE8] p-2 text-[#EDEDE8] font-mono-data"
-                  />
+
+                <div className="flex items-center gap-3 pt-6 font-mono-data text-xs">
+                  <label className="flex items-center gap-2 cursor-pointer text-[#EDEDE8]/80">
+                    <input
+                      type="checkbox"
+                      checked={useCoords}
+                      onChange={(e) => setUseCoords(e.target.checked)}
+                      className="accent-[#FFB800]"
+                    />
+                    <span>INCLUDE GPS COORDINATES (+0.10 BONUS)</span>
+                  </label>
+                </div>
+              </div>
+
+              {useCoords && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-mono-data text-xs text-[#EDEDE8]/70 mb-1">LATITUDE:</label>
+                    <input
+                      type="text"
+                      value={lat}
+                      onChange={(e) => setLat(e.target.value)}
+                      className="w-full bg-[#0A0A0A] border border-[#EDEDE8]/30 p-2 text-[#EDEDE8] font-mono-data text-xs focus:border-[#FFB800] focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-mono-data text-xs text-[#EDEDE8]/70 mb-1">LONGITUDE:</label>
+                    <input
+                      type="text"
+                      value={lon}
+                      onChange={(e) => setLon(e.target.value)}
+                      className="w-full bg-[#0A0A0A] border border-[#EDEDE8]/30 p-2 text-[#EDEDE8] font-mono-data text-xs focus:border-[#FFB800] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <label className="block font-mono-data text-xs text-[#EDEDE8]/70 mb-1">
+                  RAW INCIDENT TEXT:
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  value={rawText}
+                  onChange={(e) => setRawText(e.target.value)}
+                  placeholder="e.g. Major bridge collapse reported at Melamchi Sindhupalchok, 2 dead, 5 trapped under debris..."
+                  className="w-full bg-[#0A0A0A] border border-[#EDEDE8]/30 p-3 text-[#EDEDE8] font-body-prose text-xs focus:border-[#FFB800] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !rawText.trim()}
+                  className="px-6 py-2.5 bg-[#EDEDE8] text-[#0A0A0A] hover:bg-[#FFB800] font-mono-data text-xs font-bold uppercase transition-colors disabled:opacity-50 cursor-pointer"
+                >
+                  {isSubmitting ? "PROCESSING AI PIPELINE..." : "INJECT REPORT [↵]"}
+                </button>
+              </div>
+            </form>
+
+            {/* Results Feedback */}
+            {result && (
+              <div className="bg-[#3FB950]/10 border border-[#3FB950]/40 p-4 font-mono-data text-xs space-y-2">
+                <div className="text-[#3FB950] font-bold">
+                  ✓ REPORT SUCCESSFULLY INGESTED & SCORED
+                </div>
+                <div className="text-[#EDEDE8]/80 space-y-1 text-[11px]">
+                  <div>EXTRACTED SECTOR: <strong className="text-[#EDEDE8]">{result.resolved_location_name || result.resolved_location_id || "UNRESOLVED"}</strong></div>
+                  <div>DAMAGE TAG: <strong className="text-[#EDEDE8]">{result.extracted_damage_type || "NONE"}</strong></div>
+                  <div>CASUALTY ESTIMATE: <strong className="text-[#EDEDE8]">{result.extracted_casualties ?? "NONE"}</strong></div>
+                  <div>RELIABILITY SCORE: <strong className="text-[#3FB950]">{result.score_breakdown?.effective_score?.toFixed(2) ?? "1.00"} / 1.00</strong></div>
                 </div>
               </div>
             )}
-          </div>
 
-          {/* Raw Text Description */}
-          <div>
-            <label className="font-mono-data text-xs text-[#EDEDE8] uppercase font-bold block mb-2">
-              INCIDENT DESCRIPTION (RAW FIELD TEXT):
-            </label>
-            <textarea
-              required
-              rows={3}
-              value={rawText}
-              onChange={(e) => setRawText(e.target.value)}
-              placeholder="e.g. Landslide blocking Araniko Highway at Melamchi Sindhupalchok, 2 missing..."
-              className="w-full bg-[#0A0A0A] border-2 border-[#EDEDE8] p-3 text-[#EDEDE8] font-mono-data text-sm focus:border-[#FFB800] focus:outline-none"
-            />
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting || !rawText.trim()}
-            className="w-full bg-[#EDEDE8] text-[#0A0A0A] hover:bg-[#FFB800] hover:text-[#0A0A0A] p-4 font-mono-data text-sm font-bold uppercase tracking-wider transition-colors border-2 border-[#0A0A0A] active:translate-x-0.5 active:translate-y-0.5 disabled:opacity-50"
-          >
-            {isSubmitting ? "TRANSMITTING TO PIPELINE..." : "INJECT REPORT TO BACKEND [↵]"}
-          </button>
-        </form>
-
-        {/* Error Box */}
-        {error && (
-          <div className="mt-6 font-mono-data text-xs text-[#E5484D] p-4 border-2 border-[#E5484D] bg-[#E5484D]/10">
-            ERROR: {error}
-          </div>
-        )}
-
-        {/* Ingest Result Success Dossier */}
-        {result && (
-          <div className="mt-6 border-4 border-[#3FB950] p-4 bg-[#3FB950]/5 font-mono-data text-xs space-y-3">
-            <div className="flex items-center justify-between text-[#3FB950] font-bold border-b border-[#3FB950]/30 pb-2">
-              <span>REPORT INGESTED & SCORED (ID #{result.id})</span>
-              <span>RESOLVED: {result.resolved_location_name || "UNRESOLVED"}</span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[#EDEDE8]">
-              <div>DAMAGE TAG: <strong className="text-[#FFB800] uppercase">{result.extracted_damage_type}</strong></div>
-              <div>CASUALTIES: <strong className="text-[#E5484D]">{result.extracted_casualties ?? "NONE"}</strong></div>
-              <div>RESOLVED BY: <strong>{result.location_resolved_by}</strong></div>
-              <div>EFFECTIVE SCORE: <strong className="text-[#3FB950]">{(result.score_breakdown.effective_score * 100).toFixed(1)}%</strong></div>
-            </div>
-
-            <div className="bg-[#0A0A0A] p-2 border border-[#EDEDE8]/20 text-[11px] text-[#EDEDE8]/70">
-              FORMULA: {result.score_breakdown.formula_explanation}
-            </div>
+            {error && (
+              <div className="bg-[#E5484D]/10 border border-[#E5484D] p-3 font-mono-data text-xs text-[#E5484D]">
+                [INJECTION_ERROR]: {error}
+              </div>
+            )}
           </div>
         )}
       </div>
