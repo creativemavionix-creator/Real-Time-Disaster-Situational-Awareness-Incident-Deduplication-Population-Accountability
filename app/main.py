@@ -12,7 +12,19 @@ from app.database import init_db, SessionLocal
 from app.pipeline.embedder import get_model
 from app.simulation.clock import get_or_create_clock, get_simulated_time
 from app.simulation.generator import seed_database
-from app.routers import locations_router, reports_router, simulation_router
+from app.pipeline.population_exposure import seed_initial_missing_persons
+from app.pipeline.dispatch_engine import seed_initial_resource_units
+from app.routers import (
+    locations_router,
+    reports_router,
+    simulation_router,
+    gis_router,
+    deduplication_router,
+    blackout_intel_router,
+    population_router,
+    dispatch_router,
+    sitrep_router,
+)
 
 # Setup logging
 logging.basicConfig(
@@ -25,18 +37,23 @@ logger = logging.getLogger("disaster_fog")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Lifespan context manager for startup and shutdown initialization."""
-    logger.info("Initializing Post-Disaster Information Fog backend...")
+    logger.info("Initializing Post-Disaster Information Fog & National Disaster Platform...")
     
     # 1. Initialize SQLite Database
     init_db()
     
-    # 2. Initialize simulation clock and seed synthetic reports if DB is fresh
+    # 2. Initialize simulation clock, seed synthetic reports, missing persons, and tactical units
     db = SessionLocal()
     try:
         get_or_create_clock(db)
         seeded_count = seed_database(db, force=False)
+        mp_count = seed_initial_missing_persons(db)
+        units_count = seed_initial_resource_units(db)
         sim_time = get_simulated_time(db)
-        logger.info(f"Database ready. Active reports: {seeded_count}, Current Sim Time: {sim_time.isoformat()}")
+        logger.info(
+            f"Database initialized. Reports: {seeded_count}, Missing Persons: {mp_count}, "
+            f"Resource Units: {units_count}, Sim Time: {sim_time.isoformat()}"
+        )
     finally:
         db.close()
         
@@ -57,10 +74,9 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description=(
-        "AI-driven disaster-response backend prototype for disambiguating, clustering, "
-        "and scoring incident reports in the first 24 hours post-disaster across 8 Nepal locations. "
-        "Provides transparent reliability scoring, staleness decay, situational awareness status "
-        "('verified_safe', 'verified_damaged', 'unverified', 'blackout'), and a 24-hour simulation replay clock."
+        "National Multi-Agency Disaster Response & Situational Awareness Platform covering 6 core capabilities: "
+        "Real-Time GIS Mapping, Multi-Agency Deduplication & Unified Truth, Silent Blackout Risk Intelligence, "
+        "Dynamic Population Exposure & Missing Persons, Tactical Resource Dispatch, and 24-Hour Timeline SITREP Generator."
     ),
     openapi_url="/openapi.json",
     docs_url="/docs",
@@ -68,7 +84,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Enable CORS for all origins (frontend dev running on different port/host)
+# Enable CORS for all origins (Next.js frontend running on port 3000)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -106,10 +122,16 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Mount routers
+# Mount routers for all 6 capabilities
 app.include_router(locations_router)
 app.include_router(reports_router)
 app.include_router(simulation_router)
+app.include_router(gis_router)
+app.include_router(deduplication_router)
+app.include_router(blackout_intel_router)
+app.include_router(population_router)
+app.include_router(dispatch_router)
+app.include_router(sitrep_router)
 
 
 @app.get("/", summary="API Root Status & Metadata")
@@ -140,5 +162,21 @@ def root_status():
             "advance_simulation": "POST /simulation/advance",
             "reset_simulation": "POST /simulation/reset",
             "seed_data": "POST /seed",
+        },
+        "capabilities": {
+            "1_gis_mapping": "/gis/telemetry",
+            "2_unified_truth_deduplication": "/deduplication/unified-truth",
+            "3_silent_blackout_intelligence": "/blackout-intel/risk-assessment",
+            "4_population_and_missing_persons": {
+                "exposure": "/population/exposure",
+                "missing_persons": "/population/missing-persons"
+            },
+            "5_tactical_resource_dispatch": {
+                "dashboard": "/dispatch/dashboard",
+                "recommendations": "/dispatch/recommendations",
+                "units": "/dispatch/units",
+                "assign": "POST /dispatch/assign"
+            },
+            "6_timeline_and_sitrep_generator": "/sitrep/current"
         }
     }

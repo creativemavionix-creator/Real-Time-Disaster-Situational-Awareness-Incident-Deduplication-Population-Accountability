@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   IncidentClusterItem,
   LocationStatusItem,
+  ReportItem,
   fetchLocationIncidents,
 } from "@/lib/api";
 
@@ -98,7 +99,7 @@ export function LocationDetailModal({ location, onClose }: LocationDetailModalPr
                 </div>
                 <div>
                   <span className="text-[#EDEDE8]/60">SILENCE DURATION: </span>
-                  <strong className="text-[#EDEDE8]">{location.silence_duration_hours !== null ? `${location.silence_duration_hours.toFixed(1)}h` : "NONE"}</strong>
+                  <strong className="text-[#EDEDE8]">{location.silence_duration_hours !== null && location.silence_duration_hours !== undefined ? `${location.silence_duration_hours.toFixed(1)}h` : "NONE"}</strong>
                 </div>
               </div>
               <p className="font-body-prose text-sm text-[#EDEDE8]/90 mt-3 italic">
@@ -137,9 +138,9 @@ export function LocationDetailModal({ location, onClose }: LocationDetailModalPr
 
               {/* Cluster Cards */}
               <div className="space-y-6">
-                {incidents.map((cluster) => (
+                {incidents.map((cluster, cIdx) => (
                   <div
-                    key={cluster.cluster_id}
+                    key={`${cluster.location_id}-${cluster.cluster_id}-${cIdx}`}
                     className="border-4 border-[#EDEDE8] bg-[#0A0A0A] p-5 space-y-4"
                   >
                     {/* Cluster Header */}
@@ -182,7 +183,7 @@ export function LocationDetailModal({ location, onClose }: LocationDetailModalPr
                           key={source}
                           className="bg-[#EDEDE8]/10 border border-[#EDEDE8]/30 px-2 py-0.5 text-[#EDEDE8] uppercase"
                         >
-                          {source}: {count}
+                          {source}: {String(count)}
                         </span>
                       ))}
                     </div>
@@ -194,9 +195,9 @@ export function LocationDetailModal({ location, onClose }: LocationDetailModalPr
                           CONTRIBUTING RAW REPORTS & TRANSPARENT SCORING FORMULAS ({cluster.reports.length}):
                         </span>
                         <div className="space-y-3">
-                          {cluster.reports.map((rep) => (
+                          {cluster.reports.map((rep: ReportItem, rIdx) => (
                             <div
-                              key={rep.id}
+                              key={`${rep.id}-${rIdx}`}
                               className="bg-[#EDEDE8]/5 p-3 border border-[#EDEDE8]/20 font-mono-data text-xs space-y-2"
                             >
                               <div className="flex justify-between text-[#EDEDE8]/60">

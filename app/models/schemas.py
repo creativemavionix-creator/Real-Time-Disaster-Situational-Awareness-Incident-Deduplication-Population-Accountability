@@ -1,9 +1,13 @@
-"""Pydantic v2 schemas for request and response serialization."""
+"""Pydantic v2 schemas for all 6 platform capabilities."""
 
 from datetime import datetime
-from typing import Optional, Literal
+from typing import Optional, Literal, Any
 from pydantic import BaseModel, Field, ConfigDict
 
+
+# -------------------------------------------------------------
+# Base Core Schemas
+# -------------------------------------------------------------
 
 class LocationSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -22,26 +26,22 @@ class LocationListResponse(BaseModel):
 
 
 class ScoreBreakdownSchema(BaseModel):
-    source_trust_weight: float = Field(..., description="Base trust weight derived from source type (hospital/police > citizen > social_media)")
-    has_coordinates_bonus: float = Field(..., description="Bonus for GPS coordinates present (+0.10)")
-    corroboration_bonus: float = Field(..., description="Bonus for cluster corroboration from multiple independent reports")
-    base_score: float = Field(..., description="Pre-decay combined reliability score (0-1)")
-    elapsed_hours: float = Field(..., description="Simulated hours elapsed since report timestamp")
-    staleness_decay: float = Field(..., description="Decay multiplier from exponential half-life curve")
-    effective_score: float = Field(..., description="Final effective reliability score (0-1)")
-    formula_explanation: str = Field(..., description="Human-readable formula breakdown")
+    source_trust_weight: float
+    has_coordinates_bonus: float
+    corroboration_bonus: float
+    base_score: float
+    elapsed_hours: float
+    staleness_decay: float
+    effective_score: float
+    formula_explanation: str
 
 
 class ReportCreateRequest(BaseModel):
-    source_type: Literal["citizen", "police", "hospital", "social_media"] = Field(
-        ..., description="Origin source type of the report"
-    )
-    raw_text: str = Field(..., min_length=1, description="Raw report description / text")
-    reported_lat: Optional[float] = Field(default=None, description="Optional reported latitude")
-    reported_lon: Optional[float] = Field(default=None, description="Optional reported longitude")
-    timestamp: Optional[datetime] = Field(
-        default=None, description="Report timestamp (defaults to current simulated time if omitted)"
-    )
+    source_type: Literal["citizen", "police", "hospital", "social_media"]
+    raw_text: str = Field(..., min_length=1)
+    reported_lat: Optional[float] = None
+    reported_lon: Optional[float] = None
+    timestamp: Optional[datetime] = None
 
 
 class ReportResponse(BaseModel):
@@ -97,10 +97,7 @@ class LocationStatusResponse(BaseModel):
 class AllLocationsStatusResponse(BaseModel):
     simulated_time: datetime
     locations: list[LocationStatusResponse]
-    summary_counts: dict[str, int] = Field(
-        default_factory=dict,
-        description="Counts of locations per status (verified_safe, verified_damaged, unverified, blackout)"
-    )
+    summary_counts: dict[str, int] = Field(default_factory=dict)
 
 
 class SimulationStateResponse(BaseModel):
@@ -113,15 +110,261 @@ class SimulationStateResponse(BaseModel):
 
 
 class SimulationAdvanceRequest(BaseModel):
-    hours: Optional[float] = Field(default=None, ge=0.0, description="Hours to advance simulation clock by")
-    minutes: Optional[int] = Field(default=None, ge=0, description="Minutes to advance simulation clock by")
+    hours: Optional[float] = Field(default=None, ge=0.0)
+    minutes: Optional[int] = Field(default=None, ge=0)
 
 
 class SimulationSetTimeRequest(BaseModel):
-    simulated_time: datetime = Field(..., description="Explicit timestamp to set simulation clock to")
+    simulated_time: datetime
 
 
 class SeedResponse(BaseModel):
     message: str
     reports_seeded: int
     simulated_time: datetime
+
+
+# -------------------------------------------------------------
+# Capability 1: Real-Time Situational GIS Telemetry
+# -------------------------------------------------------------
+
+class GisSectorGeometry(BaseModel):
+    type: str = "Point"
+    coordinates: list[float]  # [lon, lat]
+
+
+class GisSectorTelemetry(BaseModel):
+    sector_id: str
+    sector_name: str
+    status: LocationStatusType
+    confidence_score: float
+    severity_index: float  # 0.0 to 10.0
+    threat_tier: str  # CRITICAL, HIGH, MODERATE, SAFE, BLACKOUT
+    latitude: float
+    longitude: float
+    elevation_meters: int
+    distance_to_epicenter_km: float
+    active_incidents_count: int
+    estimated_casualties: int
+    isolation_index: float  # 0.0 (connected) to 1.0 (severed)
+    last_telemetry_timestamp: Optional[datetime] = None
+
+
+class GisFeatureCollection(BaseModel):
+    type: str = "FeatureCollection"
+    simulated_time: datetime
+    sectors: list[GisSectorTelemetry]
+
+
+# -------------------------------------------------------------
+# Capability 2: Multi-Agency Deduplication & Unified Truth
+# -------------------------------------------------------------
+
+class AgencyReportBreakdown(BaseModel):
+    source_type: str
+    report_count: int
+    casualty_claims: list[int] = Field(default_factory=list)
+    consensus_claim: Optional[int] = None
+    trust_weight: float
+
+
+class UnifiedTruthRecord(BaseModel):
+    cluster_id: int
+    sector_id: str
+    sector_name: str
+    consensus_damage_type: str
+    unified_casualty_estimate: int
+    casualty_dispute_range: tuple[int, int]
+    has_conflicts: bool
+    conflict_summary: str
+    agency_breakdown: list[AgencyReportBreakdown]
+    confidence_score: float
+    representative_truth_text: str
+    verification_status: str  # CORROBORATED_TRUTH, DISPUTED, UNVERIFIED_RUMOR
+
+
+class UnifiedTruthResponse(BaseModel):
+    simulated_time: datetime
+    total_clusters: int
+    disputed_clusters_count: int
+    corroborated_clusters_count: int
+    unified_records: list[UnifiedTruthRecord]
+
+
+# -------------------------------------------------------------
+# Capability 3: Silent Blackout Risk Intelligence
+# -------------------------------------------------------------
+
+class SpatialPhysicsFactors(BaseModel):
+    epicenter_distance_km: float
+    epicenter_distance_hazard: float  # 0 to 1
+    slope_gradient_degrees: float
+    landslide_susceptibility_index: float  # 0 to 1
+    critical_bridge_severed: bool
+    road_access_impedance: float  # 0 to 1
+    elevation_meters: int
+
+
+class BlackoutRiskAssessment(BaseModel):
+    sector_id: str
+    sector_name: str
+    is_in_blackout: bool
+    silence_duration_hours: Optional[float]
+    spatial_physics: SpatialPhysicsFactors
+    inferred_risk_score: float  # 0.0 to 100.0
+    threat_tier: Literal["CRITICAL_INFERRED", "HIGH_INFERRED", "MODERATE", "LOW", "VERIFIED_SAFE"]
+    risk_explanation: str
+    recommended_recon_priority: int  # 1 (Urgent) to 5 (Low)
+
+
+class AllBlackoutRisksResponse(BaseModel):
+    simulated_time: datetime
+    blackout_sectors_count: int
+    high_risk_blackout_count: int
+    assessments: list[BlackoutRiskAssessment]
+
+
+# -------------------------------------------------------------
+# Capability 4: Dynamic Population Exposure & Missing Persons
+# -------------------------------------------------------------
+
+class PopulationExposureItem(BaseModel):
+    sector_id: str
+    sector_name: str
+    census_baseline_population: int
+    diurnal_commuter_flux: int
+    tourist_density_estimate: int
+    evacuated_population_estimate: int
+    real_time_exposed_population: int
+    high_density_hazard_zones: list[str]
+    missing_persons_reported: int
+    located_safe_count: int
+
+
+class AllPopulationExposureResponse(BaseModel):
+    simulated_time: datetime
+    total_national_exposed_population: int
+    total_missing_persons: int
+    total_located_safe: int
+    sector_exposures: list[PopulationExposureItem]
+
+
+class MissingPersonCreate(BaseModel):
+    full_name: str = Field(..., min_length=2)
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    last_known_location_id: str
+    reported_by: str
+    contact_number: Optional[str] = None
+    physical_description: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class MissingPersonResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    full_name: str
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    last_known_location_id: str
+    last_known_location_name: Optional[str] = None
+    reported_by: str
+    contact_number: Optional[str] = None
+    status: str  # missing, hospitalized, located_safe, deceased
+    physical_description: Optional[str] = None
+    matched_hospital_notes: Optional[str] = None
+    timestamp: datetime
+
+
+# -------------------------------------------------------------
+# Capability 5: Tactical Resource Dispatch Engine
+# -------------------------------------------------------------
+
+class ResourceUnitSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    unit_code: str
+    unit_name: str
+    unit_type: str  # sar_heavy, air_ambulance, heavy_excavator, mobile_comms, medical_triage
+    home_base: str
+    current_location_id: Optional[str] = None
+    status: str  # available, dispatched, on_scene, maintenance
+    capacity: int
+
+
+class TacticalDispatchRecommendation(BaseModel):
+    target_sector_id: str
+    target_sector_name: str
+    priority_score: float  # 0.0 to 100.0
+    threat_tier: str
+    is_blackout: bool
+    rationale: str
+    recommended_unit_types: list[str]
+    available_matching_units: list[ResourceUnitSchema]
+    assigned_missions_count: int
+
+
+class MissionDispatchCreate(BaseModel):
+    target_location_id: str
+    assigned_unit_id: int
+    justification: str
+
+
+class MissionDispatchResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    mission_code: str
+    target_location_id: str
+    target_location_name: Optional[str] = None
+    assigned_unit_id: int
+    assigned_unit_name: Optional[str] = None
+    priority_score: float
+    threat_tier: str
+    justification: str
+    status: str
+    dispatched_at: datetime
+
+
+class DispatchDashboardResponse(BaseModel):
+    simulated_time: datetime
+    available_units_count: int
+    active_missions_count: int
+    recommendations: list[TacticalDispatchRecommendation]
+    resource_units: list[ResourceUnitSchema]
+    active_missions: list[MissionDispatchResponse]
+
+
+# -------------------------------------------------------------
+# Capability 6: 24-Hour Timeline & SITREP Generator
+# -------------------------------------------------------------
+
+class SitrepCasualtyToll(BaseModel):
+    confirmed_fatalities: int
+    confirmed_injured: int
+    trapped_unaccounted: int
+    missing_persons_active: int
+
+
+class SitrepPriorityAction(BaseModel):
+    action_code: str
+    target_sector: str
+    urgency: Literal["IMMEDIATE", "HIGH", "PRIORITY", "ROUTINE"]
+    description: str
+
+
+class SitrepReportResponse(BaseModel):
+    sitrep_id: str
+    operational_period: str
+    simulated_time: datetime
+    elapsed_hours: float
+    disaster_event_name: str = "Central Nepal Seismic Sequence (M7.8)"
+    executive_summary: str
+    casualty_toll: SitrepCasualtyToll
+    critical_sectors_summary: list[dict[str, Any]]
+    blackout_intelligence_briefing: str
+    resource_deployment_status: dict[str, int]
+    priority_operational_directives: list[SitrepPriorityAction]
+    authorized_by: str = "National Emergency Operations Centre (NEOC)"

@@ -130,7 +130,7 @@ function LocationCard({ location, index, onSelect }: LocationCardProps) {
           <div>
             SILENCE:{" "}
             <strong className={location.silence_duration_hours && location.silence_duration_hours > 3.0 ? "text-[#E5484D]" : "text-[#EDEDE8]"}>
-              {location.silence_duration_hours !== null ? `${location.silence_duration_hours.toFixed(1)}h` : "N/A"}
+              {location.silence_duration_hours !== null && location.silence_duration_hours !== undefined ? `${location.silence_duration_hours.toFixed(1)}h` : "N/A"}
             </strong>
           </div>
           <div>
