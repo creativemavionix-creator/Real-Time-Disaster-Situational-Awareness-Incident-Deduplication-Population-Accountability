@@ -410,3 +410,264 @@ class SitrepReportResponse(BaseModel):
     resource_deployment_status: dict[str, int]
     priority_operational_directives: list[SitrepPriorityAction]
     authorized_by: str = "National Emergency Operations Centre (NEOC)"
+
+
+# -------------------------------------------------------------
+# PRATYAKSH-Ω: Autonomous Negative Evidence & Reality Reconstruction Schemas
+# -------------------------------------------------------------
+
+class BaselineItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: Optional[int] = None
+    sector_id: str
+    metric: str
+    hour_of_day: int
+    day_of_week: int = 0
+    expected_mean: float
+    expected_std: float
+    expected_min: float
+    expected_max: float
+    unit: str = "events/hour"
+    source: str = "historical_telecom_census"
+    provenance: Optional[str] = None
+
+
+class BaselineCatalogResponse(BaseModel):
+    total_baselines: int
+    sector_count: int
+    metrics: list[str]
+    baselines: list[BaselineItem]
+
+
+class SectorBaselineComparison(BaseModel):
+    sector_id: str
+    sector_name: str
+    current_hour: int
+    metric: str
+    expected_mean: float
+    expected_min: float
+    expected_max: float
+    observed_value: float
+    gap_delta: float
+    z_score: float
+    is_anomalous: bool
+    status: Literal["NORMAL", "ELEVATED", "UNEXPECTED_SILENCE", "CRITICAL_BLACKOUT"]
+    explanation: str
+
+
+class EvidenceItemSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: Optional[int] = None
+    evidence_id: str
+    sector_id: str
+    source_type: str
+    source_id: Optional[str] = None
+    timestamp: datetime
+    observation_type: str
+    observed_value: Optional[float] = None
+    expected_value: Optional[float] = None
+    raw_payload: Optional[str] = None
+    direction: Literal["positive", "negative"] = "positive"
+    reliability: float = Field(0.7, ge=0.0, le=1.0)
+    freshness_weight: float = 1.0
+    status: Literal["active", "stale", "superseded", "disproven"] = "active"
+    contradictions: list[str] = []
+    provenance: Optional[str] = None
+
+
+class MultiModalEvidenceIngest(BaseModel):
+    sector_id: str
+    source_type: str
+    source_id: Optional[str] = None
+    observation_type: str
+    observed_value: Optional[float] = None
+    expected_value: Optional[float] = None
+    raw_payload: str
+    direction: Literal["positive", "negative"] = "positive"
+    reliability: float = 0.8
+    timestamp: Optional[datetime] = None
+
+
+class NegativeEvidenceAnomalyItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    anomaly_id: str
+    sector_id: str
+    sector_name: str
+    metric: str
+    expected_value: float
+    observed_value: float
+    gap_magnitude: float
+    silence_duration_hours: float
+    confidence: float
+    severity_tier: Literal["CRITICAL", "HIGH", "MODERATE", "LOW"]
+    explanation: str
+    detected_at: datetime
+    is_active: bool
+
+
+class SilenceWindowItem(BaseModel):
+    sector_id: str
+    sector_name: str
+    last_signal_timestamp: Optional[datetime]
+    silence_duration_hours: float
+    expected_events_lost: float
+    silence_severity: Literal["NORMAL", "ELEVATED_WATCH", "CRITICAL_SILENCE", "PROLONGED_BLACKOUT"]
+    landslide_risk: float
+    bridge_severed: bool
+
+
+class NegativeEvidenceOverviewResponse(BaseModel):
+    simulated_time: datetime
+    active_anomalies_count: int
+    critical_silent_sectors_count: int
+    anomalies: list[NegativeEvidenceAnomalyItem]
+    silence_windows: list[SilenceWindowItem]
+
+
+class HypothesisTraceItem(BaseModel):
+    evidence_id: str
+    evidence_summary: str
+    delta_contribution: float
+    direction: Literal["SUPPORTS", "CONTRADICTS"]
+    source_reliability: float
+
+
+class CompetingHypothesisItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    hypothesis_code: Literal["H1", "H2", "H3", "H4", "H5"]
+    sector_id: str
+    title: str
+    description: str
+    prior_probability: float
+    posterior_probability: float
+    confidence: float
+    status: Literal["leading", "plausible", "unlikely", "refuted"]
+    supporting_evidence: list[str] = []
+    contradicting_evidence: list[str] = []
+    explanation_traces: list[HypothesisTraceItem] = []
+
+
+class SectorHypothesesResponse(BaseModel):
+    sector_id: str
+    sector_name: str
+    simulated_time: datetime
+    dominant_hypothesis: str
+    uncertainty_entropy: float  # Shannon Entropy H(P)
+    hypotheses: list[CompetingHypothesisItem]
+
+
+class AllHypothesesOverviewResponse(BaseModel):
+    simulated_time: datetime
+    national_dominant_hypotheses: dict[str, str]
+    sector_entropy: dict[str, float]
+    sectors: list[SectorHypothesesResponse]
+
+
+class CounterfactualPredictionItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    prediction_id: str
+    hypothesis_code: str
+    sector_id: str
+    prediction_statement: str
+    expected_observation_type: str
+    verification_status: Literal["CONFIRMED", "CONTRADICTED", "UNTESTED"]
+    matched_evidence_id: Optional[str] = None
+    consistency_weight: float = 1.0
+
+
+class SectorCounterfactualResponse(BaseModel):
+    sector_id: str
+    sector_name: str
+    consistency_score: float
+    predictions: list[CounterfactualPredictionItem]
+
+
+class VerificationActionItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    recommendation_id: str
+    sector_id: str
+    sector_name: str
+    action_type: str
+    action_title: str
+    target_hypotheses: list[str]
+    expected_information_gain: float  # Delta Entropy
+    operational_risk_score: float
+    resource_cost_usd: float
+    eta_minutes: int
+    ranking_score: float
+    justification: str
+    status: Literal["PENDING_REVIEW", "APPROVED", "MODIFIED", "REJECTED", "EXECUTED"]
+    created_at: datetime
+
+
+class RankedObservationsResponse(BaseModel):
+    simulated_time: datetime
+    total_actions_evaluated: int
+    best_next_observation: Optional[VerificationActionItem]
+    candidate_actions: list[VerificationActionItem]
+
+
+class ActionReviewRequest(BaseModel):
+    recommendation_id: str
+    decision: Literal["APPROVED", "MODIFIED", "REJECTED"]
+    reviewer_role: Literal["Viewer", "Analyst", "Officer", "Administrator", "Auditor"] = "Officer"
+    reviewer_name: str = "Duty Operations Commander"
+    justification: str
+    modifications: Optional[dict[str, Any]] = None
+
+
+class ActionReviewResponse(BaseModel):
+    audit_id: str
+    recommendation_id: str
+    decision: str
+    reviewer_role: str
+    status: str
+    message: str
+    timestamp: datetime
+
+
+class ActionAuditItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    audit_id: str
+    recommendation_id: str
+    sector_id: str
+    action_type: str
+    decision: str
+    reviewer_role: str
+    reviewer_name: str
+    justification: Optional[str]
+    resulting_evidence_id: Optional[str]
+    timestamp: datetime
+
+
+class AuditTrailResponse(BaseModel):
+    total_audits: int
+    records: list[ActionAuditItem]
+
+
+class ExecutionResultPayload(BaseModel):
+    recommendation_id: str
+    observed_finding: str
+    evidence_direction: Literal["positive", "negative"] = "positive"
+    damage_confirmed: bool = True
+    reliability: float = 0.95
+
+
+class FeedbackLoopResultResponse(BaseModel):
+    success: bool
+    recommendation_id: str
+    generated_evidence_id: str
+    sector_id: str
+    previous_dominant_hypothesis: str
+    updated_dominant_hypothesis: str
+    entropy_reduction: float
+    updated_hypotheses: list[CompetingHypothesisItem]
+    message: str
+

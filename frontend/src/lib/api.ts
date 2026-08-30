@@ -660,3 +660,442 @@ export async function fetchCurrentSitrep(): Promise<SitrepReportResponse> {
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch current SITREP`);
   return res.json();
 }
+
+// -------------------------------------------------------------
+// Capability 7: RESQ-SIGHT Multi-Modal Ground Truth & Research APIs
+// -------------------------------------------------------------
+
+export interface ResqSightManifestItem {
+  dataset: string;
+  role: string;
+  project_module: string;
+  source: string;
+  source_url?: string;
+  format: string;
+  records_count?: number;
+  files?: Array<{
+    filename: string;
+    relative_path: string;
+    size_human: string;
+    sha256: string;
+  }>;
+  validation?: {
+    status: string;
+    notes: string;
+  };
+}
+
+export interface ResqSightManifestResponse {
+  repository: string;
+  status: string;
+  total_datasets_count: number;
+  datasets: ResqSightManifestItem[];
+}
+
+export interface GroundTruthCalibrationProfile {
+  sector_id: string;
+  sector_name: string;
+  structural_fragility_index: number;
+  masonry_ratio_pct: number;
+  concrete_ratio_pct: number;
+  historical_collapse_rate_pct: number;
+  superstructure_dominant_type: string;
+  construction_code_compliance: string;
+  surveyed_buildings_count: number;
+}
+
+export interface GroundTruthCalibrationResponse {
+  dataset_summary: {
+    source: string;
+    total_surveyed_buildings: number;
+    damage_grade_distribution: {
+      grade_1_low_damage_pct: number;
+      grade_2_moderate_damage_pct: number;
+      grade_3_severe_collapse_pct: number;
+    };
+    dominant_foundation_types: Record<string, string>;
+    status: string;
+    sectors_calibrated: number;
+  };
+  sector_fragility_profiles: GroundTruthCalibrationProfile[];
+}
+
+export interface SatelliteDamagePointItem {
+  lat: number;
+  lon: number;
+  grading: string;
+  sensor_name: string;
+  sector_id: string;
+  source_dataset: string;
+}
+
+export interface SatellitePointsResponse {
+  summary: {
+    unosat_damage_points_count: number;
+    sectors_covered: string[];
+    points_by_sector: Record<string, number>;
+    sensors_active: string[];
+    sentinel_sar_metadata: any;
+  };
+  points_count: number;
+  damage_points: SatelliteDamagePointItem[];
+}
+
+export interface NlpStatsResponse {
+  devanagari_ner_ebiquity: {
+    dataset_source: string;
+    total_tokens_processed: number;
+    unique_location_entities: number;
+    unique_org_entities: number;
+    unique_person_entities: number;
+    tag_distribution: Record<string, number>;
+    status: string;
+  };
+  crisis_nlp_benchmarks: {
+    datasets: Array<{
+      name: string;
+      role: string;
+      record_count?: number;
+      events_covered?: number;
+      disaster_types?: string[];
+      source: string;
+      status: string;
+    }>;
+    sample_authentic_field_reports: string[];
+  };
+}
+
+export interface CensusExposureSummaryResponse {
+  census_year: number;
+  source: string;
+  total_tracked_palikas: number;
+  total_monitored_population: number;
+  total_households: number;
+  sectors_breakdown: Array<{
+    sector_id: string;
+    palikas_count: number;
+    total_population: number;
+    households: number;
+    palikas: Array<{
+      name: string;
+      population: number;
+      households: number;
+    }>;
+  }>;
+}
+
+export async function fetchResqSightManifest(): Promise<ResqSightManifestResponse> {
+  const res = await fetch(`${API_BASE_URL}/resq-sight/manifest`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch RESQ-SIGHT manifest`);
+  return res.json();
+}
+
+export async function fetchGroundTruthCalibration(): Promise<GroundTruthCalibrationResponse> {
+  const res = await fetch(`${API_BASE_URL}/resq-sight/ground-truth/calibration`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch ground-truth calibration`);
+  return res.json();
+}
+
+export async function fetchSatellitePoints(): Promise<SatellitePointsResponse> {
+  const res = await fetch(`${API_BASE_URL}/resq-sight/satellite/points`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch satellite damage points`);
+  return res.json();
+}
+
+export async function fetchNlpStats(): Promise<NlpStatsResponse> {
+  const res = await fetch(`${API_BASE_URL}/resq-sight/nlp/stats`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch NLP stats`);
+  return res.json();
+}
+
+export async function fetchCensusExposureSummary(): Promise<CensusExposureSummaryResponse> {
+  const res = await fetch(`${API_BASE_URL}/resq-sight/exposure/summary`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch census exposure summary`);
+  return res.json();
+}
+
+
+// =============================================================
+// PRATYAKSH-Ω: Autonomous Negative Evidence & Reality Reconstruction
+// =============================================================
+
+export interface BaselineItem {
+  id?: number;
+  sector_id: string;
+  metric: string;
+  hour_of_day: number;
+  day_of_week: number;
+  expected_mean: number;
+  expected_std: number;
+  expected_min: number;
+  expected_max: number;
+  unit: string;
+  source: string;
+  provenance?: string;
+}
+
+export interface BaselineCatalogResponse {
+  total_baselines: number;
+  sector_count: number;
+  metrics: string[];
+  baselines: BaselineItem[];
+}
+
+export interface SectorBaselineComparison {
+  sector_id: string;
+  sector_name: string;
+  current_hour: number;
+  metric: string;
+  expected_mean: number;
+  expected_min: number;
+  expected_max: number;
+  observed_value: number;
+  gap_delta: number;
+  z_score: number;
+  is_anomalous: boolean;
+  status: "NORMAL" | "ELEVATED" | "UNEXPECTED_SILENCE" | "CRITICAL_BLACKOUT";
+  explanation: string;
+}
+
+export interface NegativeEvidenceAnomalyItem {
+  anomaly_id: string;
+  sector_id: string;
+  sector_name: string;
+  metric: string;
+  expected_value: number;
+  observed_value: number;
+  gap_magnitude: number;
+  silence_duration_hours: number;
+  confidence: number;
+  severity_tier: "CRITICAL" | "HIGH" | "MODERATE" | "LOW";
+  explanation: string;
+  detected_at: string;
+  is_active: boolean;
+}
+
+export interface SilenceWindowItem {
+  sector_id: string;
+  sector_name: string;
+  last_signal_timestamp?: string;
+  silence_duration_hours: number;
+  expected_events_lost: number;
+  silence_severity: "NORMAL" | "ELEVATED_WATCH" | "CRITICAL_SILENCE" | "PROLONGED_BLACKOUT";
+  landslide_risk: number;
+  bridge_severed: boolean;
+}
+
+export interface NegativeEvidenceOverviewResponse {
+  simulated_time: string;
+  active_anomalies_count: number;
+  critical_silent_sectors_count: number;
+  anomalies: NegativeEvidenceAnomalyItem[];
+  silence_windows: SilenceWindowItem[];
+}
+
+export interface HypothesisTraceItem {
+  evidence_id: string;
+  evidence_summary: string;
+  delta_contribution: number;
+  direction: "SUPPORTS" | "CONTRADICTS";
+  source_reliability: number;
+}
+
+export interface CompetingHypothesisItem {
+  hypothesis_code: "H1" | "H2" | "H3" | "H4" | "H5";
+  sector_id: string;
+  title: string;
+  description: string;
+  prior_probability: number;
+  posterior_probability: number;
+  confidence: number;
+  status: "leading" | "plausible" | "unlikely" | "refuted";
+  supporting_evidence: string[];
+  contradicting_evidence: string[];
+  explanation_traces: HypothesisTraceItem[];
+}
+
+export interface SectorHypothesesResponse {
+  sector_id: string;
+  sector_name: string;
+  simulated_time: string;
+  dominant_hypothesis: string;
+  uncertainty_entropy: number;
+  hypotheses: CompetingHypothesisItem[];
+}
+
+export interface AllHypothesesOverviewResponse {
+  simulated_time: string;
+  national_dominant_hypotheses: Record<string, string>;
+  sector_entropy: Record<string, number>;
+  sectors: SectorHypothesesResponse[];
+}
+
+export interface CounterfactualPredictionItem {
+  prediction_id: string;
+  hypothesis_code: string;
+  sector_id: string;
+  prediction_statement: string;
+  expected_observation_type: string;
+  verification_status: "CONFIRMED" | "CONTRADICTED" | "UNTESTED";
+  matched_evidence_id?: string | null;
+  consistency_weight: number;
+}
+
+export interface SectorCounterfactualResponse {
+  sector_id: string;
+  sector_name: string;
+  consistency_score: number;
+  predictions: CounterfactualPredictionItem[];
+}
+
+export interface VerificationActionItem {
+  recommendation_id: string;
+  sector_id: string;
+  sector_name: string;
+  action_type: string;
+  action_title: string;
+  target_hypotheses: string[];
+  expected_information_gain: number;
+  operational_risk_score: number;
+  resource_cost_usd: number;
+  eta_minutes: number;
+  ranking_score: number;
+  justification: string;
+  status: "PENDING_REVIEW" | "APPROVED" | "MODIFIED" | "REJECTED" | "EXECUTED";
+  created_at: string;
+}
+
+export interface RankedObservationsResponse {
+  simulated_time: string;
+  total_actions_evaluated: number;
+  best_next_observation?: VerificationActionItem | null;
+  candidate_actions: VerificationActionItem[];
+}
+
+export interface ActionReviewRequest {
+  recommendation_id: string;
+  decision: "APPROVED" | "MODIFIED" | "REJECTED";
+  reviewer_role: "Viewer" | "Analyst" | "Officer" | "Administrator" | "Auditor";
+  reviewer_name: string;
+  justification: string;
+  modifications?: Record<string, any>;
+}
+
+export interface ActionReviewResponse {
+  audit_id: string;
+  recommendation_id: string;
+  decision: string;
+  reviewer_role: string;
+  status: string;
+  message: string;
+  timestamp: string;
+}
+
+export interface ActionAuditItem {
+  audit_id: string;
+  recommendation_id: string;
+  sector_id: string;
+  action_type: string;
+  decision: string;
+  reviewer_role: string;
+  reviewer_name: string;
+  justification?: string;
+  resulting_evidence_id?: string;
+  timestamp: string;
+}
+
+export interface AuditTrailResponse {
+  total_audits: number;
+  records: ActionAuditItem[];
+}
+
+export interface ExecutionResultPayload {
+  recommendation_id: string;
+  observed_finding: string;
+  evidence_direction: "positive" | "negative";
+  damage_confirmed: boolean;
+  reliability: number;
+}
+
+export interface FeedbackLoopResultResponse {
+  success: boolean;
+  recommendation_id: string;
+  generated_evidence_id: string;
+  sector_id: string;
+  previous_dominant_hypothesis: string;
+  updated_dominant_hypothesis: string;
+  entropy_reduction: number;
+  updated_hypotheses: CompetingHypothesisItem[];
+  message: string;
+}
+
+// PRATYAKSH-Ω API Client Functions
+export async function fetchBaselinesCatalog(): Promise<BaselineCatalogResponse> {
+  const res = await fetch(`${API_BASE_URL}/baselines`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch baselines catalog`);
+  return res.json();
+}
+
+export async function fetchSectorBaselineComparison(sectorId: string): Promise<SectorBaselineComparison> {
+  const res = await fetch(`${API_BASE_URL}/baselines/${encodeURIComponent(sectorId)}/comparison`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch baseline comparison for ${sectorId}`);
+  return res.json();
+}
+
+export async function fetchNegativeEvidenceOverview(): Promise<NegativeEvidenceOverviewResponse> {
+  const res = await fetch(`${API_BASE_URL}/negative-evidence/overview`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch negative evidence overview`);
+  return res.json();
+}
+
+export async function fetchAllHypothesesOverview(): Promise<AllHypothesesOverviewResponse> {
+  const res = await fetch(`${API_BASE_URL}/hypotheses/all`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch hypotheses overview`);
+  return res.json();
+}
+
+export async function fetchSectorHypotheses(sectorId: string): Promise<SectorHypothesesResponse> {
+  const res = await fetch(`${API_BASE_URL}/hypotheses/sector/${encodeURIComponent(sectorId)}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch sector hypotheses for ${sectorId}`);
+  return res.json();
+}
+
+export async function fetchSectorCounterfactuals(sectorId: string): Promise<SectorCounterfactualResponse> {
+  const res = await fetch(`${API_BASE_URL}/hypotheses/counterfactuals/${encodeURIComponent(sectorId)}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch counterfactuals for ${sectorId}`);
+  return res.json();
+}
+
+export async function fetchRankedVerificationObservations(): Promise<RankedObservationsResponse> {
+  const res = await fetch(`${API_BASE_URL}/verification/next-best-observations`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch ranked verification observations`);
+  return res.json();
+}
+
+export async function reviewVerificationAction(payload: ActionReviewRequest): Promise<ActionReviewResponse> {
+  const res = await fetch(`${API_BASE_URL}/verification/review`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to record action review`);
+  return res.json();
+}
+
+export async function executeAndFeedReality(payload: ExecutionResultPayload): Promise<FeedbackLoopResultResponse> {
+  const res = await fetch(`${API_BASE_URL}/verification/execute-and-feed`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to execute action feedback loop`);
+  return res.json();
+}
+
+export async function fetchAuditTrail(): Promise<AuditTrailResponse> {
+  const res = await fetch(`${API_BASE_URL}/verification/audit-trail`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch audit trail`);
+  return res.json();
+}
+
+

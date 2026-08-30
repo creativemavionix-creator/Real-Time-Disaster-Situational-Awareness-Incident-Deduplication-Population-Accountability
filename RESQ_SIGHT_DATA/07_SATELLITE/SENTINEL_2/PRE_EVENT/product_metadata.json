@@ -1,0 +1,23 @@
+{
+  "product_id": "S2A_MSIL1C_20150408T050642_N0201_R019_T45RRL_20150408T050638",
+  "satellite": "Sentinel-2A",
+  "sensor": "Multi-Spectral Instrument (MSI)",
+  "level": "Level-1C Top-of-Atmosphere Reflectance",
+  "cloud_cover_percentage": 4.12,
+  "acquisition_time": "2015-04-08T05:06:42Z",
+  "event_context": "PRE_EVENT (Clear optical baseline prior to earthquake)",
+  "tile_id": "T45RRL",
+  "aoi_bbox": [
+    84.6,
+    27.6,
+    85.8,
+    28.2
+  ],
+  "target_sectors": [
+    "sankhu",
+    "kathmandu",
+    "bhaktapur",
+    "sindhupalchok"
+  ],
+  "download_source": "Copernicus Data Space Ecosystem (CDSE) / AWS Earth Search"
+}

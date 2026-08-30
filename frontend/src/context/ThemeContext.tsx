@@ -1,60 +1,31 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-
-type Theme = "light" | "dark";
+import React, { createContext, useContext, useEffect } from "react";
 
 interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
-  isDark: boolean;
+  theme: "dark";
+  isDark: true;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+const ThemeContext = createContext<ThemeContextType>({
+  theme: "dark",
+  isDark: true,
+});
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    const saved = localStorage.getItem("prism_theme") as Theme | null;
-    if (saved === "light" || saved === "dark") {
-      setThemeState(saved);
-      if (saved === "dark") {
-        document.documentElement.classList.add("dark");
-      } else {
-        document.documentElement.classList.remove("dark");
-      }
-    } else {
-      // Default to dark mode
-      setThemeState("dark");
-      document.documentElement.classList.add("dark");
-    }
-    setMounted(true);
+    // Permanently enforce dark mode
+    document.documentElement.classList.add("dark");
+    try {
+      localStorage.removeItem("prism_theme");
+    } catch {}
   }, []);
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem("prism_theme", newTheme);
-    if (newTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  };
-
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
 
   return (
     <ThemeContext.Provider
       value={{
-        theme,
-        setTheme,
-        toggleTheme,
-        isDark: theme === "dark",
+        theme: "dark",
+        isDark: true,
       }}
     >
       {children}
@@ -63,9 +34,5 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
+  return useContext(ThemeContext);
 }

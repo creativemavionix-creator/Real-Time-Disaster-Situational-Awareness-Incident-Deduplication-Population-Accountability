@@ -69,7 +69,7 @@ export function CinematicIntro({
           </h1>
 
           <p className="font-body-prose text-base sm:text-xl text-[#5C6270] dark:text-[#9CA3AF] max-w-2xl leading-relaxed">
-            In the initial hours of a disaster, emergency authorities face fragmented, conflicting reports and complete silence from cut-off mountain ridges. Project PRISM reconstructs ground reality through negative-evidence spatial inference and multi-agency consensus.
+            In the initial hours of a disaster, emergency authorities face fragmented, conflicting reports and complete silence from cut-off mountain ridges. <strong className="text-white">PRATYAKSH-Ω</strong> reconstructs ground reality through negative-evidence spatial inference and multi-agency consensus.
           </p>
 
           {/* Calm Status Indicator */}

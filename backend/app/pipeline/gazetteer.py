@@ -226,3 +226,14 @@ def resolve_location_from_coordinates(
         return closest_loc
         
     return None
+
+
+def get_location(location_id: str) -> Optional[LocationInfo]:
+    """Retrieve location info by sector ID."""
+    return LOCATIONS.get(location_id.lower())
+
+
+def get_all_locations() -> list[LocationInfo]:
+    """Return all 8 fixed location entries."""
+    return list(LOCATIONS.values())
+

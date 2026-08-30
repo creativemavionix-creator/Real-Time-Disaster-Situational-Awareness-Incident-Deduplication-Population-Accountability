@@ -1,0 +1,13 @@
+{
+  "nepal_admin_boundaries": "done",
+  "nepal_admin_boundaries_cod": "done",
+  "nepal_earthquake_severity_index": "failed",
+  "nepali_ner": "done",
+  "kathmandu_living_labs_building_damage": "manual",
+  "crisisnlp_humaid": "manual",
+  "unosat_satellite_damage_maps": "manual",
+  "nepal_census_2021": "manual",
+  "worldpop_nepal": "manual",
+  "sentinel_sar_optical": "manual",
+  "building_footprints": "manual"
+}

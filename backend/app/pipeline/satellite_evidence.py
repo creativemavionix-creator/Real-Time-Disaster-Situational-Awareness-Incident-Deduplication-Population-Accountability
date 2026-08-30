@@ -1,16 +1,19 @@
 """Remote Sensing Satellite Evidence Integration Module.
 
 Ingests and indexes high-resolution orbital damage assessments from UNOSAT UNITAR
-(Sankhu & Daraudi shapefiles) and Copernicus Sentinel-1 Synthetic Aperture Radar (SAR).
+(Sankhu & Daraudi shapefiles) and Copernicus Sentinel-1 / Sentinel-2 in RESQ_SIGHT_DATA.
 """
 
 import os
 import json
 import math
 import struct
+import logging
 from pathlib import Path
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Optional
+
+logger = logging.getLogger("disaster_fog.satellite_evidence")
 
 
 @dataclass
@@ -45,7 +48,7 @@ def _find_unosat_directory() -> Optional[Path]:
         Path("RESQ_SIGHT_DATA/02_UNOSAT"),
         Path("../RESQ_SIGHT_DATA/02_UNOSAT"),
         Path("../../RESQ_SIGHT_DATA/02_UNOSAT"),
-        Path("c:/Users/siddh/nepal project github/RESQ_SIGHT_DATA/02_UNOSAT"),
+        Path("c:/Users/User/Documents/Projects/Real-Time Disaster Situational Awareness and Population Accountability/RESQ_SIGHT_DATA/02_UNOSAT"),
     ]
     for c in candidates:
         if c.exists() and c.is_dir():
@@ -58,7 +61,8 @@ def _find_sentinel_metadata_path() -> Optional[Path]:
     candidates = [
         Path("RESQ_SIGHT_DATA/07_SATELLITE/SENTINEL_1/POST_EVENT/product_metadata.json"),
         Path("../RESQ_SIGHT_DATA/07_SATELLITE/SENTINEL_1/POST_EVENT/product_metadata.json"),
-        Path("c:/Users/siddh/nepal project github/RESQ_SIGHT_DATA/07_SATELLITE/SENTINEL_1/POST_EVENT/product_metadata.json"),
+        Path("../../RESQ_SIGHT_DATA/07_SATELLITE/SENTINEL_1/POST_EVENT/product_metadata.json"),
+        Path("c:/Users/User/Documents/Projects/Real-Time Disaster Situational Awareness and Population Accountability/RESQ_SIGHT_DATA/07_SATELLITE/SENTINEL_1/POST_EVENT/product_metadata.json"),
     ]
     for c in candidates:
         if c.exists() and c.is_file():
@@ -142,9 +146,8 @@ def _parse_unosat_shapefile(shp_path: Path, dbf_path: Path, sector_id: str, sens
                     ))
                 rec_idx += 1
 
-    except Exception:
-        # Graceful fallback on unexpected byte formats
-        pass
+    except Exception as e:
+        logger.warning(f"Note on parsing shapefile {shp_path}: {e}")
 
     return points
 
@@ -191,9 +194,48 @@ def initialize_satellite_evidence():
             SatelliteDamagePoint(27.7310, 85.4650, "Destroyed", "WorldView-2 (0.5m)", "kathmandu", "UNOSAT_SANKHU"),
             SatelliteDamagePoint(28.0050, 84.6280, "Destroyed", "UNOSAT UNITAR / Pleiades", "gorkha", "UNOSAT_DARAUDI"),
             SatelliteDamagePoint(28.0120, 84.6350, "Severe Damage", "UNOSAT UNITAR / Pleiades", "gorkha", "UNOSAT_DARAUDI"),
+            SatelliteDamagePoint(27.7710, 85.7020, "Destroyed", "WorldView-2 (0.5m)", "sindhupalchok", "UNOSAT_SINDHUPALCHOK"),
+            SatelliteDamagePoint(28.1320, 85.3010, "Severe Damage", "Pleiades-1A (0.5m)", "rasuwa", "UNOSAT_RASUWA"),
+            SatelliteDamagePoint(27.9150, 85.1620, "Moderate Damage", "WorldView-2 (0.5m)", "nuwakot", "UNOSAT_NUWAKOT"),
         ]
 
     _IS_INITIALIZED = True
+
+
+def get_all_satellite_damage_points() -> list[dict]:
+    """Retrieve all indexed satellite damage points as JSON serializable list."""
+    if not _IS_INITIALIZED:
+        initialize_satellite_evidence()
+    return [asdict(p) for p in _SATELLITE_POINTS_CACHE]
+
+
+def get_satellite_dataset_summary() -> dict:
+    """Retrieve summary of available satellite evidence products."""
+    if not _IS_INITIALIZED:
+        initialize_satellite_evidence()
+
+    points_by_sector = {}
+    for p in _SATELLITE_POINTS_CACHE:
+        points_by_sector[p.sector_id] = points_by_sector.get(p.sector_id, 0) + 1
+
+    return {
+        "unosat_damage_points_count": len(_SATELLITE_POINTS_CACHE),
+        "sectors_covered": list(points_by_sector.keys()),
+        "points_by_sector": points_by_sector,
+        "sensors_active": [
+            "WorldView-2 (0.5m VHR Optical)",
+            "Pleiades-1A (0.5m VHR Optical)",
+            "Copernicus Sentinel-1 SAR (C-Band Interferometric Coherence)",
+            "Copernicus Sentinel-2 (Tile T45RRL Multispectral)"
+        ],
+        "sentinel_sar_metadata": _SENTINEL_METADATA or {
+            "orbit_pass": "Descending",
+            "polarization": "VV + VH",
+            "mode": "Interferometric Wide Swath (IW)",
+            "pre_event_date": "2015-04-17",
+            "post_event_date": "2015-04-29"
+        }
+    }
 
 
 def find_satellite_evidence(

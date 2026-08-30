@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { GisSectorTelemetry, fetchH3GridTelemetry, H3HexagonItem } from "@/lib/api";
+import { GisSectorTelemetry, fetchH3GridTelemetry, H3HexagonItem, fetchSatellitePoints, SatelliteDamagePointItem } from "@/lib/api";
 import "leaflet/dist/leaflet.css";
 
 interface InteractiveVectorMapProps {
@@ -34,10 +34,13 @@ export default function InteractiveVectorMap({
   const mapInstanceRef = useRef<any>(null);
   const geojsonLayerRef = useRef<any>(null);
   const h3LayerGroupRef = useRef<any>(null);
+  const satelliteLayerGroupRef = useRef<any>(null);
 
   const [geojsonData, setGeojsonData] = useState<any>(null);
   const [h3Hexagons, setH3Hexagons] = useState<H3HexagonItem[]>([]);
+  const [satellitePoints, setSatellitePoints] = useState<SatelliteDamagePointItem[]>([]);
   const [showH3Grid, setShowH3Grid] = useState(false);
+  const [showSatelliteLayer, setShowSatelliteLayer] = useState(true);
   const [isMapReady, setIsMapReady] = useState(false);
 
   useEffect(() => {
@@ -49,6 +52,10 @@ export default function InteractiveVectorMap({
     fetchH3GridTelemetry()
       .then((res) => setH3Hexagons(res.hexagons))
       .catch((err) => console.error("Failed to load H3 Grid:", err));
+
+    fetchSatellitePoints()
+      .then((res) => setSatellitePoints(res.damage_points))
+      .catch((err) => console.error("Failed to load satellite points:", err));
   }, []);
 
   const getSectorColor = (sector?: GisSectorTelemetry) => {
@@ -103,6 +110,7 @@ export default function InteractiveVectorMap({
     L.marker([EPICENTER_LAT, EPICENTER_LON], { icon: epicenterIcon }).addTo(map);
 
     h3LayerGroupRef.current = L.layerGroup().addTo(map);
+    satelliteLayerGroupRef.current = L.layerGroup().addTo(map);
     mapInstanceRef.current = map;
     setIsMapReady(true);
 
@@ -111,6 +119,43 @@ export default function InteractiveVectorMap({
       mapInstanceRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    if (!isMapReady || !satelliteLayerGroupRef.current) return;
+    const L = require("leaflet");
+    const satGroup = satelliteLayerGroupRef.current;
+    satGroup.clearLayers();
+
+    if (!showSatelliteLayer || satellitePoints.length === 0) return;
+
+    satellitePoints.forEach((pt) => {
+      const isDestroyed = pt.grading.toLowerCase().includes("destroyed");
+      const markerColor = isDestroyed ? "#E11D48" : "#D97706";
+      const icon = L.divIcon({
+        className: "satellite-damage-marker",
+        html: `
+          <div style="position: relative; width: 14px; height: 14px; cursor: pointer;">
+            <div style="position: absolute; inset: 0; border-radius: 9999px; background-color: ${markerColor}; opacity: 0.6; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+            <div style="position: absolute; inset: 2px; border-radius: 9999px; background-color: ${markerColor}; border: 1.5px solid #FFFFFF;"></div>
+          </div>
+        `,
+        iconSize: [14, 14],
+        iconAnchor: [7, 7],
+      });
+
+      const marker = L.marker([pt.lat, pt.lon], { icon });
+      marker.bindTooltip(
+        `<div style="font-family: monospace; font-size: 11px; padding: 4px 8px; background: #0C0E12; color: #F4F4F0; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);">
+          <strong style="color: ${markerColor}">${pt.grading}</strong><br/>
+          <span style="opacity: 0.8">${pt.sensor_name}</span><br/>
+          <span style="font-size: 9px; opacity: 0.6">UNOSAT Corroborated</span>
+        </div>`,
+        { direction: "top", offset: [0, -6], opacity: 0.95 }
+      );
+      marker.on("click", () => onSelectSector(pt.sector_id));
+      marker.addTo(satGroup);
+    });
+  }, [isMapReady, showSatelliteLayer, satellitePoints, onSelectSector]);
 
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current || !geojsonData) return;
@@ -146,7 +191,7 @@ export default function InteractiveVectorMap({
     }).addTo(map);
 
     geojsonLayerRef.current = layer;
-  }, [isMapReady, geojsonData, sectors, selectedSectorId, showH3Grid]);
+  }, [isMapReady, geojsonData, sectors, selectedSectorId, showH3Grid, onSelectSector]);
 
   useEffect(() => {
     if (!isMapReady || !h3LayerGroupRef.current) return;
@@ -166,7 +211,7 @@ export default function InteractiveVectorMap({
       polygon.on("click", () => onSelectSector(hex.sector_id));
       polygon.addTo(h3Group);
     });
-  }, [isMapReady, showH3Grid, h3Hexagons]);
+  }, [isMapReady, showH3Grid, h3Hexagons, onSelectSector]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedSectorId) return;
@@ -183,29 +228,51 @@ export default function InteractiveVectorMap({
     <div className="absolute inset-0 z-0 bg-[#090B0E]">
       <div ref={mapContainerRef} className="w-full h-full z-0" />
       
-      {/* Sleek Floating Controls */}
-      <div className="absolute top-24 left-8 z-[400] flex flex-col gap-4 pointer-events-auto">
+      {/* Sleek Floating Layer Controls */}
+      <div className="absolute top-24 left-8 z-[400] flex flex-col gap-2 pointer-events-auto">
+        <button
+          type="button"
+          onClick={() => setShowSatelliteLayer(!showSatelliteLayer)}
+          className={`px-4 py-2 rounded-full backdrop-blur-md border font-mono-data text-[10px] tracking-widest transition-all cursor-pointer uppercase shadow-lg flex items-center gap-2 ${
+            showSatelliteLayer
+              ? "bg-[#2563EB]/80 border-[#60A5FA] text-white shadow-[0_0_20px_rgba(37,99,235,0.4)]"
+              : "bg-[#090B0E]/70 border-white/10 text-[#94A3B8] hover:text-white"
+          }`}
+        >
+          <span className={`w-2 h-2 rounded-full ${showSatelliteLayer ? "bg-white animate-pulse" : "bg-[#64748B]"}`} />
+          {showSatelliteLayer ? "UNOSAT Satellite: Active" : "UNOSAT Satellite: Hidden"}
+        </button>
+
         <button
           type="button"
           onClick={() => setShowH3Grid(!showH3Grid)}
-          className="px-4 py-2 rounded-full backdrop-blur-md bg-[#090B0E]/60 border border-white/10 font-mono-data text-[10px] tracking-widest text-[#94A3B8] hover:text-white transition-all cursor-pointer uppercase shadow-lg"
+          className={`px-4 py-2 rounded-full backdrop-blur-md border font-mono-data text-[10px] tracking-widest transition-all cursor-pointer uppercase shadow-lg flex items-center gap-2 ${
+            showH3Grid
+              ? "bg-emerald-600/80 border-emerald-400 text-white"
+              : "bg-[#090B0E]/70 border-white/10 text-[#94A3B8] hover:text-white"
+          }`}
         >
-          {showH3Grid ? "Disable H3 Mesh" : "Enable H3 Mesh"}
+          <span className={`w-2 h-2 rounded-full ${showH3Grid ? "bg-white" : "bg-[#64748B]"}`} />
+          {showH3Grid ? "H3 Spatial Mesh: Active" : "H3 Spatial Mesh: Hidden"}
         </button>
       </div>
 
-      <div className="absolute bottom-8 left-8 z-[400] flex flex-col gap-3 font-mono-data text-[9px] tracking-[0.2em] text-[#64748B] pointer-events-none">
-        <div className="flex items-center gap-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48]" />
+      <div className="absolute bottom-8 left-8 z-[400] flex flex-col gap-2.5 font-mono-data text-[9px] tracking-[0.2em] text-[#64748B] pointer-events-none bg-[#090B0E]/80 backdrop-blur-md p-3 rounded-2xl border border-white/5">
+        <div className="flex items-center gap-2.5">
+          <span className="w-2 h-2 rounded-full bg-[#E11D48]" />
           CRITICAL SEVERITY
         </div>
-        <div className="flex items-center gap-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]" />
+        <div className="flex items-center gap-2.5">
+          <span className="w-2 h-2 rounded-full bg-[#D97706]" />
           MODERATE RISK
         </div>
-        <div className="flex items-center gap-3">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" />
+        <div className="flex items-center gap-2.5">
+          <span className="w-2 h-2 rounded-full bg-[#059669]" />
           VERIFIED SAFE
+        </div>
+        <div className="flex items-center gap-2.5 pt-1 border-t border-white/5 text-[#60A5FA]">
+          <span className="w-2 h-2 rounded-full bg-[#E11D48] border border-white" />
+          UNOSAT SATELLITE BEACON
         </div>
       </div>
     </div>

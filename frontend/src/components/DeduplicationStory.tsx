@@ -18,7 +18,7 @@ export function DeduplicationStory() {
             What Do We Actually Know?
           </h2>
           <p className="font-body-prose text-sm sm:text-base text-[#5C6270] dark:text-[#9CA3AF] leading-relaxed">
-            During disasters, the same building collapse is reported by social media with 50 claimed casualties, by police with 12, and by hospital triage with 8. PRISM semantically clusters reports into a single unified truth ledger.
+            During disasters, the same building collapse is reported by social media with 50 claimed casualties, by police with 12, and by hospital triage with 8. <strong className="text-white">PRATYAKSH-Ω</strong> semantically clusters reports into a single unified truth ledger.
           </p>
         </div>
 

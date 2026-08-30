@@ -24,7 +24,7 @@ const CASE_STUDIES: CaseStudy[] = [
     locations: "Gorkha, Barpak, Sindhupalchok",
     impact: "8,964 Fatalities • 22,300 Injured • 762,000 Buildings Damaged",
     blackoutChallenge: "Barpak epicentral region suffered total communications cutoff for 24+ hours. Emergency ops received thousands of calls from Kathmandu while zero calls arrived from Barpak.",
-    prismOutput: "Project PRISM inferred high structural damage (98% Inferred Risk) due to zero transmission duration and epicenter proximity, escalating Verification Priority before field reports arrived.",
+    prismOutput: "PRATYAKSH-Ω inferred high structural damage (98% Inferred Risk) due to zero transmission duration and epicenter proximity, escalating Verification Priority before field reports arrived.",
   },
   {
     id: "case-02",
@@ -35,7 +35,7 @@ const CASE_STUDIES: CaseStudy[] = [
     locations: "Jajarkot, Rukum West, Barekot",
     impact: "157 Fatalities • 375 Injured • 35,000 Homes Destroyed",
     blackoutChallenge: "Remote mountain ridgeline settlements lost night-time grid power. False early rumors understated the tragedy due to low reporting volume in Barekot.",
-    prismOutput: "Project PRISM cross-referenced 260K structural building survey priors with terrain slope, immediately tagging remote stone-masonry settlements as Critical Inferred Hazard.",
+    prismOutput: "PRATYAKSH-Ω cross-referenced 260K structural building survey priors with terrain slope, immediately tagging remote stone-masonry settlements as Critical Inferred Hazard.",
   },
   {
     id: "case-03",
@@ -68,7 +68,7 @@ export function HistoricalCaseStudies() {
               Historical Case Studies & Telemetry Analysis
             </h2>
             <p className="font-body-prose text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-              Examine how Project PRISM's negative-evidence algorithms handle major historical Himalayan disasters.
+              Examine how PRATYAKSH-Ω's negative-evidence algorithms handle major historical Himalayan disasters.
             </p>
           </div>
 
@@ -135,10 +135,10 @@ export function HistoricalCaseStudies() {
             </p>
           </div>
 
-          {/* Right: PRISM Reconstructive Output */}
+          {/* Right: PRATYAKSH-Ω Reconstructive Output */}
           <div className="p-6 rounded-2xl bg-cyan-50/50 dark:bg-cyan-950/20 border border-cyan-200/80 dark:border-cyan-900/40 space-y-3">
             <div className="font-mono text-[11px] font-bold text-cyan-700 dark:text-cyan-400 uppercase tracking-wider">
-              PRISM RECONSTRUCTIVE OUTPUT
+              PRATYAKSH-Ω RECONSTRUCTIVE OUTPUT
             </div>
             <p className="font-body-prose text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
               {currentCase.prismOutput}

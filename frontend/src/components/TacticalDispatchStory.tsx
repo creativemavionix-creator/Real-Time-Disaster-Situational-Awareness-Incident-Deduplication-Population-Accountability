@@ -44,7 +44,7 @@ export function TacticalDispatchStory() {
               What Should Happen Next?
             </h2>
             <p className="font-body-prose text-sm sm:text-base text-[#5C6270] dark:text-[#9CA3AF] leading-relaxed">
-              From the chaos of initial report fragments to concrete rescue deployment orders. PRISM bridges the gap between raw unstructured data and military-grade decision velocity.
+              From the chaos of initial report fragments to concrete rescue deployment orders. <strong className="text-white">PRATYAKSH-Ω</strong> bridges the gap between raw unstructured data and military-grade decision velocity.
             </p>
           </div>
 

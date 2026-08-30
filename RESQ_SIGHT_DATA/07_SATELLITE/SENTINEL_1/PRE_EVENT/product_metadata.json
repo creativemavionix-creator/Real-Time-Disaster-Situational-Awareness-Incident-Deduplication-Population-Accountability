@@ -1,0 +1,26 @@
+{
+  "product_id": "S1A_IW_GRDH_1SDV_20150417T001245_20150417T001310_005516_00705E_C4F2",
+  "satellite": "Sentinel-1A",
+  "sensor": "C-band Synthetic Aperture Radar (SAR)",
+  "mode": "Interferometric Wide (IW)",
+  "product_type": "GRD (Ground Range Detected High Resolution)",
+  "polarization": "VV + VH",
+  "pass": "ASCENDING",
+  "orbit_number": 5516,
+  "acquisition_time": "2015-04-17T00:12:45Z",
+  "event_context": "PRE_EVENT (8 days prior to Gorkha M7.8 Earthquake)",
+  "aoi_bbox": [
+    84.5,
+    27.5,
+    86.2,
+    28.3
+  ],
+  "target_sectors": [
+    "gorkha",
+    "sankhu",
+    "daraudi",
+    "kathmandu",
+    "sindhupalchok"
+  ],
+  "download_source": "Copernicus Data Space Ecosystem (CDSE) / Alaska Satellite Facility (ASF)"
+}

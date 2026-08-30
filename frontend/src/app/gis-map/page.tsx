@@ -52,10 +52,11 @@ export default function GisMapPage() {
       setGisSectors(gis.sectors);
       setExposureData(exp);
 
-      if (inspectedLocation) {
-        const updated = locsRes.locations.find((l) => l.location_id === inspectedLocation.location_id);
-        if (updated) setInspectedLocation(updated);
-      }
+      setInspectedLocation((prev) => {
+        if (!prev) return null;
+        const updated = locsRes.locations.find((l) => l.location_id === prev.location_id);
+        return updated || prev;
+      });
     } catch (err: any) {
       console.error(err);
     }
@@ -65,7 +66,7 @@ export default function GisMapPage() {
     loadData();
     const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
-  }, [inspectedLocation]);
+  }, []);
 
   const handleAdvanceHours = async (hours: number) => {
     setIsLoading(true);

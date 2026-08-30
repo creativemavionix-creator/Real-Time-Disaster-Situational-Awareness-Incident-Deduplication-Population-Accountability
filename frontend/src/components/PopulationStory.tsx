@@ -27,7 +27,7 @@ export function PopulationStory({
               Who Is Affected?
             </h2>
             <p className="font-body-prose text-sm sm:text-base text-[#5C6270] dark:text-[#9CA3AF] leading-relaxed">
-              Static census maps fail during daytime earthquakes when commuters and tourists flood urban corridors. PRISM fuses the official 2021 NSO Nepal Census baseline with diurnal mobility flux.
+              Static census maps fail during daytime earthquakes when commuters and tourists flood urban corridors. <strong className="text-white">PRATYAKSH-Ω</strong> fuses the official 2021 NSO Nepal Census baseline with diurnal mobility flux.
             </p>
           </div>
 

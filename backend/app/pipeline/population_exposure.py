@@ -93,6 +93,7 @@ def find_census_csv_path() -> Optional[Path]:
         Path("RESQ_SIGHT_DATA/06_EXPOSURE/NEPAL_CENSUS_2021/population_local_level.csv"),
         Path("../RESQ_SIGHT_DATA/06_EXPOSURE/NEPAL_CENSUS_2021/population_local_level.csv"),
         Path("../../RESQ_SIGHT_DATA/06_EXPOSURE/NEPAL_CENSUS_2021/population_local_level.csv"),
+        Path("c:/Users/User/Documents/Projects/Real-Time Disaster Situational Awareness and Population Accountability/RESQ_SIGHT_DATA/06_EXPOSURE/NEPAL_CENSUS_2021/population_local_level.csv"),
         Path("c:/Users/siddh/nepal project github/RESQ_SIGHT_DATA/06_EXPOSURE/NEPAL_CENSUS_2021/population_local_level.csv"),
     ]
     for p in candidates:

@@ -24,6 +24,12 @@ from app.routers import (
     population_router,
     dispatch_router,
     sitrep_router,
+    resq_sight_router,
+    baselines_router,
+    negative_evidence_router,
+    hypotheses_router,
+    verification_router,
+    observability_router,
 )
 
 # Setup logging
@@ -85,6 +91,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+from app.security import SecurityHeadersMiddleware, RateLimiterMiddleware
+
 # Enable CORS for Vercel production domains, preview branches, and local development
 app.add_middleware(
     CORSMiddleware,
@@ -96,6 +104,9 @@ app.add_middleware(
     expose_headers=["*"],
     max_age=86400,
 )
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimiterMiddleware, max_requests_per_minute=240)
+
 
 
 @app.exception_handler(RequestValidationError)
@@ -136,6 +147,13 @@ app.include_router(blackout_intel_router)
 app.include_router(population_router)
 app.include_router(dispatch_router)
 app.include_router(sitrep_router)
+app.include_router(resq_sight_router)
+app.include_router(baselines_router)
+app.include_router(negative_evidence_router)
+app.include_router(hypotheses_router)
+app.include_router(verification_router)
+app.include_router(observability_router)
+
 
 
 @app.get("/", summary="API Root Status & Metadata")
@@ -181,6 +199,13 @@ def root_status():
                 "units": "/dispatch/units",
                 "assign": "POST /dispatch/assign"
             },
-            "6_timeline_and_sitrep_generator": "/sitrep/current"
+            "6_timeline_and_sitrep_generator": "/sitrep/current",
+            "7_resq_sight_ground_truth": {
+                "manifest": "/resq-sight/manifest",
+                "calibration": "/resq-sight/ground-truth/calibration",
+                "satellite_points": "/resq-sight/satellite/points",
+                "nlp_benchmarks": "/resq-sight/nlp/stats",
+                "exposure_summary": "/resq-sight/exposure/summary"
+            }
         }
     }

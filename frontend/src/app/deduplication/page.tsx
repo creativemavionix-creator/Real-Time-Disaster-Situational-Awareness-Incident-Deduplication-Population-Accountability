@@ -116,13 +116,13 @@ export default function DeduplicationPage() {
             </motion.div>
 
             <motion.div variants={containerVars} className="space-y-3">
-              {filteredRecords.map((cluster) => {
+              {filteredRecords.map((cluster, idx) => {
                 const isSelected = selectedRecord?.cluster_id === cluster.cluster_id;
 
                 return (
                   <motion.div
                     variants={itemVars}
-                    key={cluster.cluster_id}
+                    key={`cluster-${cluster.cluster_id}-${idx}`}
                     onClick={() => setSelectedClusterId(cluster.cluster_id)}
                     className={`bg-[#0C0E12]/80 backdrop-blur-xl border rounded-2xl p-6 cursor-pointer transition-all hover:bg-[#10131A] ${
                       isSelected ? "border-[#2563EB] shadow-[0_0_30px_rgba(37,99,235,0.15)] scale-[1.01]" : "border-white/5"

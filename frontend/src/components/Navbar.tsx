@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "@/context/ThemeContext";
 
 interface NavPillar {
   id: string;
@@ -32,11 +31,13 @@ const NAV_PILLARS: NavPillar[] = [
     id: "intelligence",
     code: "02",
     label: "Intelligence",
-    primaryHref: "/deduplication",
+    primaryHref: "/hypotheses",
     subRoutes: [
+      { label: "Reality Reconstruction", href: "/hypotheses", description: "PRATYAKSH-Ω negative evidence & competing hypotheses" },
       { label: "Unified Truth", href: "/deduplication", description: "Reconciled multi-agency incident ledger" },
       { label: "Blackout Risk", href: "/blackout-intel", description: "Inferred risk in silent mountain sectors" },
       { label: "Population", href: "/population", description: "Exposed people & 2021 Census palikas" },
+      { label: "Scientific Evidence", href: "/research-data", description: "RESQ-SIGHT ground truth & UNOSAT datasets" },
     ],
   },
   {
@@ -61,21 +62,20 @@ const NAV_PILLARS: NavPillar[] = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { isDark, toggleTheme } = useTheme();
   const [activeHover, setActiveHover] = useState<string | null>(null);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#FAF9F5]/90 dark:bg-[#0C0E12]/90 backdrop-blur-md border-b border-[#E5E4DC] dark:border-[#232733] select-none transition-colors duration-200">
+    <header className="sticky top-0 z-50 bg-[#0C0E12]/90 backdrop-blur-md border-b border-white/10 select-none">
       {/* Top Ambient Operational Status Bar */}
-      <div className="bg-[#F2F0E8]/80 dark:bg-[#13161D]/80 border-b border-[#E5E4DC]/60 dark:border-[#232733]/60 px-4 sm:px-8 py-1.5 flex items-center justify-between text-[11px] font-mono-data text-[#5C6270] dark:text-[#9CA3AF]">
+      <div className="bg-[#10131A]/80 border-b border-white/5 px-4 sm:px-8 py-1.5 flex items-center justify-between text-[11px] font-mono-data text-[#94A3B8]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#E11D48] animate-pulse" />
-            <span className="text-[#111318] dark:text-[#F4F4F0] font-bold tracking-wider">
+            <span className="text-[#F3F4F6] font-bold tracking-wider">
               CENTRAL NEPAL CRISIS PROTOCOL
             </span>
           </div>
-          <span className="text-[#E5E4DC] dark:text-[#232733] hidden md:inline">|</span>
+          <span className="text-white/10 hidden md:inline">|</span>
           <span className="hidden md:inline">M7.8 Seismological Sequence</span>
         </div>
 
@@ -97,11 +97,11 @@ export function Navbar() {
             Ω
           </div>
           <div>
-            <div className="font-display-calm font-bold text-base sm:text-lg text-[#111318] dark:text-[#F4F4F0] tracking-tight flex items-center gap-2">
-              PROJECT PRISM
+            <div className="font-display-calm font-bold text-base sm:text-lg text-white tracking-tight flex items-center gap-2">
+              PRATYAKSH-Ω
             </div>
-            <div className="font-mono-data text-[10px] text-[#5C6270] dark:text-[#9CA3AF] tracking-wider uppercase -mt-0.5">
-              Calm Crisis Intelligence
+            <div className="font-mono-data text-[10px] text-[#94A3B8] tracking-wider uppercase -mt-0.5">
+              Negative Evidence Intelligence
             </div>
           </div>
         </Link>
@@ -173,16 +173,6 @@ export function Navbar() {
 
         {/* Right: Operational Actions & Mode Controls */}
         <div className="flex items-center gap-2.5">
-          {/* Dark / Light Mode Toggle */}
-          <button
-            onClick={toggleTheme}
-            type="button"
-            className="p-2 rounded-lg border border-[#E5E4DC] dark:border-[#232733] text-xs text-[#5C6270] dark:text-[#9CA3AF] hover:text-[#111318] dark:hover:text-[#F4F4F0] hover:bg-[#F2F0E8] dark:hover:bg-[#1A1E27] transition-all cursor-pointer"
-            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          >
-            {isDark ? "☀️" : "🌙"}
-          </button>
-
           {/* Quick Situation Report Action */}
           <Link
             href="/sitrep"

@@ -1,6 +1,11 @@
 # ==============================================================================
-# Python & Backend
+# PRATYAKSH-Ω Production Deployment .gitignore
+# Multi-stack ignoring for Next.js, FastAPI, SQLite WAL, Python, Node, Vercel & Docker
 # ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Python & FastAPI Backend
+# ------------------------------------------------------------------------------
 __pycache__/
 *.py[cod]
 *$py.class
@@ -10,44 +15,97 @@ env/
 venv/
 .venv/
 ENV/
+env.bak/
+venv.bak/
+
+# Distribution / Packaging
 build/
 develop-eggs/
 dist/
 downloads/
 eggs/
 .eggs/
-/lib/
-/lib64/
+lib/
+lib64/
 parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-backend/dataset/
-!frontend/src/lib/
-!frontend/src/lib/**
-# Testing & Coverage
-.pytest_cache/
-backend/.pytest_cache/
-.coverage
-htmlcov/
+MANIFEST
 
-# SQLite Database
+# Unit Testing & Coverage
+.pytest_cache/
+*/.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# ------------------------------------------------------------------------------
+# SQLite Database & Concurrency Files (WAL / SHM)
+# ------------------------------------------------------------------------------
 *.db
-*.sqlite3
+*.db-wal
+*.db-shm
 *.db-journal
+*.sqlite
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
 disaster_fog.db
 backend/disaster_fog.db
+backend/disaster_fog.db-wal
+backend/disaster_fog.db-shm
+backend/disaster_fog.db-journal
 
-# Scratch Scripts & Demos
-scratch/
+# ------------------------------------------------------------------------------
+# Large Scientific & Geospatial Datasets (> 25MB - GitHub Limit Safeguards)
+# ------------------------------------------------------------------------------
+*.osm.pbf
+*.pbf
+*.tif
+*.tiff
+*.geotiff
+*.gdb.zip
+*.geojson.zip
+*.shp.zip
+*.zip
+*.tar.gz
+*.tar
+*.7z
+*.rar
 
-# ==============================================================================
+# Backend Raw Datasets (Local storage only)
+backend/dataset/kathmandu_living_labs_building_damage/
+backend/dataset/nepal_admin_boundaries_cod/
+backend/dataset/nepali_ner/
+backend/dataset/*.zip
+backend/dataset/*.csv
+backend/dataset/*.xlsx
+
+# RESQ-SIGHT Large Binaries & Raw Heavy Tables
+RESQ_SIGHT_DATA/01_GROUND_TRUTH/GORKHA_EARTHQUAKE/*.csv
+RESQ_SIGHT_DATA/05_GEOSPATIAL/OSM_NEPAL/
+RESQ_SIGHT_DATA/05_GEOSPATIAL/HDX_NEPAL_COD/
+RESQ_SIGHT_DATA/07_SATELLITE/**/*.tif
+RESQ_SIGHT_DATA/07_SATELLITE/**/*.tiff
+RESQ_SIGHT_DATA/**/*.zip
+RESQ_SIGHT_DATA/**/*.tar.gz
+
+# ------------------------------------------------------------------------------
 # Node.js & Next.js Frontend
-# ==============================================================================
+# ------------------------------------------------------------------------------
 node_modules/
+*/node_modules/
 frontend/node_modules/
 .next/
 frontend/.next/
@@ -55,9 +113,18 @@ out/
 frontend/out/
 .pnp
 .pnp.js
+.pnp.*
 
-# Logs
-logs
+# Next.js & Cloud Build Caches
+.vercel/
+frontend/.vercel/
+.turbo/
+frontend/.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# Package Manager Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -65,26 +132,58 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Environment Variables
+# ------------------------------------------------------------------------------
+# Secrets & Environment Variables (Safeguard)
+# ------------------------------------------------------------------------------
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 .env*.local
+backend/.env
+frontend/.env
+frontend/.env.local
+*.pem
+*.key
+*.crt
+
+# Keep example environment templates
 !.env.example
+!backend/.env.example
+!frontend/.env.example
 
-# Next.js Build Cache
-.vercel/
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# ==============================================================================
-# IDEs & Operating System
-# ==============================================================================
+# ------------------------------------------------------------------------------
+# IDEs, Editors & Operating Systems
+# ------------------------------------------------------------------------------
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 Desktop.ini
-.idea/
+
+# Editors
 .vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.sublime-workspace
+*.sublime-project
 *.swp
 *.swo
 *~
+*.bak
+
+# ------------------------------------------------------------------------------
+# Temporary Files & Scratch Dumps
+# ------------------------------------------------------------------------------
+scratch/
+tmp/
+temp/
+.temp/
+.system_generated/

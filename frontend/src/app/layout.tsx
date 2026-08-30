@@ -31,12 +31,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Project PRISM — Post-Disaster Real-Time Intelligence & Situational Mapping",
-  description: "Autonomous disaster reality reconstruction analyzing evidence, uncertainty, silence, and information gaps across Central Nepal.",
+  title: "PRATYAKSH-Ω — Autonomous Negative Evidence Intelligence & Disaster Reality Reconstruction",
+  description: "Autonomous disaster reality reconstruction analyzing negative evidence, silence, and information gaps across Central Nepal.",
 };
 
 import { CinematicNoise } from "@/components/CinematicNoise";
-import { CustomCursor } from "@/components/CustomCursor";
 
 export default function RootLayout({
   children,
@@ -51,11 +50,10 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="min-h-full flex flex-col bg-[#FAF9F5] dark:bg-[#0C0E12] text-[#111318] dark:text-[#F4F4F0]"
+        className="min-h-full flex flex-col bg-[#090B0E] text-[#F3F4F6]"
       >
         <ThemeProvider>
           <ViewModeProvider>
-            <CustomCursor />
             <CinematicNoise />
             <Navbar />
             <main className="flex-1 flex flex-col">{children}</main>

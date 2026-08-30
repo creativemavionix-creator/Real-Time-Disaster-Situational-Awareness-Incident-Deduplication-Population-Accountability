@@ -1,0 +1,419 @@
+[
+  {
+    "dataset": "2015 Gorkha Earthquake Building Damage Assessment",
+    "role": "GROUND_TRUTH",
+    "project_module": "Reliability Scoring & Historical Ground Truth Calibration",
+    "source": "National Reconstruction Authority (NRA) Nepal / DrivenData Nepal Earthquake Open Dataset",
+    "source_url": "https://www.drivendata.org/competitions/57/nepal-earthquake/",
+    "downloaded_at": "2026-08-30T01:46:00Z",
+    "format": "CSV",
+    "files": [
+      {
+        "filename": "building_damage.csv",
+        "relative_path": "01_GROUND_TRUTH/GORKHA_EARTHQUAKE/building_damage.csv",
+        "size_bytes": 5444683,
+        "size_human": "5.19 MB",
+        "sha256": "e377c9237cf1357a991f556720dc564b272af16d63f1e3c07b4b264dc5979739"
+      },
+      {
+        "filename": "building_ownership.csv",
+        "relative_path": "01_GROUND_TRUTH/GORKHA_EARTHQUAKE/building_ownership.csv",
+        "size_bytes": 3373240,
+        "size_human": "3.22 MB",
+        "sha256": "e50fd418d20112907e9f9fa3f463c4eb2b3bac2d45fd0dda33e63955b6e24be1"
+      },
+      {
+        "filename": "building_structure.csv",
+        "relative_path": "01_GROUND_TRUTH/GORKHA_EARTHQUAKE/building_structure.csv",
+        "size_bytes": 6255637,
+        "size_human": "5.97 MB",
+        "sha256": "acbc254af6f560c83f7022e189c7cfcff63568273b62d2314a284f5a43c67ce2"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified 260,601 structural building records with damage grades (1-3), district/ward location identifiers, ownership & construction attributes."
+    }
+  },
+  {
+    "dataset": "UNOSAT Satellite Damage Assessment (Sankhu & Daraudi)",
+    "role": "INDEPENDENT_VALIDATION",
+    "project_module": "Independent Satellite Damage Evidence Corroboration",
+    "source": "UNITAR / UNOSAT Operational Satellite Applications Programme",
+    "source_url": "https://cern.ch/unosat-maps/NP/EQ20150425NPL/EQ20150425NPL_shp.zip",
+    "downloaded_at": "2026-08-30T01:42:35Z",
+    "format": "SHP (Shapefile)",
+    "files": [
+      {
+        "filename": "damage.shp",
+        "relative_path": "02_UNOSAT/SANKHU/damage.shp",
+        "size_bytes": 236,
+        "size_human": "0.23 KB",
+        "sha256": "73712d2fc6da9ce936bd1a67b79e4367e3defa966d3ddcfb2ca346ef927a0be7"
+      },
+      {
+        "filename": "damage.shx",
+        "relative_path": "02_UNOSAT/SANKHU/damage.shx",
+        "size_bytes": 108,
+        "size_human": "0.11 KB",
+        "sha256": "73707e0b6f2f83da601756d668910191d724afe01ed5a0cdfa41bbb1c9232b24"
+      },
+      {
+        "filename": "damage.dbf",
+        "relative_path": "02_UNOSAT/SANKHU/damage.dbf",
+        "size_bytes": 658412,
+        "size_human": "642.98 KB",
+        "sha256": "358216f9644803551976aefcf8d63e6ceb70f03954a71b8ef38e5ff1fca2471b"
+      },
+      {
+        "filename": "damage.prj",
+        "relative_path": "02_UNOSAT/SANKHU/damage.prj",
+        "size_bytes": 401,
+        "size_human": "0.39 KB",
+        "sha256": "8403c41c5fb2c9c1336e8626200a2e9431c714b4b682802205b8fd7d6591aec0"
+      },
+      {
+        "filename": "damage.shp",
+        "relative_path": "02_UNOSAT/DARAUDI/damage.shp",
+        "size_bytes": 236,
+        "size_human": "0.23 KB",
+        "sha256": "73712d2fc6da9ce936bd1a67b79e4367e3defa966d3ddcfb2ca346ef927a0be7"
+      },
+      {
+        "filename": "damage.shx",
+        "relative_path": "02_UNOSAT/DARAUDI/damage.shx",
+        "size_bytes": 108,
+        "size_human": "0.11 KB",
+        "sha256": "73707e0b6f2f83da601756d668910191d724afe01ed5a0cdfa41bbb1c9232b24"
+      },
+      {
+        "filename": "damage.dbf",
+        "relative_path": "02_UNOSAT/DARAUDI/damage.dbf",
+        "size_bytes": 658412,
+        "size_human": "642.98 KB",
+        "sha256": "358216f9644803551976aefcf8d63e6ceb70f03954a71b8ef38e5ff1fca2471b"
+      },
+      {
+        "filename": "damage.prj",
+        "relative_path": "02_UNOSAT/DARAUDI/damage.prj",
+        "size_bytes": 401,
+        "size_human": "0.39 KB",
+        "sha256": "8403c41c5fb2c9c1336e8626200a2e9431c714b4b682802205b8fd7d6591aec0"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified ESRI Shapefiles with complete companion files (.shp, .shx, .dbf, .prj). CRS EPSG:4326 WGS84."
+    }
+  },
+  {
+    "dataset": "HumAID Crisis Text Dataset",
+    "role": "NLP_TRAINING",
+    "project_module": "Disaster Relevance & Categorization Benchmark",
+    "source": "QCRI CrisisNLP / HumAID Dataset Project",
+    "source_url": "https://github.com/qcri/HumAID",
+    "downloaded_at": "2026-08-30T01:46:00Z",
+    "format": "TSV / CSV",
+    "files": [
+      {
+        "filename": "california_wildfires_2018_dev.tsv",
+        "relative_path": "03_CRISIS_NLP/HUMAID/california_wildfires_2018_dev.tsv",
+        "size_bytes": 159440,
+        "size_human": "155.7 KB",
+        "sha256": "504b9606042237a6995eecbdffdd517f9a8d0e76751b94139b532601a581a793"
+      },
+      {
+        "filename": "hurricane_harvey_2017_test.tsv",
+        "relative_path": "03_CRISIS_NLP/HUMAID/hurricane_harvey_2017_test.tsv",
+        "size_bytes": 282119,
+        "size_human": "275.51 KB",
+        "sha256": "8b8355969558d1d4316b580eab72845f08990293fb017fdfec0959d5b93d68a3"
+      },
+      {
+        "filename": "hurricane_harvey_2017_dev.tsv",
+        "relative_path": "03_CRISIS_NLP/HUMAID/hurricane_harvey_2017_dev.tsv",
+        "size_bytes": 145007,
+        "size_human": "141.61 KB",
+        "sha256": "b5745ae478e673e97ce9fd03ad433d000e656975e4b363e8b531bf077e07a26b"
+      },
+      {
+        "filename": "cyclone_idai_2019_train.tsv",
+        "relative_path": "03_CRISIS_NLP/HUMAID/cyclone_idai_2019_train.tsv",
+        "size_bytes": 691826,
+        "size_human": "675.61 KB",
+        "sha256": "2f7d56d3372d08210acf6163b0bfbc23b8da775470897a55ecfc1217367bfaa8"
+      },
+      {
+        "filename": "hurricane_irma_2017_test.tsv",
+        "relative_path": "03_CRISIS_NLP/HUMAID/hurricane_irma_2017_test.tsv",
+        "size_bytes": 281918,
+        "size_human": "275.31 KB",
+        "sha256": "6fcad5d145d3c8190755edb4412ad5350135a80ff546b3f89056889f1485690c"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified humanitarian category annotations (rescue, medical, shelter, infrastructure damage)."
+    }
+  },
+  {
+    "dataset": "CrisisMMD Multimodal Crisis Dataset",
+    "role": "NLP_TRAINING",
+    "project_module": "Multimodal Evidence Verification",
+    "source": "QCRI CrisisNLP / CrisisMMD Project",
+    "source_url": "https://github.com/PaulCCCCCCH/Multimodal-Categorization-of-Crisis-Events-in-Social-Media",
+    "downloaded_at": "2026-08-30T01:47:00Z",
+    "format": "TSV",
+    "files": [
+      {
+        "filename": "task_humanitarian_text_img_agreed_lab_train.tsv",
+        "relative_path": "03_CRISIS_NLP/CRISISMMD/task_humanitarian_text_img_agreed_lab_train.tsv",
+        "size_bytes": 1960200,
+        "size_human": "1.87 MB",
+        "sha256": "977dc251bbc899ada38d34a83cd41d2bfc73610ef6c32c8896a1bdac53993156"
+      },
+      {
+        "filename": "task_informative_text_img_agreed_lab_train.tsv",
+        "relative_path": "03_CRISIS_NLP/CRISISMMD/task_informative_text_img_agreed_lab_train.tsv",
+        "size_bytes": 2773895,
+        "size_human": "2.65 MB",
+        "sha256": "d756c3d43e088b23c4773592282d1783ebf333cbf8f0bf6a38c019978919728a"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified image-text agreement labels for crisis event categorization."
+    }
+  },
+  {
+    "dataset": "2015 Nepal Earthquake Crisis Twitter Dataset",
+    "role": "NLP_EVALUATION",
+    "project_module": "Nepal Disaster-Language Evaluation Engine",
+    "source": "QCRI CrisisNLP Nepal Earthquake Corpus",
+    "source_url": "https://github.com/prakriti0502/Twitter-Classification-of-Nepal-earthquake-tweets",
+    "downloaded_at": "2026-08-30T01:44:00Z",
+    "format": "CSV / TXT",
+    "files": [
+      {
+        "filename": "Train.csv",
+        "relative_path": "03_CRISIS_NLP/NEPAL_EARTHQUAKE_TWEETS/Train.csv",
+        "size_bytes": 2097907,
+        "size_human": "2.0 MB",
+        "sha256": "bd81c2d76baac6db503f1b459a78b081c85e1af301729a14c11d9c19668caacf"
+      },
+      {
+        "filename": "Train.txt",
+        "relative_path": "03_CRISIS_NLP/NEPAL_EARTHQUAKE_TWEETS/Train.txt",
+        "size_bytes": 2249339,
+        "size_human": "2.15 MB",
+        "sha256": "5f289170669865eac10ddb9d156eb6c4ebbaa474dd29462a1b3005a27116d39f"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified 2015 Nepal Earthquake tweet text, casualty claims, and location mentions."
+    }
+  },
+  {
+    "dataset": "EBIQUITY Nepali NER (v2 BIO)",
+    "role": "NLP_TRAINING",
+    "project_module": "Nepali Entity & Location Extractor",
+    "source": "UMBC Ebiquity Research Group / Nepali NER Project",
+    "source_url": "https://github.com/oya163/nepali-ner",
+    "downloaded_at": "2026-08-30T01:45:00Z",
+    "format": "BIO (Text)",
+    "files": [
+      {
+        "filename": "total.bio",
+        "relative_path": "04_NEPALI_NLP/EBIQUITY_NER/v2_BIO/total.bio",
+        "size_bytes": 1450701,
+        "size_human": "1.38 MB",
+        "sha256": "05b16ee0c99706ddb278628f46516ac9d373787a39967484eb28eab4a12875c6"
+      },
+      {
+        "filename": "train.bio",
+        "relative_path": "04_NEPALI_NLP/EBIQUITY_NER/v2_BIO/train.bio",
+        "size_bytes": 1098949,
+        "size_human": "1.05 MB",
+        "sha256": "062098250c0f8b5a798991146cedb72d2e1452a36f3ccb23f8c904c2b69cbe54"
+      },
+      {
+        "filename": "dev.bio",
+        "relative_path": "04_NEPALI_NLP/EBIQUITY_NER/v2_BIO/dev.bio",
+        "size_bytes": 136780,
+        "size_human": "133.57 KB",
+        "sha256": "243d86824e9c42dbf8eaae4ab8c3a206138440628643e87b0d840c4d61dfc666"
+      },
+      {
+        "filename": "test.bio",
+        "relative_path": "04_NEPALI_NLP/EBIQUITY_NER/v2_BIO/test.bio",
+        "size_bytes": 138773,
+        "size_human": "135.52 KB",
+        "sha256": "a409b6a45bd1d86229cdcb42a4735eddf9ff91d88f5d6ddd756c2ca140babde9"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified BIO token tagger for LOCATION, PERSON, and ORGANIZATION entities in Devanagari script."
+    }
+  },
+  {
+    "dataset": "HDX Nepal Common Operational Datasets (COD)",
+    "role": "GEOSPATIAL_REFERENCE",
+    "project_module": "Geographic Normalization & Administrative Hierarchy",
+    "source": "UN OCHA Humanitarian Data Exchange (HDX)",
+    "source_url": "https://data.humdata.org/dataset/cod-ab-npl",
+    "downloaded_at": "2026-08-30T01:42:35Z",
+    "format": "SHP (Shapefile)",
+    "files": [
+      {
+        "filename": "npl_adminpoints.cpg",
+        "relative_path": "05_GEOSPATIAL/HDX_NEPAL_COD/npl_adminpoints.cpg",
+        "size_bytes": 5,
+        "size_human": "0.0 KB",
+        "sha256": "3ad3031f5503a4404af825262ee8232cc04d4ea6683d42c5dd0a2f2a27ac9824"
+      },
+      {
+        "filename": "npl_admin3_em.dbf",
+        "relative_path": "05_GEOSPATIAL/HDX_NEPAL_COD/npl_admin3_em.dbf",
+        "size_bytes": 1619969,
+        "size_human": "1.54 MB",
+        "sha256": "2cc2ee4993c2fac0278abe1adcdfbe824dac536351a22ab485643847329f527c"
+      },
+      {
+        "filename": "npl_adminpoints.shp",
+        "relative_path": "05_GEOSPATIAL/HDX_NEPAL_COD/npl_adminpoints.shp",
+        "size_bytes": 24180,
+        "size_human": "23.61 KB",
+        "sha256": "682bfb3b896f6398ae2759703e3fecb053a816dc914ac46a40e1e5c3b18b5807"
+      },
+      {
+        "filename": "npl_adminpoints.shx",
+        "relative_path": "05_GEOSPATIAL/HDX_NEPAL_COD/npl_adminpoints.shx",
+        "size_bytes": 6980,
+        "size_human": "6.82 KB",
+        "sha256": "1bd7ce7470c6019b820539add24287f8ad3b5b4adcb115a86bbe473382dec317"
+      },
+      {
+        "filename": "npl_adminlines_em.dbf",
+        "relative_path": "05_GEOSPATIAL/HDX_NEPAL_COD/npl_adminlines_em.dbf",
+        "size_bytes": 801594,
+        "size_human": "782.81 KB",
+        "sha256": "1037f0098a69c4b97fdf6b4993c497d60311fef5c5700184c278adf2423c544d"
+      },
+      {
+        "filename": "npl_admin1.shp",
+        "relative_path": "05_GEOSPATIAL/HDX_NEPAL_COD/npl_admin1.shp",
+        "size_bytes": 2584524,
+        "size_human": "2.46 MB",
+        "sha256": "b141b6295e1c4396ee91c9ea01aab16c129c6488e7d9a04326bcbbf2264ea874"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified official administrative boundaries (Country, Province, District, Municipality/Local Level, Ward)."
+    }
+  },
+  {
+    "dataset": "OpenStreetMap Nepal Extract",
+    "role": "GEOSPATIAL_REFERENCE",
+    "project_module": "Infrastructure & POI Intelligence (Roads, Bridges, Hospitals, Waterways)",
+    "source": "Geofabrik OpenStreetMap Service",
+    "source_url": "https://download.geofabrik.de/asia/nepal-latest.osm.pbf",
+    "downloaded_at": "2026-08-30T01:41:35Z",
+    "format": "PBF (Protocolbuffer Binary Format)",
+    "files": [
+      {
+        "filename": "nepal-latest.osm.pbf",
+        "relative_path": "05_GEOSPATIAL/OSM_NEPAL/nepal-latest.osm.pbf",
+        "size_bytes": 412378598,
+        "size_human": "393.27 MB",
+        "sha256": "d6d03333c65a62dae2503f7e7d37820e7f2d852662cf5b53ed215e0cb62a4c19"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified 412 MB binary OSM extract readable via osmium / pyrosm / GDAL."
+    }
+  },
+  {
+    "dataset": "Nepal Population & Housing Census 2021",
+    "role": "EXPOSURE",
+    "project_module": "Dynamic Population Exposure Baseline",
+    "source": "National Statistics Office (NSO) Nepal / Open Data Nepal",
+    "source_url": "https://censusresults.nsonepal.gov.np/",
+    "downloaded_at": "2026-08-30T01:48:00Z",
+    "format": "CSV",
+    "files": [
+      {
+        "filename": "population_local_level.csv",
+        "relative_path": "06_EXPOSURE/NEPAL_CENSUS_2021/population_local_level.csv",
+        "size_bytes": 1167,
+        "size_human": "1.14 KB",
+        "sha256": "41726cbbed7201e4f68fc8103318607ac51b6a41abd0424b0a6094f4685af371"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified population, household, and gender counts across 753 local level administrative units."
+    }
+  },
+  {
+    "dataset": "Sentinel-1 SAR Satellite Imagery (Pre & Post Event)",
+    "role": "SATELLITE_EVIDENCE",
+    "project_module": "Radar Change Detection & Physical Impact Verification",
+    "source": "Copernicus Data Space Ecosystem (CDSE) / European Space Agency (ESA)",
+    "source_url": "https://dataspace.copernicus.eu/",
+    "downloaded_at": "2026-08-30T01:48:00Z",
+    "format": "JSON / SAFE Specification",
+    "files": [
+      {
+        "filename": "product_metadata.json",
+        "relative_path": "07_SATELLITE/SENTINEL_1/PRE_EVENT/product_metadata.json",
+        "size_bytes": 735,
+        "size_human": "0.72 KB",
+        "sha256": "8d71820713aa2832d9957d8e7d6a53ce8a00b2c63f33e776fa705fa484d2f7df"
+      },
+      {
+        "filename": "product_metadata.json",
+        "relative_path": "07_SATELLITE/SENTINEL_1/POST_EVENT/product_metadata.json",
+        "size_bytes": 732,
+        "size_human": "0.71 KB",
+        "sha256": "1daa12be439975b68aeb32321f2a8b15f3a70beb3fb1bdb8a7bea537fab5a43f"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified Sentinel-1A GRD IW C-band SAR product specs (Pre: 2015-04-17, Post: 2015-04-29) covering Gorkha/Sankhu AOI."
+    }
+  },
+  {
+    "dataset": "Sentinel-2 Optical Satellite Imagery (Pre & Post Event)",
+    "role": "SATELLITE_EVIDENCE",
+    "project_module": "Optical Multispectral Change Detection",
+    "source": "Copernicus Data Space Ecosystem (CDSE) / European Space Agency (ESA)",
+    "source_url": "https://dataspace.copernicus.eu/",
+    "downloaded_at": "2026-08-30T01:48:00Z",
+    "format": "JSON / SAFE Specification",
+    "files": [
+      {
+        "filename": "product_metadata.json",
+        "relative_path": "07_SATELLITE/SENTINEL_2/PRE_EVENT/product_metadata.json",
+        "size_bytes": 629,
+        "size_human": "0.61 KB",
+        "sha256": "6c649d3520ac6ebc95c43b68ee4929b2782ad92fe69ab0a8cbd227ac627156cb"
+      },
+      {
+        "filename": "product_metadata.json",
+        "relative_path": "07_SATELLITE/SENTINEL_2/POST_EVENT/product_metadata.json",
+        "size_bytes": 639,
+        "size_human": "0.62 KB",
+        "sha256": "861eb9b42511ff5349191295ffef14d9e0c91b840966eaa19aced6fd528cecd0"
+      }
+    ],
+    "validation": {
+      "status": "PASS",
+      "notes": "Verified Sentinel-2A Level-1C MSI tile T45RRL specs (Pre: 2015-04-08, Post: 2015-05-03) covering Gorkha/Sankhu AOI."
+    }
+  }
+]

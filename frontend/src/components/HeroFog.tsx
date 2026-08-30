@@ -49,7 +49,7 @@ export function HeroFog({
 
           {/* Subtitle */}
           <p className="font-body-prose text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-            During the critical hours following a disaster, emergency authorities are overwhelmed with fragmented, contradictory, and incomplete reports. <strong className="text-slate-900 dark:text-white font-semibold">Project PRISM</strong> reconstructs the most probable ground reality by analyzing evidence, uncertainty, silence, and information gaps.
+            During the critical hours following a disaster, emergency authorities are overwhelmed with fragmented, contradictory, and incomplete reports. <strong className="text-slate-900 dark:text-white font-semibold">PRATYAKSH-Ω</strong> reconstructs the most probable ground reality by analyzing negative evidence, uncertainty, silence, and information gaps.
           </p>
 
           {/* Action CTAs */}

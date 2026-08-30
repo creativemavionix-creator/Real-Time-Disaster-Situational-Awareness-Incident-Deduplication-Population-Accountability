@@ -1,0 +1,14 @@
+province_id,province_name,district_id,district_name,local_level_id,local_level_name,households,total_population,male_population,female_population
+3,Bagmati,306,Kathmandu,30601,Kathmandu Metropolitan City,256382,845767,432910,412857
+3,Bagmati,306,Kathmandu,30602,Kirtipur Municipality,21045,67171,34892,32279
+3,Bagmati,306,Kathmandu,30603,Budhanilkantha Municipality,41982,179688,89542,90146
+3,Bagmati,307,Bhaktapur,30701,Bhaktapur Municipality,20894,79116,39615,39501
+3,Bagmati,307,Bhaktapur,30702,Madhyapur Thimi Municipality,23891,84142,42510,41632
+3,Bagmati,301,Sindhupalchok,30101,Chautara Sangachokgadhi,11245,42561,20890,21671
+3,Bagmati,301,Sindhupalchok,30102,Melamchi Municipality,10982,41203,20112,21091
+3,Bagmati,302,Dolakha,30201,Bhimeshwor Municipality,8912,32410,15782,16628
+3,Bagmati,304,Nuwakot,30401,Bidur Municipality,12450,54320,26810,27510
+4,Gandaki,404,Gorkha,40401,Gorkha Municipality,13240,49820,24100,25720
+4,Gandaki,404,Gorkha,40402,Barpak Sulikot Rural Municipality,6540,25310,12100,13210
+3,Bagmati,305,Rasuwa,30501,Gosaikunda Rural Municipality,2180,8140,4120,4020
+3,Bagmati,303,Sindhuli,30301,Kamalamai Municipality,14890,65410,32100,33310

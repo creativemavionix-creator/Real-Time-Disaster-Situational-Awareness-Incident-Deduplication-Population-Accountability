@@ -142,7 +142,7 @@ def calculate_hybrid_match_score(
     w3: float = 0.20,
 ) -> float:
     """
-    Hybrid scoring formula from Project PRISM spec:
+    Hybrid scoring formula from PRATYAKSH-Ω spec:
     Match Score = w1 * JaroWinkler(Name1, Name2) + w2 * CosineSim(V_attrs1, V_attrs2) + w3 * Delta_Age
     With sector proximity bonus.
     """

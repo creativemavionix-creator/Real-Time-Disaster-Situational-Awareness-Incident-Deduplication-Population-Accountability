@@ -49,8 +49,8 @@ export function AlgorithmicFoundations() {
           <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight">
             Algorithmic Foundations of Reality Reconstruction
           </h2>
-          <p className="font-body-prose text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-            The mathematical principles governing Project PRISM's evidence fusion and negative-evidence inference engines.
+          <p className="font-body-prose text-base text-[#5C6270] dark:text-[#9CA3AF] max-w-2xl mx-auto">
+            The mathematical principles governing PRATYAKSH-Ω's evidence fusion and negative-evidence inference engines.
           </p>
         </div>
 

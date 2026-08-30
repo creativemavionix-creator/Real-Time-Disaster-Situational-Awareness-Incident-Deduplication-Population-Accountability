@@ -29,7 +29,7 @@ export function NegativeEvidenceSimulator() {
               Negative-Evidence Intelligence Simulator
             </h2>
             <p className="font-body-prose text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-              Adjust communication blackout levels to watch Project PRISM rebalance Rescue vs Verification priorities in real-time.
+              Adjust communication blackout levels to watch PRATYAKSH-Ω rebalance Rescue vs Verification priorities in real-time.
             </p>
           </div>
 
@@ -121,7 +121,7 @@ export function NegativeEvidenceSimulator() {
             SYSTEM INTELLIGENCE OUTPUT:
           </div>
           <p className="font-body-prose text-xs sm:text-sm text-slate-300 leading-relaxed">
-            At <strong className="text-white font-bold">{outageLevel}% Comms Outage</strong>, Project PRISM flags <strong className="text-amber-400 font-bold">{silentDistricts} silent mountain districts</strong> with high Inferred Risk ({inferredRisk}%). Instead of ignoring them due to zero incoming calls, the system automatically escalates Verification Priority to <strong className="text-cyan-400 font-bold">{verificationPriority}%</strong> to dispatch satellite recon and UAV assets.
+            At <strong className="text-white font-bold">{outageLevel}% Comms Outage</strong>, PRATYAKSH-Ω flags <strong className="text-amber-400 font-bold">{silentDistricts} silent mountain districts</strong> with high Inferred Risk ({inferredRisk}%). Instead of ignoring them due to zero incoming calls, the system automatically escalates Verification Priority to <strong className="text-cyan-400 font-bold">{verificationPriority}%</strong> to dispatch satellite recon and UAV assets.
           </p>
         </div>
       </div>

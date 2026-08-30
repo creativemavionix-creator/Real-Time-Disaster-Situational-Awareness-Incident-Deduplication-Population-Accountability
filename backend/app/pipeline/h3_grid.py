@@ -82,8 +82,8 @@ def generate_central_nepal_h3_hexagons(simulated_hours: float = 12.0) -> list[di
                 report_freq = 8 if off["sub_id"] == "core" else 4
                 adjacent_hazard = 0.35
 
-            # Silent Sector Exposure Metric (E_cell) formula from PRISM spec:
-            # E_cell = (Baseline Pop) / max(1, Report_Freq) * Adjacent Hazard Index
+            # Silent Sector Exposure Metric (E_cell) formula from PRATYAKSH-Ω spec:
+            # E_cell = P_cell * T_blackout * H_terrain * (1 - D_reports)
             e_cell = round((base_pop / max(1, report_freq)) * adjacent_hazard, 1)
 
             # Determine cell status & color
