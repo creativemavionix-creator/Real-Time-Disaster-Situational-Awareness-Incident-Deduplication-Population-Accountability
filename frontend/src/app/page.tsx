@@ -29,13 +29,11 @@ import { CinematicIntro } from "@/components/CinematicIntro";
 import { ExecutiveBriefing } from "@/components/ExecutiveBriefing";
 import InteractiveVectorMap from "@/components/InteractiveVectorMap";
 import { ActiveSectorDossier } from "@/components/ActiveSectorDossier";
-import { DeduplicationStory } from "@/components/DeduplicationStory";
 import { BeforeAfterShowcase } from "@/components/BeforeAfterShowcase";
 import { BlackoutRiskStory } from "@/components/BlackoutRiskStory";
 import { PopulationStory } from "@/components/PopulationStory";
 import { PopulationReconciliationLedger } from "@/components/PopulationReconciliationLedger";
 import { TacticalDispatchStory } from "@/components/TacticalDispatchStory";
-import { StatusGrid } from "@/components/StatusGrid";
 import { SimulationControls } from "@/components/SimulationControls";
 import { ReportInjectionForm } from "@/components/ReportInjectionForm";
 import { SectorDetailPanel } from "@/components/SectorDetailPanel";
@@ -85,7 +83,6 @@ export default function HomePage() {
       setBlackoutAssessments(blackout.assessments);
       setDispatchRecommendations(dispatch.recommendations);
 
-      // Keep inspected location updated if open
       if (inspectedLocation) {
         const updated = locsRes.locations.find((l) => l.location_id === inspectedLocation.location_id);
         if (updated) setInspectedLocation(updated);
@@ -158,11 +155,10 @@ export default function HomePage() {
   };
 
   const scrollToMatrix = () => {
-    const el = document.getElementById("command-matrix");
+    const el = document.getElementById("spatial-command");
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Active sector telemetry objects
   const activeSector = gisSectors.find(
     (s) => s.sector_id.toLowerCase() === selectedSectorId.toLowerCase()
   ) || gisSectors[0] || {
@@ -203,7 +199,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* 01: THE INFORMATION FOG (Cinematic Dark Narrative Opening) */}
+      {/* 01: THE INFORMATION FOG (Cinematic Atmospheric Opening) */}
       <CinematicIntro
         elapsedHours={simulationState?.elapsed_hours || 12.0}
         totalReports={simulationState?.reports_visible_at_current_time || 84}
@@ -211,7 +207,7 @@ export default function HomePage() {
         onEnterMatrix={scrollToMatrix}
       />
 
-      {/* STICKY SIMULATION REPLAY TIMELINE CONTROLS */}
+      {/* REPLAY TIMELINE CONTROLS */}
       <SimulationControls
         simulationState={simulationState}
         summaryCounts={summaryCounts}
@@ -243,27 +239,27 @@ export default function HomePage() {
         worstSectorName={worstSector?.location_name || "Gorkha (Epicenter)"}
       />
 
-      {/* 03: WHERE IS THE RISK? (Spatial Cartography + Active Sector Action Dossier) */}
-      <section className="py-12 sm:py-16 border-b border-[#E5E4DC] dark:border-[#232733] px-6 sm:px-12 lg:px-16">
+      {/* 03: SPATIAL COMMAND ARENA (Vector Cartography + Active Sector Action Dossier) */}
+      <section id="spatial-command" className="py-12 sm:py-16 border-b border-[#E5E4DC] dark:border-[#232733] px-6 sm:px-12 lg:px-16">
         <div className="max-w-7xl mx-auto space-y-8">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div className="space-y-1">
               <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
-                03 // GEOSPATIAL CRISIS RADAR
+                03 // Spatial Situational Awareness
               </div>
-              <h2 className="font-display-calm font-extrabold text-2xl sm:text-4xl text-[#111318] dark:text-[#F4F4F0] tracking-tight">
+              <h2 className="font-display-calm font-extrabold text-2xl sm:text-4xl text-[#0F172A] dark:text-[#F3F4F6] tracking-tight">
                 Where is the Risk?
               </h2>
             </div>
 
-            <div className="font-mono-data text-xs text-[#5C6270]">
-              SELECT A SECTOR OR ENABLE H3 MESH TO INSPECT RISK FACTORS
+            <div className="font-mono-data text-xs text-[#64748B] dark:text-[#94A3B8]">
+              Select a sector or enable H3 mesh to inspect risk factors
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
             {/* Left Column (7): Vector Cartography with H3 Hexagonal Mesh */}
-            <div className="lg:col-span-7 space-y-4">
+            <div className="lg:col-span-7 space-y-4 flex flex-col justify-between">
               <InteractiveVectorMap
                 sectors={gisSectors}
                 selectedSectorId={selectedSectorId}
@@ -271,7 +267,7 @@ export default function HomePage() {
               />
 
               {/* Horizontal 8-Sector Selector Carousel */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none font-mono-data text-xs">
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none font-display-calm text-xs">
                 {gisSectors.map((sec) => {
                   const isSelected = sec.sector_id.toLowerCase() === selectedSectorId.toLowerCase();
                   return (
@@ -279,10 +275,10 @@ export default function HomePage() {
                       key={sec.sector_id}
                       onClick={() => handleOpenDossier(sec.sector_id)}
                       type="button"
-                      className={`px-3.5 py-2 rounded-xl font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 ${
+                      className={`px-4 py-2 rounded-xl font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 ${
                         isSelected
-                          ? "bg-[#111318] dark:bg-[#F4F4F0] text-[#FFFFFF] dark:text-[#0C0E12] shadow-xs scale-102"
-                          : "surface-calm text-[#5C6270] hover:text-[#111318] dark:hover:text-[#F4F4F0]"
+                          ? "bg-[#0F172A] dark:bg-[#F3F4F6] text-[#FFFFFF] dark:text-[#090B0E] shadow-sm scale-102"
+                          : "surface-calm text-[#64748B] hover:text-[#0F172A] dark:hover:text-[#F3F4F6]"
                       }`}
                     >
                       <span
@@ -313,14 +309,13 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 04: WHAT DO WE ACTUALLY KNOW? (Multi-Agency Deduplication & Before/After Showcase) */}
-      <DeduplicationStory />
+      {/* 04: THE BEFORE & AFTER SIGNAL ENGINE (20 Raw Messages -> 3 Rescue Directives) */}
       <BeforeAfterShowcase />
 
-      {/* 05: WHAT CAN WE NOT SEE? (Silent Blackout Intelligence: No Reports ≠ No Danger) */}
+      {/* 05: SILENT BLACKOUT INTELLIGENCE (No Reports ≠ No Danger) */}
       <BlackoutRiskStory />
 
-      {/* 06: WHO IS AFFECTED? (Population Exposure & Probabilistic Missing vs Found Reconciliation) */}
+      {/* 06: POPULATION ACCOUNTABILITY & PROBABILISTIC RECONCILIATION */}
       <PopulationStory
         totalExposedMillion={
           (exposureData?.total_national_exposed_population || 2920000) / 1000000
@@ -337,18 +332,10 @@ export default function HomePage() {
         <PopulationReconciliationLedger />
       </div>
 
-      {/* 07: WHAT SHOULD HAPPEN NEXT? (Tactical Resource Dispatch Workflow) */}
+      {/* 07: TACTICAL RESOURCE DISPATCH WORKFLOW */}
       <TacticalDispatchStory />
 
-      {/* 08: COMMAND CENTER (Live 8-Sector Operational Situation Matrix) */}
-      <div id="command-matrix">
-        <StatusGrid
-          locations={locations}
-          onSelectLocation={(locId) => handleOpenDossier(locId)}
-        />
-      </div>
-
-      {/* LIVE FIELD TEST SIGNAL INJECTION */}
+      {/* FIELD TEST SIGNAL INJECTION */}
       <ReportInjectionForm onReportInjected={loadData} />
 
       {/* PROGRESSIVE SYSTEM ARCHITECTURE & FORMULA SPECIFICATIONS */}
@@ -371,7 +358,7 @@ export default function HomePage() {
                 <div className="font-mono-data text-xs text-[#D97706] dark:text-[#FBBF24] font-bold uppercase tracking-wider mb-1">
                   🏛️ NSO NEPAL 2021 CENSUS BASELINE
                 </div>
-                <h3 className="font-display-calm font-extrabold text-2xl sm:text-3xl uppercase text-[#111318] dark:text-[#F4F4F0]">
+                <h3 className="font-display-calm font-extrabold text-2xl sm:text-3xl uppercase text-[#0F172A] dark:text-[#F3F4F6]">
                   {palikaData?.sector_name || selectedSectorForPalikas} Municipalities
                 </h3>
               </div>
@@ -382,7 +369,7 @@ export default function HomePage() {
                   setSelectedSectorForPalikas(null);
                   setPalikaData(null);
                 }}
-                className="p-2 rounded-lg border border-[#E5E4DC] dark:border-[#232733] font-mono-data text-xs text-[#5C6270] hover:text-[#111318] dark:hover:text-[#F4F4F0] cursor-pointer"
+                className="p-2 rounded-lg border border-[#E5E4DC] dark:border-[#232733] font-mono-data text-xs text-[#64748B] hover:text-[#0F172A] dark:hover:text-[#F3F4F6] cursor-pointer"
               >
                 ✕
               </button>
@@ -390,34 +377,34 @@ export default function HomePage() {
 
             {loadingPalikas ? (
               <div className="p-12 text-center font-mono-data text-xs text-[#2563EB] animate-pulse">
-                [LOADING_2021_CENSUS_PALIKA_RECORDS...]
+                Loading 2021 census palika records...
               </div>
             ) : palikaData ? (
               <div className="space-y-6 font-mono-data text-xs">
                 {/* Aggregate Summary */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="surface-calm p-3.5">
-                    <span className="text-[#5C6270] block text-[10px] uppercase font-bold">TOTAL PALIKAS</span>
-                    <strong className="text-xl text-[#111318] dark:text-[#F4F4F0] font-bold">{palikaData.total_palikas}</strong>
+                    <span className="text-[#64748B] dark:text-[#94A3B8] block text-[10px] uppercase font-bold">TOTAL PALIKAS</span>
+                    <strong className="text-xl text-[#0F172A] dark:text-[#F3F4F6] font-bold">{palikaData.total_palikas}</strong>
                   </div>
                   <div className="surface-calm p-3.5">
-                    <span className="text-[#5C6270] block text-[10px] uppercase font-bold">TOTAL HOUSEHOLDS</span>
+                    <span className="text-[#64748B] dark:text-[#94A3B8] block text-[10px] uppercase font-bold">TOTAL HOUSEHOLDS</span>
                     <strong className="text-xl text-[#2563EB] dark:text-[#60A5FA] font-bold">{palikaData.total_households.toLocaleString()}</strong>
                   </div>
                   <div className="surface-calm p-3.5">
-                    <span className="text-[#5C6270] block text-[10px] uppercase font-bold">MALE POPULATION</span>
-                    <strong className="text-xl text-[#111318] dark:text-[#F4F4F0] font-bold">{palikaData.male_population.toLocaleString()}</strong>
+                    <span className="text-[#64748B] dark:text-[#94A3B8] block text-[10px] uppercase font-bold">MALE POPULATION</span>
+                    <strong className="text-xl text-[#0F172A] dark:text-[#F3F4F6] font-bold">{palikaData.male_population.toLocaleString()}</strong>
                   </div>
                   <div className="surface-calm p-3.5">
-                    <span className="text-[#5C6270] block text-[10px] uppercase font-bold">FEMALE POPULATION</span>
-                    <strong className="text-xl text-[#111318] dark:text-[#F4F4F0] font-bold">{palikaData.female_population.toLocaleString()}</strong>
+                    <span className="text-[#64748B] dark:text-[#94A3B8] block text-[10px] uppercase font-bold">FEMALE POPULATION</span>
+                    <strong className="text-xl text-[#0F172A] dark:text-[#F3F4F6] font-bold">{palikaData.female_population.toLocaleString()}</strong>
                   </div>
                 </div>
 
                 {/* Table */}
                 <div className="rounded-xl border border-[#E5E4DC] dark:border-[#232733] overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-[#F2F0E8] dark:bg-[#13161D] border-b border-[#E5E4DC] dark:border-[#232733] text-[#5C6270] text-[10px] uppercase font-bold">
+                    <thead className="bg-[#F2F0E8] dark:bg-[#10131A] border-b border-[#E5E4DC] dark:border-[#232733] text-[#64748B] dark:text-[#94A3B8] text-[10px] uppercase font-bold">
                       <tr>
                         <th className="p-3">CODE</th>
                         <th className="p-3">MUNICIPALITY / PALIKA</th>
@@ -428,11 +415,11 @@ export default function HomePage() {
                     </thead>
                     <tbody className="divide-y divide-[#E5E4DC] dark:divide-[#232733] text-[11px]">
                       {palikaData.palikas.map((p) => (
-                        <tr key={p.local_level_id} className="hover:bg-[#F2F0E8]/50 dark:hover:bg-[#13161D]/50 transition-colors">
+                        <tr key={p.local_level_id} className="hover:bg-[#F2F0E8]/50 dark:hover:bg-[#10131A]/50 transition-colors">
                           <td className="p-3 font-bold text-[#2563EB] dark:text-[#60A5FA]">{p.local_level_id}</td>
-                          <td className="p-3 font-bold text-[#111318] dark:text-[#F4F4F0]">{p.local_level_name}</td>
-                          <td className="p-3 text-right text-[#5C6270]">{p.households.toLocaleString()}</td>
-                          <td className="p-3 text-right font-bold text-[#111318] dark:text-[#F4F4F0]">{p.total_population.toLocaleString()}</td>
+                          <td className="p-3 font-bold text-[#0F172A] dark:text-[#F3F4F6]">{p.local_level_name}</td>
+                          <td className="p-3 text-right text-[#64748B] dark:text-[#94A3B8]">{p.households.toLocaleString()}</td>
+                          <td className="p-3 text-right font-bold text-[#0F172A] dark:text-[#F3F4F6]">{p.total_population.toLocaleString()}</td>
                           <td className="p-3 text-right font-bold text-[#059669] dark:text-[#34D399]">
                             {p.estimated_tents_needed.toLocaleString()} TENTS
                           </td>
