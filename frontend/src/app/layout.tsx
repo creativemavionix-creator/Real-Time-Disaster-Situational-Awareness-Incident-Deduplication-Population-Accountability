@@ -35,6 +35,9 @@ export const metadata: Metadata = {
   description: "Autonomous disaster reality reconstruction analyzing evidence, uncertainty, silence, and information gaps across Central Nepal.",
 };
 
+import { CinematicNoise } from "@/components/CinematicNoise";
+import { CustomCursor } from "@/components/CustomCursor";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -52,6 +55,8 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <ViewModeProvider>
+            <CustomCursor />
+            <CinematicNoise />
             <Navbar />
             <main className="flex-1 flex flex-col">{children}</main>
           </ViewModeProvider>

@@ -1,438 +1,127 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   fetchAllLocationsStatus,
   fetchSimulationState,
-  fetchGisTelemetry,
   fetchPopulationExposure,
-  fetchMissingPersons,
-  fetchSectorPalikas,
-  fetchUnifiedTruth,
-  fetchBlackoutRisks,
-  fetchDispatchDashboard,
-  advanceSimulation,
-  resetSimulation,
-  seedDatabase,
   LocationStatusItem,
   SimulationState,
-  GisSectorTelemetry,
   AllPopulationExposureResponse,
-  MissingPersonItem,
-  SectorPalikaBreakdown,
-  UnifiedTruthRecord,
-  BlackoutRiskAssessment,
-  TacticalDispatchRecommendation,
 } from "@/lib/api";
-import { useViewMode } from "@/context/ViewModeContext";
-import { CinematicIntro } from "@/components/CinematicIntro";
-import { ExecutiveBriefing } from "@/components/ExecutiveBriefing";
-import InteractiveVectorMap from "@/components/InteractiveVectorMap";
-import { ActiveSectorDossier } from "@/components/ActiveSectorDossier";
-import { BeforeAfterShowcase } from "@/components/BeforeAfterShowcase";
-import { BlackoutRiskStory } from "@/components/BlackoutRiskStory";
-import { PopulationStory } from "@/components/PopulationStory";
-import { PopulationReconciliationLedger } from "@/components/PopulationReconciliationLedger";
-import { TacticalDispatchStory } from "@/components/TacticalDispatchStory";
-import { SimulationControls } from "@/components/SimulationControls";
-import { ReportInjectionForm } from "@/components/ReportInjectionForm";
-import { SectorDetailPanel } from "@/components/SectorDetailPanel";
-import { SystemArchitecture } from "@/components/SystemArchitecture";
+import { motion } from "framer-motion";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
-export default function HomePage() {
+export default function OverviewPage() {
   const [locations, setLocations] = useState<LocationStatusItem[]>([]);
-  const [gisSectors, setGisSectors] = useState<GisSectorTelemetry[]>([]);
   const [simulationState, setSimulationState] = useState<SimulationState | null>(null);
   const [exposureData, setExposureData] = useState<AllPopulationExposureResponse | null>(null);
-  const [missingPersons, setMissingPersons] = useState<MissingPersonItem[]>([]);
-  const [truthRecords, setTruthRecords] = useState<UnifiedTruthRecord[]>([]);
-  const [blackoutAssessments, setBlackoutAssessments] = useState<BlackoutRiskAssessment[]>([]);
-  const [dispatchRecommendations, setDispatchRecommendations] = useState<TacticalDispatchRecommendation[]>([]);
-
-  const [selectedSectorId, setSelectedSectorId] = useState<string>("gorkha");
-  const [inspectedLocation, setInspectedLocation] = useState<LocationStatusItem | null>(null);
-  const [selectedSectorForPalikas, setSelectedSectorForPalikas] = useState<string | null>(null);
-  const [palikaData, setPalikaData] = useState<SectorPalikaBreakdown | null>(null);
-  const [loadingPalikas, setLoadingPalikas] = useState(false);
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [autoPoll, setAutoPoll] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const { isAnalysis } = useViewMode();
 
   const loadData = async () => {
     try {
-      const [locsRes, sim, gis, exp, miss, truth, blackout, dispatch] = await Promise.all([
+      const [locsRes, sim, exp] = await Promise.all([
         fetchAllLocationsStatus(),
         fetchSimulationState(),
-        fetchGisTelemetry(),
         fetchPopulationExposure(),
-        fetchMissingPersons(),
-        fetchUnifiedTruth(),
-        fetchBlackoutRisks(),
-        fetchDispatchDashboard(),
       ]);
-
       setLocations(locsRes.locations);
       setSimulationState(sim);
-      setGisSectors(gis.sectors);
       setExposureData(exp);
-      setMissingPersons(miss);
-      setTruthRecords(truth.unified_records);
-      setBlackoutAssessments(blackout.assessments);
-      setDispatchRecommendations(dispatch.recommendations);
-
-      if (inspectedLocation) {
-        const updated = locsRes.locations.find((l) => l.location_id === inspectedLocation.location_id);
-        if (updated) setInspectedLocation(updated);
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to load live situation telemetry");
+    } catch (err) {
+      console.error(err);
     }
   };
 
   useEffect(() => {
     loadData();
-    if (!autoPoll) return;
     const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
-  }, [autoPoll, inspectedLocation]);
-
-  const handleAdvanceHours = async (hours: number) => {
-    setIsLoading(true);
-    try {
-      await advanceSimulation(hours);
-      await loadData();
-    } catch (err: any) {
-      setError(err.message || "Failed to advance simulation time");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleReset = async () => {
-    setIsLoading(true);
-    try {
-      await resetSimulation();
-      await loadData();
-    } catch (err: any) {
-      setError(err.message || "Failed to reset simulation");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSeed = async () => {
-    setIsLoading(true);
-    try {
-      await seedDatabase();
-      await loadData();
-    } catch (err: any) {
-      setError(err.message || "Failed to seed realistic reports");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOpenDossier = (sectorId: string) => {
-    setSelectedSectorId(sectorId);
-    const loc = locations.find((l) => l.location_id.toLowerCase() === sectorId.toLowerCase());
-    if (loc) setInspectedLocation(loc);
-  };
-
-  const handleOpenPalikas = async (sId: string) => {
-    setSelectedSectorForPalikas(sId);
-    setLoadingPalikas(true);
-    try {
-      const data = await fetchSectorPalikas(sId);
-      setPalikaData(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch municipal census demographics");
-    } finally {
-      setLoadingPalikas(false);
-    }
-  };
-
-  const scrollToMatrix = () => {
-    const el = document.getElementById("spatial-command");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const activeSector = gisSectors.find(
-    (s) => s.sector_id.toLowerCase() === selectedSectorId.toLowerCase()
-  ) || gisSectors[0] || {
-    sector_id: "gorkha",
-    sector_name: "Gorkha",
-    status: "verified_damaged" as const,
-    confidence_score: 0.94,
-    severity_index: 9.2,
-    threat_tier: "CRITICAL",
-    latitude: 28.0,
-    longitude: 84.63,
-    elevation_meters: 1900,
-    distance_to_epicenter_km: 0.0,
-    active_incidents_count: 8,
-    estimated_casualties: 149,
-    isolation_index: 0.85,
-    satellite_corroborated: true,
-    satellite_sensor: "Sentinel-1 SAR",
-  };
-
-  const activeLocation = locations.find(
-    (l) => l.location_id.toLowerCase() === selectedSectorId.toLowerCase()
-  );
+  }, []);
 
   const summaryCounts = locations.reduce((acc: any, curr) => {
     acc[curr.status] = (acc[curr.status] || 0) + 1;
     return acc;
   }, {});
 
-  const activeCriticalCount =
-    (summaryCounts.verified_damaged || 0) +
-    (summaryCounts.blackout || 0) +
-    (summaryCounts.unverified || 0);
+  const activeCriticalCount = (summaryCounts.verified_damaged || 0) + (summaryCounts.blackout || 0);
+  const totalExposed = (exposureData?.total_national_exposed_population || 0) / 1000000;
+  const missing = exposureData?.total_missing_persons || 0;
 
-  const worstSector = locations.find(
-    (l) => l.status === "verified_damaged" || l.status === "blackout"
-  ) || locations[0];
+  const containerVars = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.2, delayChildren: 0.1 }
+    }
+  };
+
+  const itemVars = {
+    hidden: { opacity: 0, y: 30, filter: "blur(10px)" },
+    show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring", stiffness: 100, damping: 20 } }
+  };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* 01: THE INFORMATION FOG (Cinematic Atmospheric Opening) */}
-      <CinematicIntro
-        elapsedHours={simulationState?.elapsed_hours || 12.0}
-        totalReports={simulationState?.reports_visible_at_current_time || 84}
-        activeCriticalCount={activeCriticalCount || 6}
-        onEnterMatrix={scrollToMatrix}
-      />
-
-      {/* REPLAY TIMELINE CONTROLS */}
-      <SimulationControls
-        simulationState={simulationState}
-        summaryCounts={summaryCounts}
-        isLoading={isLoading}
-        autoPoll={autoPoll}
-        onToggleAutoPoll={() => setAutoPoll(!autoPoll)}
-        onAdvanceHours={handleAdvanceHours}
-        onReset={handleReset}
-        onSeed={handleSeed}
-      />
-
-      {/* Global Error Banner */}
-      {error && (
-        <div className="max-w-7xl mx-auto px-6 pt-4 w-full">
-          <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-mono-data text-[#E11D48]">
-            [TELEMETRY_SYNC_ERROR]: {error}
-          </div>
+    <div className="flex-1 w-full bg-[#090B0E] flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-hidden">
+      <motion.div 
+        variants={containerVars}
+        initial="hidden"
+        animate="show"
+        className="max-w-5xl w-full space-y-20 relative z-10"
+      >
+        <div className="space-y-6 text-center">
+          <motion.div variants={itemVars} className="font-mono-data text-xs text-[#E11D48] tracking-[0.4em] uppercase flex items-center justify-center gap-3">
+            <span className="w-2 h-2 rounded-full bg-[#E11D48] animate-pulse" />
+            System Active &bull; T+{simulationState?.elapsed_hours || 0} Hours Elapsed
+          </motion.div>
+          
+          <motion.h1 variants={itemVars} className="font-display-calm font-medium text-5xl sm:text-7xl text-[#F3F4F6] tracking-tight">
+            Central Nepal<br />Crisis Protocol
+          </motion.h1>
+          
+          <motion.p variants={itemVars} className="font-body-prose text-[#94A3B8] max-w-2xl mx-auto text-lg pt-4">
+            Autonomous disaster reality reconstruction analyzing evidence, uncertainty, silence, and information gaps across 8 strategic crisis zones.
+          </motion.p>
         </div>
-      )}
 
-      {/* 02: THE SITUATION (Executive Briefing & Key Indicators) */}
-      <ExecutiveBriefing
-        simulationState={simulationState}
-        activeCriticalCount={activeCriticalCount || 6}
-        totalExposedMillion={
-          (exposureData?.total_national_exposed_population || 2920000) / 1000000
-        }
-        unaccountedCount={missingPersons.length || 148}
-        worstSectorName={worstSector?.location_name || "Gorkha (Epicenter)"}
-      />
-
-      {/* 03: SPATIAL COMMAND ARENA (Vector Cartography + Active Sector Action Dossier) */}
-      <section id="spatial-command" className="py-12 sm:py-16 border-b border-[#E5E4DC] dark:border-[#232733] px-6 sm:px-12 lg:px-16">
-        <div className="max-w-7xl mx-auto space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="space-y-1">
-              <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
-                03 // Spatial Situational Awareness
-              </div>
-              <h2 className="font-display-calm font-extrabold text-2xl sm:text-4xl text-[#0F172A] dark:text-[#F3F4F6] tracking-tight">
-                Where is the Risk?
-              </h2>
-            </div>
-
-            <div className="font-mono-data text-xs text-[#64748B] dark:text-[#94A3B8]">
-              Select a sector or enable H3 mesh to inspect risk factors
-            </div>
+        <motion.div variants={itemVars} className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/5 border border-white/5 rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(255,255,255,0.03)]">
+          <div className="bg-[#0C0E12]/80 backdrop-blur-xl p-10 flex flex-col gap-3 group transition-colors hover:bg-[#10131A]">
+            <span className="font-mono-data text-[10px] text-[#64748B] uppercase tracking-[0.2em] group-hover:text-[#94A3B8] transition-colors">Critical Sectors</span>
+            <span className="font-display-calm text-6xl text-[#E11D48] tracking-tighter">
+              <AnimatedCounter value={activeCriticalCount} />
+            </span>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            {/* Left Column (7): Vector Cartography with H3 Hexagonal Mesh */}
-            <div className="lg:col-span-7 space-y-4 flex flex-col justify-between">
-              <InteractiveVectorMap
-                sectors={gisSectors}
-                selectedSectorId={selectedSectorId}
-                onSelectSector={(sId) => handleOpenDossier(sId)}
-              />
-
-              {/* Horizontal 8-Sector Selector Carousel */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none font-display-calm text-xs">
-                {gisSectors.map((sec) => {
-                  const isSelected = sec.sector_id.toLowerCase() === selectedSectorId.toLowerCase();
-                  return (
-                    <button
-                      key={sec.sector_id}
-                      onClick={() => handleOpenDossier(sec.sector_id)}
-                      type="button"
-                      className={`px-4 py-2 rounded-xl font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 ${
-                        isSelected
-                          ? "bg-[#0F172A] dark:bg-[#F3F4F6] text-[#FFFFFF] dark:text-[#090B0E] shadow-sm scale-102"
-                          : "surface-calm text-[#64748B] hover:text-[#0F172A] dark:hover:text-[#F3F4F6]"
-                      }`}
-                    >
-                      <span
-                        className={`w-2 h-2 rounded-full ${
-                          sec.status === "verified_damaged" || sec.status === "blackout"
-                            ? "bg-[#E11D48]"
-                            : sec.status === "verified_safe"
-                            ? "bg-[#059669]"
-                            : "bg-[#D97706]"
-                        }`}
-                      />
-                      <span>{sec.sector_name}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right Column (5): Active Sector Operational Action Dossier */}
-            <div className="lg:col-span-5">
-              <ActiveSectorDossier
-                sector={activeSector}
-                location={activeLocation}
-                onOpenPalikas={handleOpenPalikas}
-              />
-            </div>
+          <div className="bg-[#0C0E12]/80 backdrop-blur-xl p-10 flex flex-col gap-3 group transition-colors hover:bg-[#10131A]">
+            <span className="font-mono-data text-[10px] text-[#64748B] uppercase tracking-[0.2em] group-hover:text-[#94A3B8] transition-colors">Exposed Population</span>
+            <span className="font-display-calm text-6xl text-[#F3F4F6] tracking-tighter">
+              <AnimatedCounter value={totalExposed} isDecimal={true} suffix="M" />
+            </span>
           </div>
-        </div>
-      </section>
-
-      {/* 04: THE BEFORE & AFTER SIGNAL ENGINE (20 Raw Messages -> 3 Rescue Directives) */}
-      <BeforeAfterShowcase />
-
-      {/* 05: SILENT BLACKOUT INTELLIGENCE (No Reports ≠ No Danger) */}
-      <BlackoutRiskStory />
-
-      {/* 06: POPULATION ACCOUNTABILITY & PROBABILISTIC RECONCILIATION */}
-      <PopulationStory
-        totalExposedMillion={
-          (exposureData?.total_national_exposed_population || 2920000) / 1000000
-        }
-        totalUnaccountedCount={missingPersons.length || 148}
-        totalEvacuatedThousand={
-          (exposureData?.sector_exposures.reduce(
-            (acc, s) => acc + s.evacuated_population_estimate,
-            0
-          ) || 38000) / 1000
-        }
-      />
-      <div className="max-w-7xl mx-auto px-6 sm:px-12 lg:px-16 pb-12 w-full">
-        <PopulationReconciliationLedger />
-      </div>
-
-      {/* 07: TACTICAL RESOURCE DISPATCH WORKFLOW */}
-      <TacticalDispatchStory />
-
-      {/* FIELD TEST SIGNAL INJECTION */}
-      <ReportInjectionForm onReportInjected={loadData} />
-
-      {/* PROGRESSIVE SYSTEM ARCHITECTURE & FORMULA SPECIFICATIONS */}
-      <SystemArchitecture />
-
-      {/* SLIDE-IN SECTOR EVIDENCE DOSSIER PANEL */}
-      <SectorDetailPanel
-        location={inspectedLocation}
-        onClose={() => setInspectedLocation(null)}
-        isAnalysis={isAnalysis}
-        onOpenPalikas={handleOpenPalikas}
-      />
-
-      {/* 2021 CENSUS PALIKA DEMOGRAPHICS MODAL */}
-      {selectedSectorForPalikas && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="surface-elevated max-w-4xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-start border-b border-[#E5E4DC] dark:border-[#232733] pb-4">
-              <div>
-                <div className="font-mono-data text-xs text-[#D97706] dark:text-[#FBBF24] font-bold uppercase tracking-wider mb-1">
-                  🏛️ NSO NEPAL 2021 CENSUS BASELINE
-                </div>
-                <h3 className="font-display-calm font-extrabold text-2xl sm:text-3xl uppercase text-[#0F172A] dark:text-[#F3F4F6]">
-                  {palikaData?.sector_name || selectedSectorForPalikas} Municipalities
-                </h3>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedSectorForPalikas(null);
-                  setPalikaData(null);
-                }}
-                className="p-2 rounded-lg border border-[#E5E4DC] dark:border-[#232733] font-mono-data text-xs text-[#64748B] hover:text-[#0F172A] dark:hover:text-[#F3F4F6] cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {loadingPalikas ? (
-              <div className="p-12 text-center font-mono-data text-xs text-[#2563EB] animate-pulse">
-                Loading 2021 census palika records...
-              </div>
-            ) : palikaData ? (
-              <div className="space-y-6 font-mono-data text-xs">
-                {/* Aggregate Summary */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="surface-calm p-3.5">
-                    <span className="text-[#64748B] dark:text-[#94A3B8] block text-[10px] uppercase font-bold">TOTAL PALIKAS</span>
-                    <strong className="text-xl text-[#0F172A] dark:text-[#F3F4F6] font-bold">{palikaData.total_palikas}</strong>
-                  </div>
-                  <div className="surface-calm p-3.5">
-                    <span className="text-[#64748B] dark:text-[#94A3B8] block text-[10px] uppercase font-bold">TOTAL HOUSEHOLDS</span>
-                    <strong className="text-xl text-[#2563EB] dark:text-[#60A5FA] font-bold">{palikaData.total_households.toLocaleString()}</strong>
-                  </div>
-                  <div className="surface-calm p-3.5">
-                    <span className="text-[#64748B] dark:text-[#94A3B8] block text-[10px] uppercase font-bold">MALE POPULATION</span>
-                    <strong className="text-xl text-[#0F172A] dark:text-[#F3F4F6] font-bold">{palikaData.male_population.toLocaleString()}</strong>
-                  </div>
-                  <div className="surface-calm p-3.5">
-                    <span className="text-[#64748B] dark:text-[#94A3B8] block text-[10px] uppercase font-bold">FEMALE POPULATION</span>
-                    <strong className="text-xl text-[#0F172A] dark:text-[#F3F4F6] font-bold">{palikaData.female_population.toLocaleString()}</strong>
-                  </div>
-                </div>
-
-                {/* Table */}
-                <div className="rounded-xl border border-[#E5E4DC] dark:border-[#232733] overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-[#F2F0E8] dark:bg-[#10131A] border-b border-[#E5E4DC] dark:border-[#232733] text-[#64748B] dark:text-[#94A3B8] text-[10px] uppercase font-bold">
-                      <tr>
-                        <th className="p-3">CODE</th>
-                        <th className="p-3">MUNICIPALITY / PALIKA</th>
-                        <th className="p-3 text-right">HOUSEHOLDS</th>
-                        <th className="p-3 text-right">POPULATION</th>
-                        <th className="p-3 text-right">SHELTER TENTS REQ.</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E5E4DC] dark:divide-[#232733] text-[11px]">
-                      {palikaData.palikas.map((p) => (
-                        <tr key={p.local_level_id} className="hover:bg-[#F2F0E8]/50 dark:hover:bg-[#10131A]/50 transition-colors">
-                          <td className="p-3 font-bold text-[#2563EB] dark:text-[#60A5FA]">{p.local_level_id}</td>
-                          <td className="p-3 font-bold text-[#0F172A] dark:text-[#F3F4F6]">{p.local_level_name}</td>
-                          <td className="p-3 text-right text-[#64748B] dark:text-[#94A3B8]">{p.households.toLocaleString()}</td>
-                          <td className="p-3 text-right font-bold text-[#0F172A] dark:text-[#F3F4F6]">{p.total_population.toLocaleString()}</td>
-                          <td className="p-3 text-right font-bold text-[#059669] dark:text-[#34D399]">
-                            {p.estimated_tents_needed.toLocaleString()} TENTS
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ) : null}
+          <div className="bg-[#0C0E12]/80 backdrop-blur-xl p-10 flex flex-col gap-3 group transition-colors hover:bg-[#10131A]">
+            <span className="font-mono-data text-[10px] text-[#64748B] uppercase tracking-[0.2em] group-hover:text-[#94A3B8] transition-colors">Unaccounted Persons</span>
+            <span className="font-display-calm text-6xl text-[#D97706] tracking-tighter">
+              <AnimatedCounter value={missing} />
+            </span>
           </div>
-        </div>
-      )}
+        </motion.div>
+
+        <motion.div variants={itemVars} className="flex flex-col sm:flex-row items-center justify-center gap-6 pt-10">
+          <Link href="/gis-map" className="px-10 py-5 bg-[#F3F4F6] text-[#090B0E] font-mono-data text-[11px] uppercase tracking-[0.2em] hover:bg-white transition-all rounded-xl shadow-[0_0_30px_rgba(255,255,255,0.1)] hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] hover:-translate-y-1">
+            Launch Live Map &rarr;
+          </Link>
+          <Link href="/sitrep" className="px-10 py-5 border border-white/10 text-[#F3F4F6] font-mono-data text-[11px] uppercase tracking-[0.2em] hover:bg-white/5 transition-all rounded-xl hover:-translate-y-1">
+            Generate SITREP
+          </Link>
+        </motion.div>
+      </motion.div>
+      
+      {/* Decorative background glow */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 0.4, scale: 1 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#E11D48]/5 rounded-full blur-[120px] pointer-events-none z-0"
+      />
     </div>
   );
 }

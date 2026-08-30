@@ -6,7 +6,8 @@ import {
   assignMission,
   DispatchDashboardResponse,
 } from "@/lib/api";
-import { useViewMode } from "@/context/ViewModeContext";
+import { motion } from "framer-motion";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function DispatchPage() {
   const [data, setData] = useState<DispatchDashboardResponse | null>(null);
@@ -16,7 +17,6 @@ export default function DispatchPage() {
   const [isDeploying, setIsDeploying] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { isAnalysis } = useViewMode();
 
   const loadData = async () => {
     try {
@@ -75,183 +75,222 @@ export default function DispatchPage() {
     }
   };
 
+  const containerVars = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 }
+    }
+  };
+
+  const itemVars = {
+    hidden: { opacity: 0, y: 20, filter: "blur(10px)" },
+    show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring", stiffness: 100, damping: 20 } }
+  };
+
   return (
-    <div className="p-6 sm:p-10 lg:p-14 space-y-8 max-w-7xl mx-auto w-full">
-      {/* Page Header */}
-      <div className="border-b border-[#E5E4DC] dark:border-[#232733] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
-            03 // TACTICAL DISPATCH & RESOURCE ALLOCATION
-          </div>
-          <h1 className="font-display-calm font-extrabold text-3xl sm:text-4xl text-[#111318] dark:text-[#F4F4F0] tracking-tight">
-            Tactical Resource Dispatch Queue
-          </h1>
-          <p className="font-body-prose text-xs sm:text-sm text-[#5C6270] dark:text-[#9CA3AF] max-w-2xl leading-relaxed">
-            Priority-ranked tactical dispatch queue allocating scarce Urban SAR Battalions, Air Ambulances, Hydraulic Excavators, and Field Hospitals where risk and population exposure are highest.
-          </p>
-        </div>
+    <div className="flex-1 w-full bg-[#090B0E] p-6 sm:p-10 lg:p-14 space-y-8 relative overflow-hidden">
+      
+      {/* Decorative background glow */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 0.15, scale: 1 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+        className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#E11D48]/10 rounded-full blur-[120px] pointer-events-none z-0"
+      />
 
-        <div className="font-mono-data text-xs text-[#5C6270] text-left md:text-right">
-          ACTIVE MISSIONS: <strong className="text-[#2563EB] dark:text-[#60A5FA] font-bold text-sm">{data?.active_missions_count || 0}</strong>
-        </div>
-      </div>
-
-      {error && (
-        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-mono-data text-[#E11D48]">
-          [DISPATCH_ERROR]: {error}
-        </div>
-      )}
-
-      {feedbackMsg && (
-        <div
-          className={`p-4 rounded-xl border font-mono-data text-xs ${
-            feedbackMsg.type === "success"
-              ? "bg-[#059669]/10 border-[#059669]/30 text-[#059669] dark:text-[#34D399]"
-              : "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-[#E11D48]"
-          }`}
-        >
-          {feedbackMsg.text}
-        </div>
-      )}
-
-      {/* Main Grid: Priority Queue Left (7) + Dispatch Console Right (5) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Ranked Priority Queue */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="font-mono-data text-xs text-[#5C6270] font-bold uppercase tracking-wider">
-            PRIORITY DEPLOYMENT QUEUE // 8 SECTORS
+      <motion.div 
+        variants={containerVars}
+        initial="hidden"
+        animate="show"
+        className="max-w-7xl mx-auto w-full space-y-8 relative z-10"
+      >
+        {/* Page Header */}
+        <motion.div variants={itemVars} className="border-b border-white/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="space-y-2">
+            <div className="font-mono-data text-[10px] text-[#60A5FA] font-bold uppercase tracking-[0.2em] flex items-center gap-2">
+              03 // TACTICAL DISPATCH & RESOURCE ALLOCATION
+            </div>
+            <h1 className="font-display-calm font-medium text-4xl sm:text-5xl text-[#F3F4F6] tracking-tight">
+              Tactical Resource Dispatch
+            </h1>
+            <p className="font-body-prose text-sm text-[#94A3B8] max-w-2xl leading-relaxed">
+              Priority-ranked tactical dispatch queue allocating scarce Urban SAR Battalions, Air Ambulances, and Field Hospitals where risk is highest.
+            </p>
           </div>
 
-          <div className="space-y-3">
-            {data?.recommendations.map((rec, rIdx) => {
-              const isSelected = selectedRec?.target_sector_id === rec.target_sector_id;
-              const isTopPriority = rIdx < 2;
+          <div className="font-mono-data text-[10px] text-[#64748B] tracking-[0.2em] uppercase text-left md:text-right">
+            ACTIVE MISSIONS: <strong className="text-[#60A5FA] font-bold text-xl block mt-1"><AnimatedCounter value={data?.active_missions_count || 0} /></strong>
+          </div>
+        </motion.div>
 
-              return (
-                <div
-                  key={rec.target_sector_id}
-                  onClick={() => setSelectedSectorId(rec.target_sector_id)}
-                  className={`surface-calm p-5 cursor-pointer transition-all ${
-                    isSelected
-                      ? "ring-2 ring-[#2563EB] shadow-md"
-                      : isTopPriority
-                      ? "border-rose-300 dark:border-rose-900/60"
-                      : ""
+        {error && (
+          <motion.div variants={itemVars} className="p-4 rounded-xl bg-rose-950/40 border border-rose-800 text-xs font-mono-data text-[#E11D48]">
+            [DISPATCH_ERROR]: {error}
+          </motion.div>
+        )}
+
+        {feedbackMsg && (
+          <motion.div
+            variants={itemVars}
+            className={`p-4 rounded-xl border font-mono-data text-[11px] tracking-wider uppercase ${
+              feedbackMsg.type === "success"
+                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                : "bg-rose-950/40 border-rose-800 text-[#E11D48]"
+            }`}
+          >
+            {feedbackMsg.text}
+          </motion.div>
+        )}
+
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Ranked Priority Queue */}
+          <div className="lg:col-span-7 space-y-4">
+            <motion.div variants={itemVars} className="font-mono-data text-[10px] text-[#64748B] font-bold uppercase tracking-[0.2em]">
+              PRIORITY DEPLOYMENT QUEUE // 8 SECTORS
+            </motion.div>
+
+            <motion.div variants={containerVars} className="space-y-4">
+              {data?.recommendations.map((rec, rIdx) => {
+                const isSelected = selectedRec?.target_sector_id === rec.target_sector_id;
+                const isTopPriority = rIdx < 2;
+
+                return (
+                  <motion.div
+                    variants={itemVars}
+                    key={rec.target_sector_id}
+                    onClick={() => setSelectedSectorId(rec.target_sector_id)}
+                    className={`bg-[#0C0E12]/80 backdrop-blur-xl border rounded-2xl p-6 cursor-pointer transition-all hover:bg-[#10131A] ${
+                      isSelected
+                        ? "border-[#2563EB] shadow-[0_0_30px_rgba(37,99,235,0.15)] scale-[1.01]"
+                        : isTopPriority
+                        ? "border-[#E11D48]/40"
+                        : "border-white/5"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-4 mb-4">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`px-3 py-1.5 rounded-lg font-mono-data text-[10px] tracking-[0.2em] font-bold ${
+                            rIdx === 0
+                              ? "bg-[#E11D48] text-white shadow-[0_0_15px_rgba(225,29,72,0.5)]"
+                              : rIdx === 1
+                              ? "bg-[#D97706] text-white"
+                              : "bg-white/5 text-[#94A3B8]"
+                          }`}
+                        >
+                          RANK #{rIdx + 1}
+                        </span>
+                        <h3 className="font-display-calm font-medium text-2xl text-[#F3F4F6]">
+                          {rec.target_sector_name}
+                        </h3>
+                      </div>
+
+                      <div className="font-mono-data text-[10px] tracking-[0.2em] text-[#64748B] uppercase flex flex-col items-end gap-1">
+                        Priority Score
+                        <strong className="text-xl text-[#60A5FA] font-medium"><AnimatedCounter value={rec.priority_score} isDecimal={true} /></strong>
+                      </div>
+                    </div>
+
+                    <p className="font-body-prose text-sm text-[#94A3B8] mb-4 leading-relaxed">
+                      {rec.rationale}
+                    </p>
+
+                    <div className="flex flex-wrap items-center justify-between text-[11px] font-mono-data tracking-wider uppercase text-[#94A3B8] bg-black/20 p-3 rounded-xl border border-white/5">
+                      <div>
+                        REC: <strong className="text-[#F3F4F6]">{rec.recommended_unit_types.join(", ").replace(/_/g, " ")}</strong>
+                      </div>
+
+                      <span className="text-[#60A5FA] font-bold">
+                        {rec.assigned_missions_count} ACTIVE
+                      </span>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
+
+          {/* Right Column: Mission Dispatch Console */}
+          <motion.div variants={itemVars} className="lg:col-span-5 bg-[#0C0E12]/90 backdrop-blur-3xl border border-white/10 rounded-3xl p-8 space-y-8 sticky top-24 shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+            <div>
+              <div className="font-mono-data text-[10px] text-[#60A5FA] uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#60A5FA] animate-pulse" />
+                AUTHORIZATION CONSOLE
+              </div>
+              <h2 className="font-display-calm font-medium text-3xl text-[#F3F4F6] leading-tight">
+                Deploy to<br/>{selectedRec?.target_sector_name || "Select Sector"}
+              </h2>
+              <div className="text-[10px] tracking-[0.1em] font-mono-data text-[#94A3B8] mt-4 p-3 border border-white/5 bg-white/5 rounded-lg">
+                REQUIRED ASSETS: <strong className="text-[#60A5FA] uppercase">{selectedRec?.recommended_unit_types.join(", ").replace(/_/g, " ")}</strong>
+              </div>
+            </div>
+
+            {selectedRec ? (
+              <form onSubmit={handleDispatch} className="space-y-6 font-mono-data text-xs">
+                <div>
+                  <label className="block text-[#94A3B8] text-[10px] tracking-[0.2em] uppercase mb-3">AVAILABLE RESOURCE UNITS *</label>
+                  <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                    {data?.resource_units
+                      .filter((u) => u.status === "available")
+                      .map((unit) => (
+                        <div
+                          key={unit.id}
+                          onClick={() => setSelectedUnitId(unit.id)}
+                          className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                            selectedUnitId === unit.id
+                              ? "border-[#2563EB] bg-[#2563EB]/10 text-[#F3F4F6] shadow-[0_0_20px_rgba(37,99,235,0.1)]"
+                              : "border-white/10 bg-black/20 hover:border-white/30 text-[#94A3B8]"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between font-bold mb-1">
+                            <span className="tracking-wider">{unit.unit_code}</span>
+                            <span className="text-[9px] text-[#34D399] tracking-[0.2em] uppercase bg-[#34D399]/10 px-2 py-1 rounded">AVAILABLE</span>
+                          </div>
+                          <div className="text-sm font-medium text-[#F3F4F6] mt-1 mb-2 font-display-calm tracking-wide">{unit.unit_name}</div>
+                          <div className="text-[10px] text-[#64748B] flex items-center gap-2">
+                            <span>Base: {unit.home_base}</span>
+                            <span>&bull;</span>
+                            <span>Cap: {unit.capacity}</span>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[#94A3B8] text-[10px] tracking-[0.2em] uppercase mb-3">TACTICAL JUSTIFICATION *</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={justification}
+                    onChange={(e) => setJustification(e.target.value)}
+                    placeholder="e.g. Immediate structural rescue at collapsed commercial block..."
+                    className="w-full bg-black/30 border border-white/10 rounded-xl p-4 text-[#F3F4F6] font-body-prose text-sm focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] focus:outline-none transition-all placeholder:text-[#64748B]"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isDeploying || !selectedUnitId || !justification.trim()}
+                  className={`w-full text-[11px] py-4 rounded-xl tracking-[0.2em] uppercase transition-all duration-300 cursor-pointer ${
+                    isDeploying || !selectedUnitId || !justification.trim()
+                      ? "bg-white/5 text-[#64748B] border border-white/5 cursor-not-allowed"
+                      : "bg-[#2563EB] text-white hover:bg-[#3B82F6] shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)]"
                   }`}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E5E4DC] dark:border-[#232733] pb-3 mb-3">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-lg font-mono-data text-xs font-bold ${
-                          rIdx === 0
-                            ? "bg-[#E11D48] text-[#FFFFFF]"
-                            : rIdx === 1
-                            ? "bg-[#D97706] text-[#FFFFFF]"
-                            : "bg-[#F2F0E8] dark:bg-[#13161D] text-[#5C6270]"
-                        }`}
-                      >
-                        RANK #{rIdx + 1}
-                      </span>
-                      <h3 className="font-display-calm font-extrabold text-lg text-[#111318] dark:text-[#F4F4F0]">
-                        {rec.target_sector_name}
-                      </h3>
-                    </div>
-
-                    <div className="font-mono-data text-xs text-[#5C6270]">
-                      PRIORITY SCORE: <strong className="text-base text-[#2563EB] dark:text-[#60A5FA] font-bold">{rec.priority_score.toFixed(1)}</strong>
-                    </div>
-                  </div>
-
-                  <p className="font-body-prose text-xs sm:text-sm text-[#5C6270] dark:text-[#9CA3AF] mb-3">
-                    {rec.rationale}
-                  </p>
-
-                  <div className="flex flex-wrap items-center justify-between text-xs font-mono-data text-[#5C6270] dark:text-[#9CA3AF]">
-                    <div>
-                      RECOMMENDED: <strong className="text-[#111318] dark:text-[#F4F4F0] uppercase">{rec.recommended_unit_types.join(", ").replace(/_/g, " ")}</strong>
-                    </div>
-
-                    <span className="text-[#2563EB] dark:text-[#60A5FA] font-bold">
-                      {rec.assigned_missions_count} ACTIVE MISSIONS
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Right Column: Mission Dispatch Console */}
-        <div className="lg:col-span-5 surface-calm p-6 sm:p-8 space-y-6">
-          <div>
-            <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider mb-1">
-              TACTICAL AUTHORIZATION CONSOLE
-            </div>
-            <h2 className="font-display-calm font-extrabold text-2xl text-[#111318] dark:text-[#F4F4F0]">
-              Deploy to {selectedRec?.target_sector_name || "Select Sector"}
-            </h2>
-            <div className="text-xs font-mono-data text-[#5C6270] mt-1">
-              RECOMMENDED ASSETS: <strong className="text-[#2563EB] dark:text-[#60A5FA] uppercase">{selectedRec?.recommended_unit_types.join(", ").replace(/_/g, " ")}</strong>
-            </div>
-          </div>
-
-          {selectedRec ? (
-            <form onSubmit={handleDispatch} className="space-y-4 font-mono-data text-xs">
-              <div>
-                <label className="block text-[#5C6270] font-bold mb-1.5">SELECT SPECIALIZED RESOURCE UNIT *</label>
-                <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                  {data?.resource_units
-                    .filter((u) => u.status === "available")
-                    .map((unit) => (
-                      <div
-                        key={unit.id}
-                        onClick={() => setSelectedUnitId(unit.id)}
-                        className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
-                          selectedUnitId === unit.id
-                            ? "border-[#2563EB] bg-[#2563EB]/5 dark:bg-[#2563EB]/10 text-[#111318] dark:text-[#F4F4F0] shadow-xs"
-                            : "border-[#E5E4DC] dark:border-[#232733] bg-[#FAF9F5] dark:bg-[#0C0E12] hover:border-[#94A3B8] text-[#5C6270] dark:text-[#9CA3AF]"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between font-bold">
-                          <span>{unit.unit_code}</span>
-                          <span className="text-[10px] text-[#059669] dark:text-[#34D399] uppercase">AVAILABLE</span>
-                        </div>
-                        <div className="text-xs font-bold text-[#111318] dark:text-[#F4F4F0] mt-0.5">{unit.unit_name}</div>
-                        <div className="text-[10px] text-[#5C6270] mt-1">
-                          Base: {unit.home_base} • Capacity: {unit.capacity}
-                        </div>
-                      </div>
-                    ))}
-                </div>
+                  {isDeploying ? "AUTHORIZING..." : "AUTHORIZE DISPATCH [↵]"}
+                </button>
+              </form>
+            ) : (
+              <div className="py-24 text-center font-mono-data text-[10px] uppercase tracking-[0.2em] text-[#64748B]">
+                SELECT A TARGET SECTOR<br/>TO INITIALIZE DISPATCH.
               </div>
-
-              <div>
-                <label className="block text-[#5C6270] font-bold mb-1.5">TACTICAL DIRECTIVE & JUSTIFICATION *</label>
-                <textarea
-                  rows={3}
-                  required
-                  value={justification}
-                  onChange={(e) => setJustification(e.target.value)}
-                  placeholder="e.g. Immediate structural rescue at collapsed commercial block..."
-                  className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] rounded-lg p-3 text-[#111318] dark:text-[#F4F4F0] font-body-prose text-xs focus:border-[#2563EB] focus:outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={isDeploying || !selectedUnitId || !justification.trim()}
-                className="w-full btn-action-primary text-xs py-3.5 tracking-wider disabled:opacity-50 cursor-pointer"
-              >
-                {isDeploying ? "AUTHORIZING MISSION..." : "AUTHORIZE DISPATCH [↵]"}
-              </button>
-            </form>
-          ) : (
-            <div className="py-16 text-center font-mono-data text-xs text-[#5C6270]">
-              SELECT A TARGET SECTOR TO INITIALIZE DISPATCH.
-            </div>
-          )}
+            )}
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

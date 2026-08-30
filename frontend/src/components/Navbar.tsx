@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/context/ThemeContext";
-import { useViewMode } from "@/context/ViewModeContext";
 
 interface NavPillar {
   id: string;
@@ -63,7 +62,6 @@ const NAV_PILLARS: NavPillar[] = [
 export function Navbar() {
   const pathname = usePathname();
   const { isDark, toggleTheme } = useTheme();
-  const { isAnalysis, toggleMode } = useViewMode();
   const [activeHover, setActiveHover] = useState<string | null>(null);
 
   return (
@@ -143,7 +141,8 @@ export function Navbar() {
 
                 {/* Sub-routes Dropdown */}
                 {hasMultiple && activeHover === pillar.id && (
-                  <div className="absolute top-full left-0 mt-1 w-56 surface-elevated p-2 shadow-xl z-50 space-y-1">
+                  <div className="absolute top-full left-0 pt-2 w-56 z-50">
+                    <div className="surface-elevated p-2 shadow-2xl rounded-xl border border-white/10 bg-[#0C0E12]/95 backdrop-blur-xl space-y-1">
                     {pillar.subRoutes?.map((sub) => {
                       const isSubActive = pathname === sub.href;
                       return (
@@ -164,6 +163,7 @@ export function Navbar() {
                         </Link>
                       );
                     })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -173,25 +173,6 @@ export function Navbar() {
 
         {/* Right: Operational Actions & Mode Controls */}
         <div className="flex items-center gap-2.5">
-          {/* Command vs Analysis Mode Toggle */}
-          <button
-            onClick={toggleMode}
-            type="button"
-            className={`px-3 py-1.5 rounded-lg text-xs font-mono-data font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
-              isAnalysis
-                ? "bg-[#2563EB]/10 border-[#2563EB] text-[#2563EB] dark:text-[#60A5FA]"
-                : "bg-transparent border-[#E5E4DC] dark:border-[#232733] text-[#5C6270] dark:text-[#9CA3AF] hover:text-[#111318] dark:hover:text-[#F4F4F0]"
-            }`}
-            title={
-              isAnalysis
-                ? "Analysis Mode: Raw formulas, source weights & dense telemetry revealed"
-                : "Command Mode: Human-readable operational summaries"
-            }
-          >
-            <span>{isAnalysis ? "⚙" : "◉"}</span>
-            <span className="hidden md:inline">{isAnalysis ? "ANALYSIS" : "COMMAND"}</span>
-          </button>
-
           {/* Dark / Light Mode Toggle */}
           <button
             onClick={toggleTheme}
