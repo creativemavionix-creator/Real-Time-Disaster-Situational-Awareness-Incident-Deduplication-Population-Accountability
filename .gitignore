@@ -26,7 +26,6 @@ wheels/
 .installed.cfg
 *.egg
 backend/dataset/
-dataset/
 # Testing & Coverage
 .pytest_cache/
 backend/.pytest_cache/
