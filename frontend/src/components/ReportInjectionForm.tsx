@@ -57,113 +57,89 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
   };
 
   return (
-    <section className="py-12 md:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-      <div className="prism-card p-6 sm:p-8 space-y-6">
+    <section className="py-12 sm:py-16 px-6 sm:px-12 lg:px-16 max-w-7xl mx-auto w-full">
+      <div className="surface-calm p-6 sm:p-8 space-y-6">
         {/* Collapsible Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="prism-badge-cyan">
-              <span>⚡</span>
-              <span>FIELD TEST CONSOLE // LIVE SIGNAL INJECTION</span>
+            <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
+              FIELD TEST CONSOLE // LIVE SIGNAL INJECTION
             </div>
-            <h3 className="font-display font-extrabold text-2xl text-slate-900 dark:text-white tracking-tight">
+            <h3 className="font-display-calm font-extrabold text-2xl text-[#111318] dark:text-[#F4F4F0] tracking-tight">
               Inject Simulated Disaster Signal
             </h3>
-            <p className="font-body-prose text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-              Simulate incoming radio, citizen, or hospital reports to test semantic deduplication and real-time matrix updates.
+            <p className="font-body-prose text-xs sm:text-sm text-[#5C6270] dark:text-[#9CA3AF]">
+              Simulate incoming police radio, citizen SMS, hospital intake, or Devanagari reports to test semantic deduplication and real-time matrix updates.
             </p>
           </div>
 
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono text-xs font-bold uppercase transition-all border border-slate-200 dark:border-slate-700 cursor-pointer self-start sm:self-auto"
+            className="btn-action-secondary text-xs py-2 px-4 cursor-pointer self-start sm:self-auto"
           >
             {isOpen ? "HIDE CONSOLE ▲" : "OPEN CONSOLE ▼"}
           </button>
         </div>
 
         {isOpen && (
-          <div className="pt-6 border-t border-slate-100 dark:border-slate-800 space-y-6 animate-fade-in">
+          <div className="pt-6 border-t border-[#E5E4DC] dark:border-[#232733] space-y-6">
             {/* Quick Demo Presets */}
             <div className="space-y-2.5">
-              <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400 uppercase font-bold block">
+              <span className="font-mono-data text-[11px] text-[#5C6270] uppercase font-bold block">
                 PRELOAD TEST SIGNALS (ENGLISH & NEPALI):
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setPreset("police", "Police patrol in Sindhupalchok confirms Melamchi river bridge completely washed away, 2 dead.", "27.9500", "85.7000")}
-                  className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-mono px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg surface-calm text-xs font-mono-data text-[#5C6270] hover:text-[#111318] dark:hover:text-[#F4F4F0] cursor-pointer"
                 >
                   [POLICE: SINDHUPALCHOK BRIDGE]
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPreset("hospital", "Kathmandu Hospital trauma update: 14 injured from New Road structural collapse receiving treatment.", "27.7172", "85.3240")}
-                  className="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-mono px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 transition-all cursor-pointer"
+                  onClick={() => setPreset("hospital", "Patan Hospital ER received 14 trauma patients from collapsed commercial block in Kathmandu.", "27.6710", "85.3240")}
+                  className="px-3 py-1.5 rounded-lg surface-calm text-xs font-mono-data text-[#5C6270] hover:text-[#111318] dark:hover:text-[#F4F4F0] cursor-pointer"
                 >
-                  [HOSPITAL: KATHMANDU CASUALTIES]
+                  [HOSPITAL: PATAN ER INTAKE]
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPreset("police", "गोरखा बारपाकमा ढुङ्गाको घर भत्किएर ३ जनाको मृत्यु र ५ जना घाइते।", "28.0000", "84.6333")}
-                  className="bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/40 dark:hover:bg-cyan-900/50 text-cyan-800 dark:text-cyan-300 text-xs font-mono px-3 py-1.5 rounded-full border border-cyan-200 dark:border-cyan-800 transition-all cursor-pointer font-semibold"
+                  onClick={() => setPreset("citizen", "गोरखा बारपाकमा धेरै घर भत्किएका छन्, १० जना पुरिएका छन्, तत्काल उद्धार टोली चाहियो।", "28.0000", "84.6333")}
+                  className="px-3 py-1.5 rounded-lg surface-calm text-xs font-mono-data text-[#D97706] hover:underline cursor-pointer"
                 >
-                  [🇳🇵 नेपाली: गोरखा घर भत्कियो]
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreset("citizen", "सिन्धुपाल्चोक मेलम्ची बजारमा बाढी पसेर पक्की पुल बगायो, २ जना बेपत्ता।", "27.9500", "85.7000")}
-                  className="bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/40 dark:hover:bg-cyan-900/50 text-cyan-800 dark:text-cyan-300 text-xs font-mono px-3 py-1.5 rounded-full border border-cyan-200 dark:border-cyan-800 transition-all cursor-pointer font-semibold"
-                >
-                  [🇳🇵 नेपाली: मेलम्ची बाढी र पुल]
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreset("citizen", "रसुवा धुन्चेमा भीषण पहिरोले सडक अवरुद्ध, मोबाइल टावर डाउन र सम्पर्कविहीन।", "28.1500", "85.3000")}
-                  className="bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/50 text-purple-800 dark:text-purple-300 text-xs font-mono px-3 py-1.5 rounded-full border border-purple-200 dark:border-purple-800 transition-all cursor-pointer font-semibold"
-                >
-                  [🇳🇵 नेपाली: रसुवा पहिरो र ब्ल्याकआउट]
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPreset("police", "भक्तपुर दरबार स्क्वायर क्षेत्रमा कुनै क्षति छैन, सबै सुरक्षित, सामान्य अवस्था।", "27.6710", "85.4298")}
-                  className="bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 text-xs font-mono px-3 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800 transition-all cursor-pointer font-semibold"
-                >
-                  [🇳🇵 नेपाली: भक्तपुर सुरक्षित]
+                  [NEPALI: GORKHA BARPAK RESCUE]
                 </button>
               </div>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Injection Form */}
+            <form onSubmit={handleSubmit} className="space-y-4 font-mono-data text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block font-mono text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                    SOURCE CHANNEL:
-                  </label>
+                  <label className="block text-[#5C6270] font-bold mb-1.5">SOURCE TYPE *</label>
                   <select
                     value={sourceType}
-                    onChange={(e: any) => setSourceType(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                    onChange={(e) => setSourceType(e.target.value as any)}
+                    className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] p-2.5 rounded-lg text-[#111318] dark:text-[#F4F4F0] focus:border-[#2563EB] focus:outline-none"
                   >
-                    <option value="citizen">CITIZEN SOS (Weight: 0.60)</option>
-                    <option value="police">POLICE RADIO (Weight: 0.90)</option>
-                    <option value="hospital">HOSPITAL TRIAGE LOG (Weight: 0.95)</option>
-                    <option value="social_media">SOCIAL MEDIA FEED (Weight: 0.35)</option>
+                    <option value="citizen">Citizen Report (Trust Weight: 0.70)</option>
+                    <option value="police">Police Log / First Responder (Trust Weight: 0.90)</option>
+                    <option value="hospital">Hospital Triage Admissions (Trust Weight: 0.95)</option>
+                    <option value="social_media">Social Media Crowdsource (Trust Weight: 0.30)</option>
                   </select>
                 </div>
 
-                <div className="flex items-center gap-3 pt-6 font-mono text-xs">
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300 font-medium">
+                <div className="flex items-center gap-4 pt-6">
+                  <label className="flex items-center gap-2 cursor-pointer text-[#111318] dark:text-[#F4F4F0]">
                     <input
                       type="checkbox"
                       checked={useCoords}
                       onChange={(e) => setUseCoords(e.target.checked)}
-                      className="accent-[#0088A9] w-4 h-4 rounded"
+                      className="rounded text-[#2563EB] focus:ring-[#2563EB]"
                     />
-                    <span>INCLUDE GPS COORDINATES (+0.10 BONUS)</span>
+                    <span>Attach Exact GPS Coordinates</span>
                   </label>
                 </div>
               </div>
@@ -171,69 +147,59 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
               {useCoords && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-mono text-xs text-slate-600 dark:text-slate-400 mb-1">LATITUDE:</label>
+                    <label className="block text-[#5C6270] mb-1">LATITUDE (°N)</label>
                     <input
                       type="text"
                       value={lat}
                       onChange={(e) => setLat(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] p-2 rounded-lg text-[#111318] dark:text-[#F4F4F0]"
                     />
                   </div>
                   <div>
-                    <label className="block font-mono text-xs text-slate-600 dark:text-slate-400 mb-1">LONGITUDE:</label>
+                    <label className="block text-[#5C6270] mb-1">LONGITUDE (°E)</label>
                     <input
                       type="text"
                       value={lon}
                       onChange={(e) => setLon(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2 text-slate-800 dark:text-slate-200 font-mono text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                      className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] p-2 rounded-lg text-[#111318] dark:text-[#F4F4F0]"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block font-mono text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                  RAW INCIDENT TEXT (ENGLISH OR NEPALI):
-                </label>
+                <label className="block text-[#5C6270] font-bold mb-1.5">RAW REPORT MESSAGE *</label>
                 <textarea
                   rows={3}
                   required
                   value={rawText}
                   onChange={(e) => setRawText(e.target.value)}
-                  placeholder="e.g. Major bridge collapse reported at Melamchi Sindhupalchok, 2 dead, 5 trapped under debris..."
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-800 dark:text-slate-200 font-body-prose text-xs sm:text-sm focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                  placeholder="Describe damage, trapped persons, road blockages, or casualty counts..."
+                  className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] p-3 rounded-lg text-[#111318] dark:text-[#F4F4F0] font-body-prose text-xs focus:border-[#2563EB] focus:outline-none"
                 />
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-3 pt-2">
                 <button
                   type="submit"
                   disabled={isSubmitting || !rawText.trim()}
-                  className="btn-primary-cyan text-xs py-2.5 px-6 disabled:opacity-50 cursor-pointer"
+                  className="btn-action-primary text-xs py-2.5 px-6 disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? "PROCESSING AI PIPELINE..." : "INJECT REPORT [↵]"}
+                  {isSubmitting ? "PROCESSING SIGNAL..." : "INJECT SIGNAL [↵]"}
                 </button>
               </div>
             </form>
 
             {/* Results Feedback */}
             {result && (
-              <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 p-4 rounded-2xl font-mono text-xs space-y-2">
-                <div className="text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-2">
-                  <span>✓</span>
-                  <span>REPORT SUCCESSFULLY INGESTED & SCORED</span>
-                </div>
-                <div className="text-slate-700 dark:text-slate-300 space-y-1 text-[11px]">
-                  <div>EXTRACTED SECTOR: <strong className="text-slate-900 dark:text-white">{result.resolved_location_name || result.resolved_location_id || "UNRESOLVED"}</strong></div>
-                  <div>DAMAGE TAG: <strong className="text-slate-900 dark:text-white">{result.extracted_damage_type || "NONE"}</strong></div>
-                  <div>CASUALTY ESTIMATE: <strong className="text-slate-900 dark:text-white">{result.extracted_casualties ?? "NONE"}</strong></div>
-                  <div>RELIABILITY SCORE: <strong className="text-emerald-600 dark:text-emerald-400">{result.score_breakdown?.effective_score?.toFixed(2) ?? "1.00"} / 1.00</strong></div>
-                </div>
+              <div className="p-4 rounded-xl bg-[#059669]/10 border border-[#059669]/30 text-xs font-mono-data text-[#059669] dark:text-[#34D399] space-y-1">
+                <div className="font-bold">✓ SIGNAL INGESTED & FUSED (ID #{result.id})</div>
+                <div>Extracted Location: <strong>{result.resolved_location_name || result.resolved_location_id || "Central Nepal"}</strong> | Extracted Damage: <strong>{result.extracted_damage_type || "structural"}</strong></div>
               </div>
             )}
 
             {error && (
-              <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 p-3.5 rounded-2xl font-mono text-xs text-rose-700 dark:text-rose-300">
+              <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-xs font-mono-data text-[#E11D48]">
                 [INJECTION_ERROR]: {error}
               </div>
             )}

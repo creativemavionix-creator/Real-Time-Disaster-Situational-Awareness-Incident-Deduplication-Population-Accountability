@@ -34,46 +34,44 @@ export function SimulationControls({
   const simTime = simulationState ? simulationState.simulated_time : "";
 
   return (
-    <div className="sticky top-[57px] z-40 bg-white/90 dark:bg-[#090D16]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-6 lg:px-8 py-3 transition-colors">
+    <div className="sticky top-[58px] z-40 bg-[#FAF9F5]/90 dark:bg-[#0C0E12]/90 backdrop-blur-md border-b border-[#E5E4DC] dark:border-[#232733] px-4 sm:px-6 lg:px-8 py-2.5 transition-colors">
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
         
         {/* Left: Replay Clock & Counts */}
-        <div className="flex flex-wrap items-center gap-2.5 font-mono text-xs">
-          <div className="bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-200 dark:border-cyan-800 text-cyan-900 dark:text-cyan-200 px-3 py-1 rounded-full font-bold flex items-center gap-1.5 shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-cyan-500 animate-ping"></span>
+        <div className="flex flex-wrap items-center gap-2.5 font-mono-data text-xs">
+          <div className="bg-[#111318] dark:bg-[#F4F4F0] text-[#FFFFFF] dark:text-[#0C0E12] px-3 py-1 rounded-lg font-bold flex items-center gap-2 shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E11D48] animate-ping" />
             <span>TIMELINE:</span>
-            <span className="text-cyan-700 dark:text-cyan-300 font-bold">
-              T+{elapsed.toFixed(1)}h / 24.0h
-            </span>
+            <span>T+{elapsed.toFixed(1)}h / 24.0h</span>
           </div>
 
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 hidden xl:block">
+          <div className="text-[11px] text-[#5C6270] dark:text-[#9CA3AF] hidden xl:block">
             SIMULATED: <strong>{simTime ? new Date(simTime).toISOString().replace(".000Z", "Z") : "2026-08-30T06:00:00Z"}</strong>
           </div>
 
-          {/* Counts Badges */}
-          <div className="flex flex-wrap items-center gap-1 text-[11px]">
-            <span className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-0.5 rounded-full font-semibold">
+          {/* Counts Chips */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="chip-safe text-[10px]">
               SAFE: {summaryCounts.verified_safe ?? 0}
             </span>
-            <span className="bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 px-2.5 py-0.5 rounded-full font-semibold">
+            <span className="chip-critical text-[10px]">
               DAMAGED: {summaryCounts.verified_damaged ?? 0}
             </span>
-            <span className="bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 px-2.5 py-0.5 rounded-full font-semibold">
+            <span className="chip-warning text-[10px]">
               UNVERIFIED: {summaryCounts.unverified ?? 0}
             </span>
-            <span className="bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60 px-2.5 py-0.5 rounded-full font-semibold">
+            <span className="chip-neutral text-[10px]">
               BLACKOUT: {summaryCounts.blackout ?? 0}
             </span>
           </div>
         </div>
 
-        {/* Right: Simulation Controls */}
-        <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
+        {/* Right: Simulation Step & Reset Actions */}
+        <div className="flex flex-wrap items-center gap-2 font-mono-data text-xs">
           <button
             onClick={() => onAdvanceHours(1.0)}
             disabled={isLoading}
-            className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-[#0088A9] hover:text-white px-3 py-1.5 rounded-full font-bold uppercase transition-all border border-slate-200 dark:border-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
+            className="btn-action-secondary text-xs py-1.5 px-3 disabled:opacity-50 cursor-pointer"
             title="Advance simulated time by 1 hour"
           >
             +1.0H STEP
@@ -82,7 +80,7 @@ export function SimulationControls({
           <button
             onClick={() => onAdvanceHours(4.0)}
             disabled={isLoading}
-            className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-[#0088A9] hover:text-white px-3 py-1.5 rounded-full font-bold uppercase transition-all border border-slate-200 dark:border-slate-700 disabled:opacity-50 cursor-pointer shadow-xs"
+            className="btn-action-secondary text-xs py-1.5 px-3 disabled:opacity-50 cursor-pointer"
             title="Advance simulated time by 4 hours"
           >
             +4.0H JUMP
@@ -91,7 +89,7 @@ export function SimulationControls({
           <button
             onClick={onReset}
             disabled={isLoading}
-            className="bg-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white px-3 py-1.5 rounded-full uppercase transition-all border border-slate-200 dark:border-slate-700 disabled:opacity-50 cursor-pointer"
+            className="text-[#5C6270] dark:text-[#9CA3AF] hover:text-[#111318] dark:hover:text-[#F4F4F0] px-2.5 py-1.5 text-xs uppercase cursor-pointer"
             title="Reset replay clock back to disaster start T0"
           >
             RESET T0
@@ -100,24 +98,23 @@ export function SimulationControls({
           <button
             onClick={onSeed}
             disabled={isLoading}
-            className="bg-transparent text-cyan-700 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-950/50 px-3 py-1.5 rounded-full uppercase transition-all border border-cyan-200 dark:border-cyan-800 disabled:opacity-50 cursor-pointer"
-            title="Re-seed synthetic dataset into database"
+            className="text-[#2563EB] dark:text-[#60A5FA] hover:underline px-2.5 py-1.5 text-xs font-bold uppercase cursor-pointer"
+            title="Seed 100 realistic central Nepal crisis reports"
           >
             RE-SEED
           </button>
 
           <button
             onClick={onToggleAutoPoll}
-            className={`px-3 py-1.5 rounded-full font-bold uppercase transition-all border cursor-pointer ${
+            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase border cursor-pointer ${
               autoPoll
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
-                : "bg-transparent text-slate-400 border-slate-200 dark:border-slate-700"
+                ? "bg-[#059669]/10 border-[#059669]/30 text-[#059669] dark:text-[#34D399]"
+                : "border-[#E5E4DC] dark:border-[#232733] text-[#5C6270]"
             }`}
           >
-            POLL: {autoPoll ? "LIVE" : "PAUSED"}
+            {autoPoll ? "POLLING 4s" : "PAUSED"}
           </button>
         </div>
-
       </div>
     </div>
   );

@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono, Inter } from "next/font/google";
+import { Newsreader, Plus_Jakarta_Sans, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ViewModeProvider } from "@/context/ViewModeContext";
+
+const newsreader = Newsreader({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+});
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-display",
@@ -14,17 +21,17 @@ const plusJakarta = Plus_Jakarta_Sans({
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600"],
 });
 
 const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600"],
 });
 
 export const metadata: Metadata = {
-  title: "Project PRISM — Post-disaster Real-time Intelligence & Situational Mapping",
+  title: "Project PRISM — Post-Disaster Real-Time Intelligence & Situational Mapping",
   description: "Autonomous disaster reality reconstruction analyzing evidence, uncertainty, silence, and information gaps across Central Nepal.",
 };
 
@@ -37,9 +44,12 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakarta.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-[#F4F8FC] dark:bg-[#090D16] text-[#0F172A] dark:text-[#F8FAFC]">
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col bg-[#FAF9F5] dark:bg-[#0C0E12] text-[#111318] dark:text-[#F4F4F0]"
+      >
         <ThemeProvider>
           <ViewModeProvider>
             <Navbar />

@@ -5,7 +5,6 @@ import {
   fetchDispatchDashboard,
   assignMission,
   DispatchDashboardResponse,
-  TacticalDispatchRecommendation,
 } from "@/lib/api";
 import { useViewMode } from "@/context/ViewModeContext";
 
@@ -15,7 +14,6 @@ export default function DispatchPage() {
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
   const [justification, setJustification] = useState("");
   const [isDeploying, setIsDeploying] = useState(false);
-  const [showFormula, setShowFormula] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { isAnalysis } = useViewMode();
@@ -80,49 +78,47 @@ export default function DispatchPage() {
   return (
     <div className="p-6 sm:p-10 lg:p-14 space-y-8 max-w-7xl mx-auto w-full">
       {/* Page Header */}
-      <div className="border-b border-slate-200 dark:border-slate-800 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="border-b border-[#E5E4DC] dark:border-[#232733] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="prism-badge-cyan">
-            <span>03</span>
-            <span>//</span>
-            <span>TACTICAL DISPATCH & RESOURCE ALLOCATION</span>
+          <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
+            03 // TACTICAL DISPATCH & RESOURCE ALLOCATION
           </div>
-          <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight">
+          <h1 className="font-display-calm font-extrabold text-3xl sm:text-4xl text-[#111318] dark:text-[#F4F4F0] tracking-tight">
             Tactical Resource Dispatch Queue
           </h1>
-          <p className="font-body-prose text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+          <p className="font-body-prose text-xs sm:text-sm text-[#5C6270] dark:text-[#9CA3AF] max-w-2xl leading-relaxed">
             Priority-ranked tactical dispatch queue allocating scarce Urban SAR Battalions, Air Ambulances, Hydraulic Excavators, and Field Hospitals where risk and population exposure are highest.
           </p>
         </div>
 
-        <div className="font-mono text-xs text-slate-500 text-left md:text-right">
-          ACTIVE MISSIONS: <strong className="text-cyan-600 dark:text-cyan-400 font-bold text-sm">{data?.active_missions_count || 0}</strong>
+        <div className="font-mono-data text-xs text-[#5C6270] text-left md:text-right">
+          ACTIVE MISSIONS: <strong className="text-[#2563EB] dark:text-[#60A5FA] font-bold text-sm">{data?.active_missions_count || 0}</strong>
         </div>
       </div>
 
       {error && (
-        <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 p-4 rounded-2xl font-mono text-xs text-rose-700 dark:text-rose-300">
+        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-mono-data text-[#E11D48]">
           [DISPATCH_ERROR]: {error}
         </div>
       )}
 
       {feedbackMsg && (
         <div
-          className={`p-4 rounded-2xl border font-mono text-xs ${
+          className={`p-4 rounded-xl border font-mono-data text-xs ${
             feedbackMsg.type === "success"
-              ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300"
-              : "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300"
+              ? "bg-[#059669]/10 border-[#059669]/30 text-[#059669] dark:text-[#34D399]"
+              : "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-[#E11D48]"
           }`}
         >
           {feedbackMsg.text}
         </div>
       )}
 
-      {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
-        {/* Left Column: Ranked Priority Queue (7 Columns) */}
+      {/* Main Grid: Priority Queue Left (7) + Dispatch Console Right (5) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Ranked Priority Queue */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="font-mono text-xs text-slate-500 font-bold uppercase tracking-wider">
+          <div className="font-mono-data text-xs text-[#5C6270] font-bold uppercase tracking-wider">
             PRIORITY DEPLOYMENT QUEUE // 8 SECTORS
           </div>
 
@@ -135,47 +131,47 @@ export default function DispatchPage() {
                 <div
                   key={rec.target_sector_id}
                   onClick={() => setSelectedSectorId(rec.target_sector_id)}
-                  className={`prism-card p-5 cursor-pointer transition-all ${
+                  className={`surface-calm p-5 cursor-pointer transition-all ${
                     isSelected
-                      ? "ring-2 ring-[#0088A9] shadow-md"
+                      ? "ring-2 ring-[#2563EB] shadow-md"
                       : isTopPriority
                       ? "border-rose-300 dark:border-rose-900/60"
                       : ""
                   }`}
                 >
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3 mb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E5E4DC] dark:border-[#232733] pb-3 mb-3">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`px-2.5 py-0.5 rounded-full font-mono text-xs font-bold ${
+                        className={`px-2.5 py-0.5 rounded-lg font-mono-data text-xs font-bold ${
                           rIdx === 0
-                            ? "bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300"
+                            ? "bg-[#E11D48] text-[#FFFFFF]"
                             : rIdx === 1
-                            ? "bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300"
-                            : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                            ? "bg-[#D97706] text-[#FFFFFF]"
+                            : "bg-[#F2F0E8] dark:bg-[#13161D] text-[#5C6270]"
                         }`}
                       >
                         RANK #{rIdx + 1}
                       </span>
-                      <h3 className="font-display font-extrabold text-lg text-slate-900 dark:text-white">
+                      <h3 className="font-display-calm font-extrabold text-lg text-[#111318] dark:text-[#F4F4F0]">
                         {rec.target_sector_name}
                       </h3>
                     </div>
 
-                    <div className="font-mono text-xs text-slate-500">
-                      PRIORITY SCORE: <strong className="text-base text-cyan-700 dark:text-cyan-400 font-bold">{rec.priority_score.toFixed(1)}</strong>
+                    <div className="font-mono-data text-xs text-[#5C6270]">
+                      PRIORITY SCORE: <strong className="text-base text-[#2563EB] dark:text-[#60A5FA] font-bold">{rec.priority_score.toFixed(1)}</strong>
                     </div>
                   </div>
 
-                  <p className="font-body-prose text-xs sm:text-sm text-slate-600 dark:text-slate-300 mb-3">
+                  <p className="font-body-prose text-xs sm:text-sm text-[#5C6270] dark:text-[#9CA3AF] mb-3">
                     {rec.rationale}
                   </p>
 
-                  <div className="flex flex-wrap items-center justify-between text-xs font-mono text-slate-500 dark:text-slate-400">
+                  <div className="flex flex-wrap items-center justify-between text-xs font-mono-data text-[#5C6270] dark:text-[#9CA3AF]">
                     <div>
-                      RECOMMENDED: <strong className="text-slate-900 dark:text-white uppercase">{rec.recommended_unit_types.join(", ").replace(/_/g, " ")}</strong>
+                      RECOMMENDED: <strong className="text-[#111318] dark:text-[#F4F4F0] uppercase">{rec.recommended_unit_types.join(", ").replace(/_/g, " ")}</strong>
                     </div>
 
-                    <span className="text-cyan-600 dark:text-cyan-400 font-bold">
+                    <span className="text-[#2563EB] dark:text-[#60A5FA] font-bold">
                       {rec.assigned_missions_count} ACTIVE MISSIONS
                     </span>
                   </div>
@@ -185,24 +181,24 @@ export default function DispatchPage() {
           </div>
         </div>
 
-        {/* Right Column: Mission Dispatch Console (5 Columns) */}
-        <div className="lg:col-span-5 prism-card p-6 space-y-6">
+        {/* Right Column: Mission Dispatch Console */}
+        <div className="lg:col-span-5 surface-calm p-6 sm:p-8 space-y-6">
           <div>
-            <div className="prism-badge-cyan mb-1.5">
-              <span>TACTICAL AUTHORIZATION CONSOLE</span>
+            <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider mb-1">
+              TACTICAL AUTHORIZATION CONSOLE
             </div>
-            <h2 className="font-display font-extrabold text-2xl text-slate-900 dark:text-white">
+            <h2 className="font-display-calm font-extrabold text-2xl text-[#111318] dark:text-[#F4F4F0]">
               Deploy to {selectedRec?.target_sector_name || "Select Sector"}
             </h2>
-            <div className="text-xs font-mono text-slate-500 mt-1">
-              RECOMMENDED ASSETS: <strong className="text-cyan-700 dark:text-cyan-400 uppercase">{selectedRec?.recommended_unit_types.join(", ").replace(/_/g, " ")}</strong>
+            <div className="text-xs font-mono-data text-[#5C6270] mt-1">
+              RECOMMENDED ASSETS: <strong className="text-[#2563EB] dark:text-[#60A5FA] uppercase">{selectedRec?.recommended_unit_types.join(", ").replace(/_/g, " ")}</strong>
             </div>
           </div>
 
           {selectedRec ? (
-            <form onSubmit={handleDispatch} className="space-y-4 font-mono text-xs">
+            <form onSubmit={handleDispatch} className="space-y-4 font-mono-data text-xs">
               <div>
-                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">SELECT SPECIALIZED RESOURCE UNIT *</label>
+                <label className="block text-[#5C6270] font-bold mb-1.5">SELECT SPECIALIZED RESOURCE UNIT *</label>
                 <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                   {data?.resource_units
                     .filter((u) => u.status === "available")
@@ -210,18 +206,18 @@ export default function DispatchPage() {
                       <div
                         key={unit.id}
                         onClick={() => setSelectedUnitId(unit.id)}
-                        className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                        className={`p-3.5 rounded-xl border cursor-pointer transition-all ${
                           selectedUnitId === unit.id
-                            ? "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-950/40 text-slate-900 dark:text-white shadow-xs"
-                            : "border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 hover:border-slate-400 text-slate-700 dark:text-slate-300"
+                            ? "border-[#2563EB] bg-[#2563EB]/5 dark:bg-[#2563EB]/10 text-[#111318] dark:text-[#F4F4F0] shadow-xs"
+                            : "border-[#E5E4DC] dark:border-[#232733] bg-[#FAF9F5] dark:bg-[#0C0E12] hover:border-[#94A3B8] text-[#5C6270] dark:text-[#9CA3AF]"
                         }`}
                       >
                         <div className="flex items-center justify-between font-bold">
                           <span>{unit.unit_code}</span>
-                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase">AVAILABLE</span>
+                          <span className="text-[10px] text-[#059669] dark:text-[#34D399] uppercase">AVAILABLE</span>
                         </div>
-                        <div className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">{unit.unit_name}</div>
-                        <div className="text-[10px] text-slate-400 mt-1">
+                        <div className="text-xs font-bold text-[#111318] dark:text-[#F4F4F0] mt-0.5">{unit.unit_name}</div>
+                        <div className="text-[10px] text-[#5C6270] mt-1">
                           Base: {unit.home_base} • Capacity: {unit.capacity}
                         </div>
                       </div>
@@ -230,28 +226,28 @@ export default function DispatchPage() {
               </div>
 
               <div>
-                <label className="block text-slate-700 dark:text-slate-300 font-bold mb-1.5">TACTICAL DIRECTIVE & JUSTIFICATION *</label>
+                <label className="block text-[#5C6270] font-bold mb-1.5">TACTICAL DIRECTIVE & JUSTIFICATION *</label>
                 <textarea
                   rows={3}
                   required
                   value={justification}
                   onChange={(e) => setJustification(e.target.value)}
                   placeholder="e.g. Immediate structural rescue at collapsed commercial block..."
-                  className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-slate-900 dark:text-white font-body-prose text-xs focus:ring-2 focus:ring-cyan-500 focus:outline-none"
+                  className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] rounded-lg p-3 text-[#111318] dark:text-[#F4F4F0] font-body-prose text-xs focus:border-[#2563EB] focus:outline-none"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isDeploying || !selectedUnitId || !justification.trim()}
-                className="w-full btn-primary-cyan text-xs py-3.5 tracking-wider disabled:opacity-50 cursor-pointer"
+                className="w-full btn-action-primary text-xs py-3.5 tracking-wider disabled:opacity-50 cursor-pointer"
               >
                 {isDeploying ? "AUTHORIZING MISSION..." : "AUTHORIZE DISPATCH [↵]"}
               </button>
             </form>
           ) : (
-            <div className="py-16 text-center font-mono text-xs text-slate-400">
-              SELECT A TARGET SECTOR TO INITIALIZE DISPATCH AUTHORIZATION.
+            <div className="py-16 text-center font-mono-data text-xs text-[#5C6270]">
+              SELECT A TARGET SECTOR TO INITIALIZE DISPATCH.
             </div>
           )}
         </div>
