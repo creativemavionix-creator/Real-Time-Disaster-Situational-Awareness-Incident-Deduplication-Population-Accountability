@@ -77,23 +77,39 @@ def cluster_reports(
     norms[norms == 0] = 1.0
     normalized_matrix = emb_matrix / norms
     
-    # Perform clustering using DBSCAN or AgglomerativeClustering with cosine distance
+    # Build pairwise distance matrix combining cosine semantic distance & damage corroboration
+    n = len(reports)
+    dist_matrix = np.zeros((n, n), dtype=np.float32)
+    for i in range(n):
+        for j in range(i + 1, n):
+            cos_sim = float(np.dot(normalized_matrix[i], normalized_matrix[j]))
+            
+            d1 = reports[i].extracted_damage_type
+            d2 = reports[j].extracted_damage_type
+            if d1 == d2 and d1 not in ("unspecified", "safe_clear"):
+                cos_sim += 0.28
+            elif d1 != d2 and d1 not in ("unspecified", "safe_clear") and d2 not in ("unspecified", "safe_clear"):
+                cos_sim -= 0.25
+                
+            cos_sim = max(0.0, min(1.0, cos_sim))
+            d = 1.0 - cos_sim
+            dist_matrix[i, j] = d
+            dist_matrix[j, i] = d
+
+    # Perform clustering using AgglomerativeClustering (single linkage for connected component deduplication)
     try:
-        # DBSCAN with eps=0.25 (1 - similarity 0.75), min_samples=1 so everything is clustered
-        clustering = DBSCAN(eps=distance_threshold, min_samples=1, metric="cosine")
-        labels = clustering.fit_predict(normalized_matrix)
+        agg = AgglomerativeClustering(
+            n_clusters=None,
+            distance_threshold=distance_threshold,
+            metric="precomputed",
+            linkage="single"
+        )
+        labels = agg.fit_predict(dist_matrix)
     except Exception:
         try:
-            # Fallback to AgglomerativeClustering
-            agg = AgglomerativeClustering(
-                n_clusters=None,
-                distance_threshold=distance_threshold,
-                metric="cosine",
-                linkage="average"
-            )
-            labels = agg.fit_predict(normalized_matrix)
+            clustering = DBSCAN(eps=distance_threshold, min_samples=1, metric="precomputed")
+            labels = clustering.fit_predict(dist_matrix)
         except Exception:
-            # Absolute fallback: sequential similarity matching
             labels = _greedy_cosine_cluster(normalized_matrix, 1.0 - distance_threshold)
 
     # Group reports by label

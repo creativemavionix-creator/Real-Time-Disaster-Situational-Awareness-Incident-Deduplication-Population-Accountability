@@ -19,6 +19,10 @@ _EMBEDDING_CACHE: dict[str, list[float]] = {}
 def get_model():
     """Lazy load SentenceTransformer model singleton with memory optimization."""
     global _MODEL
+    from app.config import settings
+    if not settings.USE_TRANSFORMER_EMBEDDINGS:
+        return False
+        
     if _MODEL is None:
         try:
             import torch
@@ -29,7 +33,6 @@ def get_model():
                 pass
                 
             from sentence_transformers import SentenceTransformer
-            from app.config import settings
             logger.info(f"Loading embedding model: {settings.EMBEDDING_MODEL_NAME}")
             _MODEL = SentenceTransformer(settings.EMBEDDING_MODEL_NAME, device="cpu")
             _MODEL.eval()
@@ -40,23 +43,33 @@ def get_model():
     return _MODEL
 
 
+STOPWORDS = {
+    "in", "on", "at", "due", "to", "the", "a", "an", "and", "by", "for", "of", "with",
+    "under", "is", "are", "was", "were", "has", "have", "had", "been", "being", "it", "this"
+}
+
+
 def _fallback_embed(text: str, dim: int = 384) -> list[float]:
     """
     Deterministic fallback embedding for offline or edge cases.
-    Produces a normalized vector using character and word hash distributions.
+    Produces a normalized vector using subword and word hash distributions.
     """
     if not text:
         return [0.0] * dim
     
     vec = np.zeros(dim, dtype=np.float32)
-    words = text.lower().split()
+    import re
+    clean = re.sub(r'[^a-zA-Z0-9\s]', ' ', text.lower())
+    words = [w for w in clean.split() if w not in STOPWORDS and len(w) > 1]
+    
     for w in words:
-        h = hash(w) % dim
-        vec[h] += 1.0
-        # Add character bi-grams
-        for i in range(len(w) - 1):
-            bg_hash = hash(w[i:i+2]) % dim
-            vec[bg_hash] += 0.5
+        h = (hash(w) & 0x7FFFFFFF) % dim
+        vec[h] += 2.5
+        # Character n-grams (3-gram and 4-gram) for robust subword matching
+        for n in (3, 4):
+            for i in range(len(w) - n + 1):
+                bg_hash = (hash(w[i:i+n]) & 0x7FFFFFFF) % dim
+                vec[bg_hash] += 0.8
             
     norm = np.linalg.norm(vec)
     if norm > 1e-6:

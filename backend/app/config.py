@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./disaster_fog.db"
     
     # Embedding & Clustering
+    USE_TRANSFORMER_EMBEDDINGS: bool = False  # Set to True if >1GB RAM is available
     EMBEDDING_MODEL_NAME: str = "all-MiniLM-L6-v2"
     SIMILARITY_THRESHOLD: float = 0.75  # Cosine similarity threshold for clustering
     COSINE_DISTANCE_THRESHOLD: float = 0.25  # 1.0 - 0.75

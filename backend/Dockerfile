@@ -25,14 +25,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install python dependencies (leveraging Docker layer cache)
+# Copy and install python dependencies (CPU-optimized for cloud deployment)
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir -r requirements.txt
-
-# Pre-download SentenceTransformers model into Docker image cache during build
-# This eliminates network latency and cold-start download timeouts on deployment
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 # Copy application source code
 COPY app/ ./app/
