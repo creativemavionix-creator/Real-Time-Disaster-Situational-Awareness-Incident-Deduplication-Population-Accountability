@@ -56,15 +56,15 @@ ${sitrep.priority_operational_directives.map(d => `- [${d.action_code}] (${d.urg
   return (
     <div className="p-6 sm:p-10 lg:p-14 space-y-8 max-w-5xl mx-auto w-full">
       {/* Page Actions & Header */}
-      <div className="border-b border-[#EDEDE8]/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
+      <div className="border-b border-[#E5E4DC] dark:border-[#232733] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
             04 // FORMAL DISASTER REPORTING
           </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-[#EDEDE8]">
-            SITUATION REPORT (SITREP)
+          <h1 className="font-display-calm font-extrabold text-3xl sm:text-4xl text-[#111318] dark:text-[#F4F4F0] tracking-tight">
+            Situation Report (SITREP)
           </h1>
-          <p className="font-body-prose text-sm text-[#EDEDE8]/70 mt-1 max-w-2xl leading-relaxed">
+          <p className="font-body-prose text-xs sm:text-sm text-[#5C6270] dark:text-[#9CA3AF] max-w-2xl leading-relaxed">
             Automated UN OCHA / NDMA standardized Situation Report synthesizing fused multi-agency intelligence, casualty tolls, and commander operational directives.
           </p>
         </div>
@@ -73,13 +73,15 @@ ${sitrep.priority_operational_directives.map(d => `- [${d.action_code}] (${d.urg
         <div className="flex items-center gap-3 font-mono-data text-xs">
           <button
             onClick={handleCopyMarkdown}
-            className="px-4 py-2 bg-[#EDEDE8]/10 hover:bg-[#EDEDE8] hover:text-[#0A0A0A] font-bold uppercase transition-colors border border-[#EDEDE8]/20 cursor-pointer"
+            type="button"
+            className="btn-action-secondary text-xs py-2 px-4 cursor-pointer"
           >
             {copied ? "✓ COPIED" : "COPY MARKDOWN"}
           </button>
           <button
             onClick={handlePrint}
-            className="px-4 py-2 bg-[#EDEDE8] text-[#0A0A0A] hover:bg-[#FFB800] font-bold uppercase transition-colors cursor-pointer"
+            type="button"
+            className="btn-action-primary text-xs py-2 px-5 cursor-pointer"
           >
             PRINT / PDF [⎙]
           </button>
@@ -87,69 +89,69 @@ ${sitrep.priority_operational_directives.map(d => `- [${d.action_code}] (${d.urg
       </div>
 
       {error && (
-        <div className="bg-[#E5484D]/10 border border-[#E5484D] p-4 font-mono-data text-xs text-[#E5484D]">
+        <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-mono-data text-[#E11D48]">
           [SITREP_ERROR]: {error}
         </div>
       )}
 
       {/* Official SITREP Document Canvas */}
       {sitrep && (
-        <div className="surface-card p-6 sm:p-10 space-y-8 print:border-none print:p-0">
+        <div className="surface-calm p-6 sm:p-10 space-y-8 print:border-none print:p-0 print:shadow-none">
           {/* Document Header */}
-          <div className="border-b border-[#EDEDE8]/15 pb-6 space-y-3 font-mono-data">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#FFB800] font-bold uppercase">
+          <div className="border-b border-[#E5E4DC] dark:border-[#232733] pb-6 space-y-3 font-mono-data">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase">
               <span>AUTHORIZED BY: {sitrep.authorized_by}</span>
               <span>CODE: {sitrep.sitrep_id}</span>
             </div>
 
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#EDEDE8]">
+            <h2 className="font-display-calm font-extrabold text-2xl sm:text-3xl text-[#111318] dark:text-[#F4F4F0]">
               {sitrep.disaster_event_name}
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-[#EDEDE8]/60 pt-2">
-              <div>PERIOD: <strong className="text-[#EDEDE8]">{sitrep.operational_period}</strong></div>
-              <div>TIMELINE: <strong className="text-[#FFB800]">T+{sitrep.elapsed_hours.toFixed(1)}h</strong></div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-[#5C6270] pt-2">
+              <div>PERIOD: <strong className="text-[#111318] dark:text-[#F4F4F0]">{sitrep.operational_period}</strong></div>
+              <div>TIMELINE: <strong className="text-[#2563EB] dark:text-[#60A5FA]">T+{sitrep.elapsed_hours.toFixed(1)}h</strong></div>
               <div>PUBLISHED: <strong>{new Date(sitrep.simulated_time).toUTCString()}</strong></div>
             </div>
           </div>
 
           {/* Section 1: Executive Summary */}
-          <div className="space-y-2">
-            <h3 className="font-mono-data text-xs text-[#FFB800] font-bold uppercase tracking-widest">
+          <div className="space-y-2.5">
+            <h3 className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
               1. EXECUTIVE OPERATIONAL BRIEFING
             </h3>
-            <p className="font-body-prose text-sm sm:text-base text-[#EDEDE8]/90 leading-relaxed bg-[#EDEDE8]/2 p-4 border-l-2 border-[#FFB800]">
+            <p className="font-body-prose text-sm sm:text-base text-[#111318] dark:text-[#F4F4F0] leading-relaxed bg-[#F2F0E8]/60 dark:bg-[#13161D]/60 p-4 rounded-xl border-l-4 border-[#2563EB]">
               {sitrep.executive_summary}
             </p>
           </div>
 
           {/* Section 2: Reconciled Casualty Ledger */}
           <div className="space-y-3">
-            <h3 className="font-mono-data text-xs text-[#FFB800] font-bold uppercase tracking-widest">
+            <h3 className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
               2. RECONCILED CASUALTY & LIFE-SAFETY LEDGER
             </h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono-data text-xs">
-              <div className="bg-[#EDEDE8]/3 p-4 border border-[#EDEDE8]/10 text-center">
-                <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">FATALITIES (CONFIRMED)</span>
-                <strong className="text-2xl text-[#E5484D] font-bold">
+              <div className="p-4 rounded-xl bg-[#F2F0E8]/60 dark:bg-[#13161D]/60 border border-[#E5E4DC] dark:border-[#232733] text-center">
+                <span className="text-[#5C6270] block text-[10px] uppercase font-bold">FATALITIES</span>
+                <strong className="text-2xl text-[#E11D48] dark:text-[#FB7185] font-extrabold">
                   {sitrep.casualty_toll.confirmed_fatalities}
                 </strong>
               </div>
-              <div className="bg-[#EDEDE8]/3 p-4 border border-[#EDEDE8]/10 text-center">
-                <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">TRAPPED / SEARCH & RESCUE</span>
-                <strong className="text-2xl text-[#FFB800] font-bold">
+              <div className="p-4 rounded-xl bg-[#F2F0E8]/60 dark:bg-[#13161D]/60 border border-[#E5E4DC] dark:border-[#232733] text-center">
+                <span className="text-[#5C6270] block text-[10px] uppercase font-bold">TRAPPED / SAR</span>
+                <strong className="text-2xl text-[#D97706] dark:text-[#FBBF24] font-extrabold">
                   {sitrep.casualty_toll.trapped_unaccounted}
                 </strong>
               </div>
-              <div className="bg-[#EDEDE8]/3 p-4 border border-[#EDEDE8]/10 text-center">
-                <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">HOSPITALIZED / INJURED</span>
-                <strong className="text-2xl text-[#3FB950] font-bold">
+              <div className="p-4 rounded-xl bg-[#F2F0E8]/60 dark:bg-[#13161D]/60 border border-[#E5E4DC] dark:border-[#232733] text-center">
+                <span className="text-[#5C6270] block text-[10px] uppercase font-bold">HOSPITALIZED</span>
+                <strong className="text-2xl text-[#059669] dark:text-[#34D399] font-extrabold">
                   {sitrep.casualty_toll.confirmed_injured}
                 </strong>
               </div>
-              <div className="bg-[#EDEDE8]/3 p-4 border border-[#EDEDE8]/10 text-center">
-                <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">MISSING / UNACCOUNTED</span>
-                <strong className="text-2xl text-[#E5484D] font-bold">
+              <div className="p-4 rounded-xl bg-[#F2F0E8]/60 dark:bg-[#13161D]/60 border border-[#E5E4DC] dark:border-[#232733] text-center">
+                <span className="text-[#5C6270] block text-[10px] uppercase font-bold">MISSING</span>
+                <strong className="text-2xl text-[#E11D48] dark:text-[#FB7185] font-extrabold">
                   {sitrep.casualty_toll.missing_persons_active}
                 </strong>
               </div>
@@ -157,41 +159,39 @@ ${sitrep.priority_operational_directives.map(d => `- [${d.action_code}] (${d.urg
           </div>
 
           {/* Section 3: Blackout Intelligence Briefing */}
-          <div className="space-y-2">
-            <h3 className="font-mono-data text-xs text-[#FFB800] font-bold uppercase tracking-widest">
+          <div className="space-y-2.5">
+            <h3 className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
               3. SILENT BLACKOUT & ISOLATED SECTOR BRIEFING
             </h3>
-            <p className="font-body-prose text-sm text-[#EDEDE8]/80 leading-relaxed bg-[#EDEDE8]/2 p-3 border border-[#EDEDE8]/10">
+            <p className="font-body-prose text-xs sm:text-sm text-[#5C6270] dark:text-[#9CA3AF] leading-relaxed p-4 rounded-xl bg-[#F2F0E8]/60 dark:bg-[#13161D]/60 border border-[#E5E4DC] dark:border-[#232733]">
               {sitrep.blackout_intelligence_briefing}
             </p>
           </div>
 
           {/* Section 4: Critical Sector Summary */}
-          <div className="space-y-3">
-            <h3 className="font-mono-data text-xs text-[#FFB800] font-bold uppercase tracking-widest">
+          <div className="space-y-3 font-mono-data text-xs">
+            <h3 className="text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
               4. CRITICAL INTERVENTION SECTORS
             </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left font-mono-data text-xs border-collapse">
+            <div className="rounded-xl border border-[#E5E4DC] dark:border-[#232733] overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-[#EDEDE8]/5 border-b border-[#EDEDE8]/15 text-[#EDEDE8]">
-                    <th className="p-2.5">SECTOR</th>
-                    <th className="p-2.5">STATUS</th>
-                    <th className="p-2.5">CONFIDENCE</th>
-                    <th className="p-2.5">JUSTIFICATION & THREAT SUMMARY</th>
+                  <tr className="bg-[#F2F0E8] dark:bg-[#13161D] border-b border-[#E5E4DC] dark:border-[#232733] text-[#111318] dark:text-[#F4F4F0] font-bold">
+                    <th className="p-3">SECTOR</th>
+                    <th className="p-3">STATUS</th>
+                    <th className="p-3">CONFIDENCE</th>
+                    <th className="p-3">JUSTIFICATION & THREAT SUMMARY</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#EDEDE8]/10">
+                <tbody className="divide-y divide-[#E5E4DC] dark:divide-[#232733]">
                   {sitrep.critical_sectors_summary.map((c, idx) => (
                     <tr key={`${c.sector_id}-${idx}`}>
-                      <td className="p-2.5 font-bold uppercase text-[#EDEDE8]">{c.sector_name}</td>
-                      <td className="p-2.5">
-                        <span className="px-1.5 py-0.2 border border-[#E5484D] text-[#E5484D] text-[10px] font-bold uppercase">
-                          {c.status.replace("_", " ")}
-                        </span>
+                      <td className="p-3 font-bold uppercase text-[#111318] dark:text-[#F4F4F0]">{c.sector_name}</td>
+                      <td className="p-3">
+                        <span className="chip-critical">{c.status.replace("_", " ")}</span>
                       </td>
-                      <td className="p-2.5 font-bold text-[#3FB950]">{(c.confidence * 100).toFixed(0)}%</td>
-                      <td className="p-2.5 text-[#EDEDE8]/70 text-[11px]">{c.status_reason}</td>
+                      <td className="p-3 font-bold text-[#059669] dark:text-[#34D399]">{(c.confidence * 100).toFixed(0)}%</td>
+                      <td className="p-3 text-[#5C6270] dark:text-[#9CA3AF] text-[11px] font-body-prose">{c.status_reason}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -200,22 +200,20 @@ ${sitrep.priority_operational_directives.map(d => `- [${d.action_code}] (${d.urg
           </div>
 
           {/* Section 5: Priority Operational Directives */}
-          <div className="space-y-3">
-            <h3 className="font-mono-data text-xs text-[#FFB800] font-bold uppercase tracking-widest">
+          <div className="space-y-3 font-mono-data text-xs">
+            <h3 className="text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
               5. COMMANDER PRIORITY OPERATIONAL DIRECTIVES
             </h3>
-            <div className="border border-[#EDEDE8]/15 divide-y divide-[#EDEDE8]/10 font-mono-data text-xs">
+            <div className="rounded-xl border border-[#E5E4DC] dark:border-[#232733] divide-y divide-[#E5E4DC] dark:divide-[#232733]">
               {sitrep.priority_operational_directives.map((action, idx) => (
                 <div key={`${action.action_code}-${idx}`} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-[#FFB800]">[{action.action_code}]</span>
-                      <strong className="text-sm text-[#EDEDE8] uppercase">Target: {action.target_sector}</strong>
-                      <span className="px-1.5 py-0.2 bg-[#E5484D]/10 text-[#E5484D] border border-[#E5484D]/30 text-[10px]">
-                        {action.urgency}
-                      </span>
+                      <span className="font-bold text-[#2563EB] dark:text-[#60A5FA]">[{action.action_code}]</span>
+                      <strong className="text-sm text-[#111318] dark:text-[#F4F4F0] uppercase">Target: {action.target_sector}</strong>
+                      <span className="chip-critical text-[10px]">{action.urgency}</span>
                     </div>
-                    <p className="font-body-prose text-xs text-[#EDEDE8]/80">
+                    <p className="font-body-prose text-xs text-[#5C6270] dark:text-[#9CA3AF]">
                       {action.description}
                     </p>
                   </div>

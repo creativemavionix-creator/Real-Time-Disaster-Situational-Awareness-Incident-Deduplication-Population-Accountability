@@ -1,19 +1,27 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono, Inter } from "next/font/google";
+import { Newsreader, Plus_Jakarta_Sans, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { ViewModeProvider } from "@/context/ViewModeContext";
 
-const spaceGrotesk = Space_Grotesk({
+const newsreader = Newsreader({
+  variable: "--font-serif",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600"],
 });
 
 const inter = Inter({
@@ -23,8 +31,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "POST-DISASTER // INFORMATION FOG — National Situational Awareness Platform",
-  description: "Real-time command platform for disaster situational awareness, report deduplication, blackout intelligence, population exposure, and tactical dispatch.",
+  title: "Project PRISM — Post-Disaster Real-Time Intelligence & Situational Mapping",
+  description: "Autonomous disaster reality reconstruction analyzing evidence, uncertainty, silence, and information gaps across Central Nepal.",
 };
 
 export default function RootLayout({
@@ -36,13 +44,18 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased dark`}
+      className={`${newsreader.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-[#0A0A0A] text-[#EDEDE8]">
-        <ViewModeProvider>
-          <Navbar />
-          <main className="flex-1 flex flex-col">{children}</main>
-        </ViewModeProvider>
+      <body
+        suppressHydrationWarning
+        className="min-h-full flex flex-col bg-[#FAF9F5] dark:bg-[#0C0E12] text-[#111318] dark:text-[#F4F4F0]"
+      >
+        <ThemeProvider>
+          <ViewModeProvider>
+            <Navbar />
+            <main className="flex-1 flex flex-col">{children}</main>
+          </ViewModeProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -1,7 +1,20 @@
 "use client";
 
-import React, { useRef } from "react";
-import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import React from "react";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const HeroMap = dynamic(
+  () => import("./HeroMap").then((mod) => mod.HeroMap),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-[420px] sm:h-[480px] rounded-3xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-xs font-mono text-slate-400">
+        INITIALIZING GEOSPATIAL RADAR...
+      </div>
+    ),
+  }
+);
 
 interface HeroFogProps {
   elapsedHours: number;
@@ -18,107 +31,70 @@ export function HeroFog({
   activeCriticalCount = 6,
   onExploreClick,
 }: HeroFogProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const shouldReduceMotion = useReducedMotion();
-
-  // Scroll-based fog lift
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end start"],
-  });
-
-  const timeClarityFactor = Math.min(1, Math.max(0, elapsedHours / 24.0));
-  const scrollBlur = useTransform(scrollYProgress, [0, 0.6], [12, 0]);
-  const scrollOpacity = useTransform(scrollYProgress, [0, 0.75], [0.6, 0]);
-
   return (
-    <section
-      ref={containerRef}
-      className="relative min-h-[85vh] flex flex-col justify-between p-6 sm:p-10 lg:p-14 bg-[#0A0A0A] border-b border-[#EDEDE8]/10 overflow-hidden"
-    >
-      {/* Top Operational Breadcrumb */}
-      <div className="flex flex-wrap items-center justify-between gap-4 pb-6 font-mono-data text-xs border-b border-[#EDEDE8]/10 z-30">
-        <div className="flex items-center gap-3">
-          <span className="w-2.5 h-2.5 bg-[#FFB800]" />
-          <span className="text-[#EDEDE8] font-bold tracking-wider uppercase">
-            CENTRAL NEPAL CRISIS SEQUENCE
-          </span>
-          <span className="text-[#EDEDE8]/40">/</span>
-          <span className="text-[#EDEDE8]/70">M7.8 EPICENTER PROTOCOL</span>
-        </div>
-
-        <div className="flex items-center gap-6 text-[#EDEDE8]/70">
-          <div>
-            ELAPSED: <strong className="text-[#FFB800]">{elapsedHours.toFixed(1)}h</strong> / 24.0h
-          </div>
-          <div>
-            REPORTS FUSED: <strong className="text-[#EDEDE8]">{totalReports}</strong>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Cinematic Editorial Center */}
-      <div className="my-auto py-10 z-10 max-w-5xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="space-y-4"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#EDEDE8]/5 border border-[#EDEDE8]/15 text-xs font-mono-data text-[#FFB800]">
-            <span>M7.8 BARPAK SEISMIC EVENT</span>
-            <span className="text-[#EDEDE8]/30">•</span>
-            <span>T+{elapsedHours.toFixed(0)}H TIMELINE</span>
+    <section className="relative w-full py-12 md:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+        {/* Left Column: Mission Narrative & CTAs */}
+        <div className="lg:col-span-7 space-y-6 text-left">
+          {/* Pill Badge */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-50 dark:bg-cyan-950/50 border border-cyan-200 dark:border-cyan-800/80 text-cyan-800 dark:text-cyan-300 text-xs font-bold uppercase tracking-wider shadow-xs">
+            <span className="text-cyan-600 dark:text-cyan-400">✨</span>
+            <span>AUTONOMOUS DISASTER REALITY RECONSTRUCTION</span>
           </div>
 
-          <h1 className="font-display text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-[#EDEDE8] leading-[0.95]">
-            INFORMATION FOG
+          {/* Main Headline */}
+          <h1 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl text-slate-900 dark:text-white leading-[1.1] tracking-tight">
+            When Information Fails, Intelligence Must See Beyond It.
           </h1>
 
-          <p className="font-body-prose text-lg sm:text-2xl text-[#EDEDE8]/80 max-w-3xl leading-relaxed pt-2">
-            In the initial 24 hours of a disaster, authorities face fragmented, conflicting reports.
-            This command platform resolves multi-agency reports, calculates risk in silent blackout zones,
-            and guides life-saving tactical resource deployment.
+          {/* Subtitle */}
+          <p className="font-body-prose text-base sm:text-lg text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
+            During the critical hours following a disaster, emergency authorities are overwhelmed with fragmented, contradictory, and incomplete reports. <strong className="text-slate-900 dark:text-white font-semibold">Project PRISM</strong> reconstructs the most probable ground reality by analyzing evidence, uncertainty, silence, and information gaps.
           </p>
 
-          {/* Core Situation Callout */}
-          <div className="pt-4 flex items-center gap-3 text-sm sm:text-base font-body-prose text-[#EDEDE8]">
-            <span className="w-3 h-3 bg-[#E5484D] inline-block" />
-            <span>
-              <strong className="text-[#E5484D] font-bold">{activeCriticalCount} of 8 monitored sectors</strong> currently require immediate operational intervention.
-            </span>
+          {/* Action CTAs */}
+          <div className="pt-2 flex flex-wrap items-center gap-4">
+            <button
+              onClick={onExploreClick}
+              type="button"
+              className="btn-primary-cyan text-sm py-3 px-6 cursor-pointer"
+            >
+              <span>EXPLORE THE PLATFORM</span>
+              <span>→</span>
+            </button>
+
+            <Link
+              href="/sitrep"
+              className="btn-secondary-glass text-sm py-3 px-6"
+            >
+              <span className="text-cyan-600 dark:text-cyan-400">✨</span>
+              <span>SITREP BRIEFING</span>
+            </Link>
           </div>
-        </motion.div>
-      </div>
 
-      {/* Signature Subtle Atmospheric Fog Overlay */}
-      <motion.div
-        style={{
-          backdropFilter: shouldReduceMotion ? "none" : `blur(${scrollBlur}px)`,
-          opacity: shouldReduceMotion ? 0.2 : scrollOpacity,
-        }}
-        className="pointer-events-none absolute inset-0 z-20 bg-noise bg-[#0A0A0A]/40 transition-opacity duration-500"
-      >
-        <div className="absolute top-8 right-8 font-mono-data text-[11px] text-[#EDEDE8]/60 bg-[#0A0A0A]/80 border border-[#EDEDE8]/15 px-3 py-1.5 backdrop-blur-sm">
-          FOG CLEARANCE: <strong className="text-[#FFB800]">{Math.min(100, Math.round(timeClarityFactor * 100))}%</strong>
-        </div>
-      </motion.div>
-
-      {/* Bottom Action Bar */}
-      <div className="pt-6 border-t border-[#EDEDE8]/10 flex flex-wrap items-center justify-between gap-4 z-30">
-        <div className="flex items-center gap-4 text-xs font-mono-data text-[#EDEDE8]/60">
-          <span>8 STRATEGIC GAZEPTEER HUBS</span>
-          <span>•</span>
-          <span>AUTONOMOUS SEMANTIC FUSION</span>
+          {/* Live Status Indicators */}
+          <div className="pt-4 flex flex-wrap items-center gap-6 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+              <span>
+                <strong className="text-slate-800 dark:text-slate-200 font-bold">{activeCriticalCount}/8 Sectors</strong> Active Crisis
+              </span>
+            </div>
+            <div className="hidden sm:inline text-slate-300 dark:text-slate-700">•</div>
+            <div>
+              Elapsed: <strong className="text-slate-800 dark:text-slate-200 font-bold">T+{elapsedHours.toFixed(1)}h</strong>
+            </div>
+            <div className="hidden sm:inline text-slate-300 dark:text-slate-700">•</div>
+            <div>
+              Reports Fused: <strong className="text-slate-800 dark:text-slate-200 font-bold">{totalReports}</strong>
+            </div>
+          </div>
         </div>
 
-        <button
-          onClick={onExploreClick}
-          className="px-6 py-3 bg-[#EDEDE8] text-[#0A0A0A] hover:bg-[#FFB800] font-mono-data text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-2 group cursor-pointer"
-        >
-          <span>VIEW LIVE SITUATION</span>
-          <span className="transition-transform group-hover:translate-x-1">→</span>
-        </button>
+        {/* Right Column: Interactive Hero Map Card */}
+        <div className="lg:col-span-5 w-full">
+          <HeroMap />
+        </div>
       </div>
     </section>
   );

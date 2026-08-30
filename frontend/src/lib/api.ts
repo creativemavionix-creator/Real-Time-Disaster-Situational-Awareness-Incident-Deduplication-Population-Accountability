@@ -5,10 +5,17 @@
 
 function getSanitizedApiUrl(): string {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!envUrl || envUrl.includes("<YOUR-") || envUrl.includes("<your-")) {
-    return "https://prism-r2lh.onrender.com";
+  if (envUrl && !envUrl.includes("<YOUR-") && !envUrl.includes("<your-")) {
+    return envUrl.trim().replace(/\/+$/, "");
   }
-  return envUrl.trim().replace(/\/+$/, "");
+  if (typeof window !== "undefined") {
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://localhost:8000";
+    }
+  } else if (process.env.NODE_ENV === "development") {
+    return "http://localhost:8000";
+  }
+  return "https://prism-r2lh.onrender.com";
 }
 
 export const API_BASE_URL = getSanitizedApiUrl();
