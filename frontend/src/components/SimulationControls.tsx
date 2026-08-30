@@ -31,7 +31,7 @@ export function SimulationControls({
   onSeed,
 }: SimulationControlsProps) {
   const elapsed = simulationState ? simulationState.elapsed_hours : 0;
-  const simTime = simulationState ? simulationState.simulated_time : "";
+  const simTime = simulationState ? simulationState.current_simulated_time : "";
 
   return (
     <div className="sticky top-[58px] z-40 bg-[#FAF9F5]/90 dark:bg-[#0C0E12]/90 backdrop-blur-md border-b border-[#E5E4DC] dark:border-[#232733] px-4 sm:px-6 lg:px-8 py-2.5 transition-colors">

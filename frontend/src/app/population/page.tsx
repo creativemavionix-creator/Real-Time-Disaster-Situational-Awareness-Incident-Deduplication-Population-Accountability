@@ -10,6 +10,7 @@ import {
   MissingPersonItem,
   SectorPalikaBreakdown,
 } from "@/lib/api";
+import { PopulationReconciliationLedger } from "@/components/PopulationReconciliationLedger";
 
 export default function PopulationPage() {
   const [exposureData, setExposureData] = useState<AllPopulationExposureResponse | null>(null);
@@ -103,8 +104,10 @@ export default function PopulationPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "LOCATED_SAFE":
+      case "located_safe":
         return <span className="chip-safe">LOCATED SAFE</span>;
       case "HOSPITALIZED":
+      case "hospitalized":
         return <span className="chip-warning">IN HOSPITAL TRIAGE</span>;
       default:
         return <span className="chip-critical">UNACCOUNTED FOR</span>;
@@ -117,13 +120,13 @@ export default function PopulationPage() {
       <div className="border-b border-[#E5E4DC] dark:border-[#232733] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="space-y-1">
           <div className="font-mono-data text-xs text-[#059669] dark:text-[#34D399] font-bold uppercase tracking-wider">
-            02 // POPULATION ACCOUNTABILITY
+            02 // POPULATION ACCOUNTABILITY & ENTITY RESOLUTION
           </div>
           <h1 className="font-display-calm font-extrabold text-3xl sm:text-4xl text-[#111318] dark:text-[#F4F4F0] tracking-tight">
-            Exposed Population & Missing Registry
+            Population Exposure & Reconciliation
           </h1>
           <p className="font-body-prose text-xs sm:text-sm text-[#5C6270] dark:text-[#9CA3AF] max-w-2xl leading-relaxed">
-            Verified NSO Nepal 2021 Census baseline with municipal Palika & household drill-down, adjusted for diurnal commuters, tourist density, and evacuations.
+            Verified NSO Nepal 2021 Census baseline with municipal Palika demographics, real-time shelter check-in reconciliation, and fuzzy entity matching.
           </p>
         </div>
 
@@ -226,6 +229,9 @@ export default function PopulationPage() {
         </div>
       </div>
 
+      {/* PROBABILISTIC ENTITY RECONCILIATION LEDGER (Missing vs. Found Shelter Check-ins) */}
+      <PopulationReconciliationLedger />
+
       {/* Missing Persons Registry Section */}
       <div className="surface-calm p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E5E4DC] dark:border-[#232733] pb-4">
@@ -234,7 +240,7 @@ export default function PopulationPage() {
               PERSONNEL ACCOUNTABILITY
             </div>
             <h2 className="font-display-calm font-extrabold text-2xl text-[#111318] dark:text-[#F4F4F0]">
-              Missing Persons Registry ({missingPersons.length})
+              Missing Persons Inquiries Registry ({missingPersons.length})
             </h2>
           </div>
 

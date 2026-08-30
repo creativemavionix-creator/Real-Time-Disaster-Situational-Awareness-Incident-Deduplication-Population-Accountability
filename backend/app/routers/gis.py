@@ -1,4 +1,4 @@
-"""API router for Real-Time Situational GIS Telemetry & Spatial Layers."""
+"""API router for Real-Time Situational GIS Telemetry, Spatial Layers, and H3 Hexagonal Grid."""
 
 from datetime import datetime
 from typing import Optional
@@ -14,6 +14,7 @@ from app.pipeline.embedder import deserialize_embedding
 from app.pipeline.aggregator import aggregate_location
 from app.pipeline.blackout_risk import compute_spatial_physics, assess_sector_blackout_risk
 from app.pipeline.satellite_evidence import find_satellite_evidence
+from app.pipeline.h3_grid import generate_central_nepal_h3_hexagons
 from app.simulation.clock import get_simulated_time
 
 router = APIRouter(prefix="/gis", tags=["GIS & Situational Telemetry"])
@@ -97,3 +98,19 @@ def get_gis_telemetry(
         sectors=sectors_telemetry,
     )
 
+
+@router.get("/h3-grid", summary="Get dynamic H3 Hexagonal Grid Cells and Silent Sector Exposure Metrics ($E_{cell}$)")
+def get_h3_grid():
+    """
+    Returns H3 Hexagonal Grid Cells (Resolution 8) across Central Nepal with:
+    - Status: Critical (Red), Moderate (Yellow), Flashing Blackout (Grey/Black), Safe (Green)
+    - Silent Sector Exposure: E_cell = (Baseline Pop) / max(1, Report_Freq) * Adjacent_Hazard_Index
+    """
+    hexagons = generate_central_nepal_h3_hexagons()
+    return {
+        "type": "H3HexagonalGridCollection",
+        "total_hexagons": len(hexagons),
+        "resolution": 8,
+        "blackout_cells_count": sum(1 for h in hexagons if h["is_blackout"]),
+        "hexagons": hexagons,
+    }

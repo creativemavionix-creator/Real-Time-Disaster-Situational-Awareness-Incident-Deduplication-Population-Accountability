@@ -98,24 +98,24 @@ export interface AllLocationsStatusResponse {
 }
 
 export interface SimulationState {
-  simulated_time: string;
-  is_running: boolean;
+  current_simulated_time: string;
   start_time: string;
   elapsed_hours: number;
-  total_reports_seeded: number;
+  total_reports_in_db: number;
   reports_visible_at_current_time: number;
+  is_running: boolean;
 }
 
 // -------------------------------------------------------------
-// Capability 1: GIS Telemetry Schemas
+// Capability 1: Geospatial Telemetry & GIS
 // -------------------------------------------------------------
 
 export interface GisSectorTelemetry {
   sector_id: string;
   sector_name: string;
-  status: "verified_safe" | "verified_damaged" | "unverified" | "blackout";
+  status: LocationStatusType;
   confidence_score: number;
-  severity_index: number;
+  severity_index: number; // 0.0 to 10.0
   threat_tier: string;
   latitude: number;
   longitude: number;
@@ -125,8 +125,8 @@ export interface GisSectorTelemetry {
   estimated_casualties: number;
   isolation_index: number;
   last_telemetry_timestamp?: string | null;
-  satellite_corroborated?: boolean;
-  satellite_sensor?: string | null;
+  satellite_corroborated: boolean;
+  satellite_sensor: string;
 }
 
 export interface GisFeatureCollection {
@@ -135,16 +135,43 @@ export interface GisFeatureCollection {
   sectors: GisSectorTelemetry[];
 }
 
+export interface H3HexagonItem {
+  h3_index: string;
+  sector_id: string;
+  sector_name: string;
+  sub_region: string;
+  center_lat: number;
+  center_lon: number;
+  polygon_coordinates: number[][];
+  resolution: number;
+  baseline_population: number;
+  report_frequency_delta_t: number;
+  adjacent_hazard_index: number;
+  silent_exposure_metric_ecell: number;
+  is_blackout: boolean;
+  status: "critical" | "moderate" | "blackout" | "safe";
+  status_color: string;
+  threat_tier: string;
+}
+
+export interface H3GridResponse {
+  type: string;
+  total_hexagons: number;
+  resolution: number;
+  blackout_cells_count: number;
+  hexagons: H3HexagonItem[];
+}
+
 // -------------------------------------------------------------
-// Capability 2: Unified Truth & Deduplication Schemas
+// Capability 2: Deduplication & Unified Truth
 // -------------------------------------------------------------
 
-export interface AgencyReportBreakdown {
+export interface AgencyBreakdownItem {
   source_type: string;
   report_count: number;
+  trust_weight: number;
   casualty_claims: number[];
   consensus_claim?: number | null;
-  trust_weight: number;
 }
 
 export interface UnifiedTruthRecord {
@@ -156,14 +183,14 @@ export interface UnifiedTruthRecord {
   casualty_dispute_range: [number, number];
   has_conflicts: boolean;
   conflict_summary: string;
-  agency_breakdown: AgencyReportBreakdown[];
+  agency_breakdown: AgencyBreakdownItem[];
   confidence_score: number;
   representative_truth_text: string;
   verification_status: string;
-  satellite_corroborated?: boolean;
-  satellite_damage_points_count?: number;
-  satellite_sensor_source?: string | null;
-  satellite_evidence_summary?: string | null;
+  satellite_corroborated: boolean;
+  satellite_damage_points_count: number;
+  satellite_sensor_source: string;
+  satellite_evidence_summary: string;
 }
 
 export interface UnifiedTruthResponse {
@@ -174,24 +201,56 @@ export interface UnifiedTruthResponse {
   unified_records: UnifiedTruthRecord[];
 }
 
+export interface RawChaoticMessage {
+  id: number;
+  source: string;
+  raw_text: string;
+  sender: string;
+  time_offset_min: number;
+  location_hint: string;
+  noise_flags: string[];
+}
+
+export interface PrioritizedRescueDirective {
+  rank: number;
+  task_code: string;
+  target_location: string;
+  hazard_type: string;
+  reconciled_casualties?: number;
+  hospitalized_triage_count?: number;
+  confidence_score: number;
+  deduplicated_inputs_count: number;
+  contributing_sources: string[];
+  recommended_action: string;
+  ai_synthesis_explanation: string;
+}
+
+export interface BeforeAfterShowcaseResponse {
+  raw_messages_count: number;
+  raw_messages: RawChaoticMessage[];
+  condensed_directives_count: number;
+  condensed_directives: PrioritizedRescueDirective[];
+  compression_ratio: string;
+  time_decay_filtered_count: number;
+  duplicate_merged_count: number;
+  population_auto_matched_count: number;
+}
+
 // -------------------------------------------------------------
-// Capability 3: Blackout Risk Intelligence Schemas
+// Capability 3: Blackout Risk Intelligence
 // -------------------------------------------------------------
 
 export interface SpatialPhysicsFactors {
+  elevation_meters: number;
+  slope_gradient_degrees: number;
   epicenter_distance_km: number;
   epicenter_distance_hazard: number;
-  slope_gradient_degrees: number;
   landslide_susceptibility_index: number;
-  critical_bridge_severed: boolean;
   road_access_impedance: number;
-  elevation_meters: number;
+  critical_bridge_severed: boolean;
   structural_fragility_index?: number;
   masonry_ratio_pct?: number;
   concrete_ratio_pct?: number;
-  historical_collapse_rate_pct?: number;
-  superstructure_dominant_type?: string;
-  construction_code_compliance?: string;
 }
 
 export interface BlackoutRiskAssessment {
@@ -199,22 +258,22 @@ export interface BlackoutRiskAssessment {
   sector_name: string;
   is_in_blackout: boolean;
   silence_duration_hours?: number | null;
-  spatial_physics: SpatialPhysicsFactors;
-  inferred_risk_score: number;
-  threat_tier: "CRITICAL_INFERRED" | "HIGH_INFERRED" | "MODERATE" | "LOW" | "VERIFIED_SAFE";
-  risk_explanation: string;
+  inferred_risk_score: number; // 0.0 to 100.0
+  threat_tier: string;
   recommended_recon_priority: number;
+  spatial_physics: SpatialPhysicsFactors;
+  risk_explanation: string;
+  sensor_anomalies: string[];
 }
 
 export interface AllBlackoutRisksResponse {
   simulated_time: string;
   blackout_sectors_count: number;
-  high_risk_blackout_count: number;
   assessments: BlackoutRiskAssessment[];
 }
 
 // -------------------------------------------------------------
-// Capability 4: Dynamic Population & Missing Persons
+// Capability 4: Population Exposure & Probabilistic Missing Reconciliation
 // -------------------------------------------------------------
 
 export interface PopulationExposureItem {
@@ -244,10 +303,10 @@ export interface MissingPersonItem {
   age?: number | null;
   gender?: string | null;
   last_known_location_id: string;
-  last_known_location_name?: string | null;
+  last_known_location_name?: string;
   reported_by: string;
   contact_number?: string | null;
-  status: string;
+  status: "missing" | "hospitalized" | "located_safe" | "deceased";
   physical_description?: string | null;
   matched_hospital_notes?: string | null;
   timestamp: string;
@@ -268,7 +327,6 @@ export interface PalikaItem {
   estimated_tents_needed: number;
   estimated_ration_packs_needed: number;
 }
-export type PalikaResponse = PalikaItem;
 
 export interface SectorPalikaBreakdown {
   sector_id: string;
@@ -280,7 +338,47 @@ export interface SectorPalikaBreakdown {
   female_population: number;
   palikas: PalikaItem[];
 }
-export type SectorPalikasResponse = SectorPalikaBreakdown;
+
+export interface ShelterCheckinItem {
+  checkin_id: number;
+  facility_name: string;
+  facility_type: string;
+  person_name: string;
+  age?: number | null;
+  gender?: string | null;
+  identifying_features?: string | null;
+  sector_id: string;
+  health_status: string;
+  timestamp: string;
+}
+
+export interface ReconciliationMatchItem {
+  missing_person_id: number;
+  missing_name: string;
+  missing_age?: number | null;
+  missing_sector: string;
+  missing_desc?: string | null;
+  checkin_id: number;
+  found_name: string;
+  found_age?: number | null;
+  found_facility: string;
+  found_sector: string;
+  found_desc?: string | null;
+  health_status: string;
+  match_score: number;
+  confidence_tier: "HIGH_AUTO_MATCH" | "SUGGESTED_REVIEW";
+}
+
+export interface ReconciliationLedgerResponse {
+  missing_ledger_count: number;
+  found_checkins_count: number;
+  auto_matched_count: number;
+  suggested_review_count: number;
+  missing_records: MissingPersonItem[];
+  found_checkins: ShelterCheckinItem[];
+  auto_reconciled_matches: ReconciliationMatchItem[];
+  suggested_matches_queue: ReconciliationMatchItem[];
+}
 
 // -------------------------------------------------------------
 // Capability 5: Tactical Resource Dispatch
@@ -293,7 +391,7 @@ export interface ResourceUnitItem {
   unit_type: string;
   home_base: string;
   current_location_id?: string | null;
-  status: string;
+  status: "available" | "dispatched" | "on_scene" | "maintenance";
   capacity: number;
 }
 
@@ -333,7 +431,7 @@ export interface DispatchDashboardResponse {
 }
 
 // -------------------------------------------------------------
-// Capability 6: SITREP Generator
+// Capability 6: SITREP Briefing Report
 // -------------------------------------------------------------
 
 export interface SitrepCasualtyToll {
@@ -438,17 +536,29 @@ export async function submitReport(payload: {
   return res.json();
 }
 
-// Capability 1: GIS
+// Capability 1: GIS & H3 Hexagonal Grid
 export async function fetchGisTelemetry(): Promise<GisFeatureCollection> {
   const res = await fetch(`${API_BASE_URL}/gis/telemetry`, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch GIS telemetry`);
   return res.json();
 }
 
-// Capability 2: Deduplication & Unified Truth
+export async function fetchH3GridTelemetry(): Promise<H3GridResponse> {
+  const res = await fetch(`${API_BASE_URL}/gis/h3-grid`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch H3 grid`);
+  return res.json();
+}
+
+// Capability 2: Deduplication & Before/After Showcase
 export async function fetchUnifiedTruth(): Promise<UnifiedTruthResponse> {
   const res = await fetch(`${API_BASE_URL}/deduplication/unified-truth`, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch unified truth`);
+  return res.json();
+}
+
+export async function fetchBeforeAfterShowcase(): Promise<BeforeAfterShowcaseResponse> {
+  const res = await fetch(`${API_BASE_URL}/deduplication/before-after-showcase`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch before/after showcase`);
   return res.json();
 }
 
@@ -459,7 +569,7 @@ export async function fetchBlackoutRisks(): Promise<AllBlackoutRisksResponse> {
   return res.json();
 }
 
-// Capability 4: Population Exposure & Missing Persons
+// Capability 4: Population Exposure & Probabilistic Reconciliation
 export async function fetchPopulationExposure(): Promise<AllPopulationExposureResponse> {
   const res = await fetch(`${API_BASE_URL}/population/exposure`, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch population exposure`);
@@ -495,6 +605,22 @@ export async function submitMissingPerson(payload: {
     const err = await res.json().catch(() => ({ message: "Unknown error" }));
     throw new Error(err.message || `HTTP ${res.status}`);
   }
+  return res.json();
+}
+
+export async function fetchReconciliationLedger(): Promise<ReconciliationLedgerResponse> {
+  const res = await fetch(`${API_BASE_URL}/population/reconciliation-ledger`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch reconciliation ledger`);
+  return res.json();
+}
+
+export async function confirmReconciliationMatch(missingPersonId: number, checkinId: number): Promise<any> {
+  const res = await fetch(`${API_BASE_URL}/population/confirm-match`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ missing_person_id: missingPersonId, checkin_id: checkinId, confirmed: true }),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to confirm match`);
   return res.json();
 }
 

@@ -27,6 +27,7 @@ import {
 import { ExecutiveBriefing } from "@/components/ExecutiveBriefing";
 import InteractiveVectorMap from "@/components/InteractiveVectorMap";
 import { ActiveSectorDossier } from "@/components/ActiveSectorDossier";
+import { BeforeAfterShowcase } from "@/components/BeforeAfterShowcase";
 import { IntegratedIntelligenceHub } from "@/components/IntegratedIntelligenceHub";
 import { SimulationControls } from "@/components/SimulationControls";
 import { ReportInjectionForm } from "@/components/ReportInjectionForm";
@@ -220,12 +221,12 @@ export default function HomePage() {
             </div>
 
             <div className="font-mono-data text-xs text-[#5C6270]">
-              SELECT A SECTOR TO FOCUS CARTOGRAPHY & REVEAL DIRECTIVES
+              TOGGLE H3 MESH OR SELECT SECTOR TO REVEAL DIRECTIVES
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Left Column (7): Vector Cartography + Quick Selector */}
+            {/* Left Column (7): Vector Cartography with H3 Hexagonal Mesh */}
             <div className="lg:col-span-7 space-y-4">
               <InteractiveVectorMap
                 sectors={gisSectors}
@@ -235,7 +236,7 @@ export default function HomePage() {
 
               {/* Horizontal 8-Sector Selector Carousel */}
               <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none font-mono-data text-xs">
-                {gisSectors.map((sec, idx) => {
+                {gisSectors.map((sec) => {
                   const isSelected = sec.sector_id.toLowerCase() === selectedSectorId.toLowerCase();
                   return (
                     <button
@@ -276,7 +277,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 3. INTEGRATED 4-PILLAR INTELLIGENCE HUB */}
+      {/* 3. THE "BEFORE & AFTER" SIGNAL ENGINE SHOWCASE (20 Raw Signals -> 3 Master Directives) */}
+      <BeforeAfterShowcase />
+
+      {/* 4. INTEGRATED 4-PILLAR INTELLIGENCE HUB */}
       <IntegratedIntelligenceHub
         truthRecords={truthRecords}
         blackoutAssessments={blackoutAssessments}
@@ -288,10 +292,10 @@ export default function HomePage() {
         }}
       />
 
-      {/* 4. FIELD TEST SIGNAL INJECTION */}
+      {/* 5. FIELD TEST SIGNAL INJECTION */}
       <ReportInjectionForm onReportInjected={loadData} />
 
-      {/* 5. SYSTEM ARCHITECTURE & ALGORITHMIC SPECS */}
+      {/* 6. SYSTEM ARCHITECTURE & ALGORITHMIC SPECS */}
       <SystemArchitecture />
 
       {/* 2021 CENSUS PALIKA DEMOGRAPHICS MODAL */}

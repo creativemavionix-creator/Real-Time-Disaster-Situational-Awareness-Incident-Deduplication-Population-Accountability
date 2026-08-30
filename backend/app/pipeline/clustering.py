@@ -87,7 +87,7 @@ def cluster_reports(
             d1 = reports[i].extracted_damage_type
             d2 = reports[j].extracted_damage_type
             if d1 == d2 and d1 not in ("unspecified", "safe_clear"):
-                cos_sim += 0.28
+                cos_sim += 0.35
             elif d1 != d2 and d1 not in ("unspecified", "safe_clear") and d2 not in ("unspecified", "safe_clear"):
                 cos_sim -= 0.25
                 
@@ -97,10 +97,11 @@ def cluster_reports(
             dist_matrix[j, i] = d
 
     # Perform clustering using AgglomerativeClustering (single linkage for connected component deduplication)
+    effective_thresh = max(distance_threshold, 0.38)
     try:
         agg = AgglomerativeClustering(
             n_clusters=None,
-            distance_threshold=distance_threshold,
+            distance_threshold=effective_thresh,
             metric="precomputed",
             linkage="single"
         )
