@@ -33,7 +33,9 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 # Copy application source code
 COPY app/ ./app/
 COPY prepare_dataset.py .
-COPY dataset/ ./dataset/
+
+# Ensure dataset directory exists without breaking build when dataset is empty/gitignored
+RUN mkdir -p dataset
 
 # Create a non-root system user for security best practices
 RUN useradd -m -u 1000 appuser && \
