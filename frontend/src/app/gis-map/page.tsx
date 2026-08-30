@@ -1,13 +1,20 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { fetchGisTelemetry, GisFeatureCollection, GisSectorTelemetry } from "@/lib/api";
 import { useViewMode } from "@/context/ViewModeContext";
 
+const InteractiveVectorMap = dynamic(
+  () => import("@/components/InteractiveVectorMap"),
+  { ssr: false, loading: () => <div className="h-[520px] bg-[#0A0A0A] border border-[#EDEDE8]/15 flex items-center justify-center font-mono-data text-xs text-[#EDEDE8]/50">INITIALIZING LEAFLET VECTOR CARTOGRAPHY...</div> }
+);
+
 export default function GisMapPage() {
   const [data, setData] = useState<GisFeatureCollection | null>(null);
-  const [selectedSector, setSelectedSector] = useState<GisSectorTelemetry | null>(null);
+  const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
   const [activeLayer, setActiveLayer] = useState<"severity" | "epicenter" | "isolation">("severity");
+  const [mapViewMode, setMapViewMode] = useState<"vector" | "radar">("vector");
   const [showEvidence, setShowEvidence] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isAnalysis } = useViewMode();
@@ -16,9 +23,12 @@ export default function GisMapPage() {
     try {
       const res = await fetchGisTelemetry();
       setData(res);
-      if (!selectedSector && res.sectors.length > 0) {
-        setSelectedSector(res.sectors[0]);
-      }
+      setSelectedSectorId((prev) => {
+        if (prev && res.sectors.some((s) => s.sector_id === prev)) {
+          return prev;
+        }
+        return res.sectors[0]?.sector_id || null;
+      });
     } catch (err: any) {
       setError(err.message || "Failed to load GIS telemetry");
     }
@@ -29,6 +39,11 @@ export default function GisMapPage() {
     const interval = setInterval(loadData, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  const selectedSector =
+    data?.sectors.find((s) => s.sector_id === selectedSectorId) ||
+    data?.sectors[0] ||
+    null;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -97,83 +112,117 @@ export default function GisMapPage() {
 
       {/* Main Map & Detail Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
-        {/* Visual Spatial Radar Canvas (7 Columns) */}
-        <div className="lg:col-span-7 surface-card p-6 relative">
-          <div className="flex items-center justify-between border-b border-[#EDEDE8]/10 pb-3 mb-4 font-mono-data text-xs">
+        {/* Visual Map Canvas (7 Columns) */}
+        <div className="lg:col-span-7 surface-card p-6 relative space-y-4">
+          <div className="flex flex-wrap items-center justify-between border-b border-[#EDEDE8]/10 pb-3 gap-2 font-mono-data text-xs">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 bg-[#FFB800] inline-block" />
-              <span className="font-bold text-[#EDEDE8]">SPATIAL RADAR // 8 SECTORS</span>
-            </div>
-            <span className="text-[#EDEDE8]/50 text-[11px]">EPICENTER: BARPAK, GORKHA</span>
-          </div>
-
-          {/* Radar Map Canvas */}
-          <div className="relative aspect-[4/3] bg-[#0A0A0A] border border-[#EDEDE8]/15 p-6 overflow-hidden flex flex-col justify-between">
-            {/* Subtle Grid Lines */}
-            <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-5 pointer-events-none">
-              {Array.from({ length: 36 }).map((_, i) => (
-                <div key={i} className="border border-[#EDEDE8]" />
-              ))}
-            </div>
-
-            {/* Epicenter Target Mark */}
-            <div
-              className="absolute pointer-events-none z-10 -translate-x-1/2 -translate-y-1/2"
-              style={{ left: "15%", top: "35%" }}
-            >
-              <div className="w-8 h-8 rounded-full border border-[#E5484D] opacity-40 animate-ping absolute inset-0" />
-              <div className="w-3 h-3 bg-[#E5484D] flex items-center justify-center font-mono-data text-[8px] text-[#EDEDE8] font-bold">
-                ✕
-              </div>
-              <span className="absolute left-4 top-0 whitespace-nowrap font-mono-data text-[9px] text-[#E5484D] font-bold bg-[#0A0A0A]/90 px-1 border border-[#E5484D]/40">
-                M7.8 EPICENTER
+              <span className="font-bold text-[#EDEDE8]">
+                {mapViewMode === "vector" ? "HDX UN OCHA VECTOR MAP" : "SPATIAL RADAR HUD"} // 8 SECTORS
               </span>
             </div>
 
-            {/* Render 8 Sector Pins */}
-            <div className="relative w-full h-full">
-              {data?.sectors.map((sector, idx) => {
-                const normX = ((sector.longitude - 84.5) / 1.7) * 85 + 5;
-                const normY = (1 - (sector.latitude - 27.2) / 1.0) * 85 + 5;
-                const isSelected = selectedSector?.sector_id === sector.sector_id;
-                const color = getStatusColor(sector.status);
-
-                return (
-                  <button
-                    key={`${sector.sector_id}-${idx}`}
-                    onClick={() => setSelectedSector(sector)}
-                    style={{ left: `${normX}%`, top: `${normY}%` }}
-                    className={`absolute -translate-x-1/2 -translate-y-1/2 p-2 border transition-all select-none text-left cursor-pointer ${
-                      isSelected
-                        ? "bg-[#EDEDE8] text-[#0A0A0A] border-[#FFB800] z-30 shadow-lg scale-105"
-                        : "bg-[#0A0A0A]/90 text-[#EDEDE8] border-[#EDEDE8]/20 hover:border-[#EDEDE8] z-20"
-                    }`}
-                  >
-                    <div className="flex items-center gap-1.5 font-mono-data text-[10px] font-bold">
-                      <span className="w-1.5 h-1.5" style={{ backgroundColor: color }} />
-                      <span className="uppercase">{sector.sector_name}</span>
-                    </div>
-
-                    <div
-                      className={`text-[9px] font-mono-data mt-0.5 ${
-                        isSelected ? "text-[#0A0A0A]/70" : "text-[#EDEDE8]/60"
-                      }`}
-                    >
-                      {activeLayer === "severity" && `Sev: ${sector.severity_index.toFixed(1)}/10`}
-                      {activeLayer === "epicenter" && `${sector.distance_to_epicenter_km.toFixed(0)} km`}
-                      {activeLayer === "isolation" && `${(sector.isolation_index * 100).toFixed(0)}% cut`}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Radar Footer */}
-            <div className="flex justify-between items-center text-[10px] font-mono-data text-[#EDEDE8]/40 border-t border-[#EDEDE8]/10 pt-2 z-10">
-              <span>LAT: 27.2°N - 28.2°N</span>
-              <span>LON: 84.5°E - 86.2°E</span>
+            {/* Dual Mode Switcher */}
+            <div className="flex items-center gap-1 bg-[#0A0A0A] p-1 border border-[#EDEDE8]/20">
+              <button
+                onClick={() => setMapViewMode("vector")}
+                className={`px-2.5 py-1 text-[11px] font-bold uppercase transition-all cursor-pointer ${
+                  mapViewMode === "vector"
+                    ? "bg-[#FFB800] text-[#0A0A0A]"
+                    : "text-[#EDEDE8]/60 hover:text-[#EDEDE8]"
+                }`}
+              >
+                🗺️ Vector Map
+              </button>
+              <button
+                onClick={() => setMapViewMode("radar")}
+                className={`px-2.5 py-1 text-[11px] font-bold uppercase transition-all cursor-pointer ${
+                  mapViewMode === "radar"
+                    ? "bg-[#FFB800] text-[#0A0A0A]"
+                    : "text-[#EDEDE8]/60 hover:text-[#EDEDE8]"
+                }`}
+              >
+                📡 Radar HUD
+              </button>
             </div>
           </div>
+
+          {/* Map Display (Vector vs Radar) */}
+          {mapViewMode === "vector" ? (
+            <InteractiveVectorMap
+              sectors={data?.sectors || []}
+              selectedSectorId={selectedSectorId}
+              onSelectSector={setSelectedSectorId}
+              activeLayer={activeLayer}
+            />
+          ) : (
+            <div className="relative aspect-[4/3] bg-[#0A0A0A] border border-[#EDEDE8]/15 p-6 overflow-hidden flex flex-col justify-between">
+              {/* Subtle Grid Lines */}
+              <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-5 pointer-events-none">
+                {Array.from({ length: 36 }).map((_, i) => (
+                  <div key={i} className="border border-[#EDEDE8]" />
+                ))}
+              </div>
+
+              {/* Epicenter Target Mark */}
+              <div
+                className="absolute pointer-events-none z-10 -translate-x-1/2 -translate-y-1/2"
+                style={{ left: "15%", top: "35%" }}
+              >
+                <div className="w-8 h-8 rounded-full border border-[#E5484D] opacity-40 animate-ping absolute inset-0" />
+                <div className="w-3 h-3 bg-[#E5484D] flex items-center justify-center font-mono-data text-[8px] text-[#EDEDE8] font-bold">
+                  ✕
+                </div>
+                <span className="absolute left-4 top-0 whitespace-nowrap font-mono-data text-[9px] text-[#E5484D] font-bold bg-[#0A0A0A]/90 px-1 border border-[#E5484D]/40">
+                  M7.8 EPICENTER
+                </span>
+              </div>
+
+              {/* Render 8 Sector Pins */}
+              <div className="relative w-full h-full">
+                {data?.sectors.map((sector, idx) => {
+                  const normX = ((sector.longitude - 84.5) / 1.7) * 85 + 5;
+                  const normY = (1 - (sector.latitude - 27.2) / 1.0) * 85 + 5;
+                  const isSelected = selectedSector?.sector_id === sector.sector_id;
+                  const color = getStatusColor(sector.status);
+
+                  return (
+                    <button
+                      key={`${sector.sector_id}-${idx}`}
+                      onClick={() => setSelectedSectorId(sector.sector_id)}
+                      style={{ left: `${normX}%`, top: `${normY}%` }}
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 p-2 border transition-all select-none text-left cursor-pointer ${
+                        isSelected
+                          ? "bg-[#EDEDE8] text-[#0A0A0A] border-[#FFB800] z-30 shadow-lg scale-105"
+                          : "bg-[#0A0A0A]/90 text-[#EDEDE8] border-[#EDEDE8]/20 hover:border-[#EDEDE8] z-20"
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 font-mono-data text-[10px] font-bold">
+                        <span className="w-1.5 h-1.5" style={{ backgroundColor: color }} />
+                        <span className="uppercase">{sector.sector_name}</span>
+                      </div>
+
+                      <div
+                        className={`text-[9px] font-mono-data mt-0.5 ${
+                          isSelected ? "text-[#0A0A0A]/70" : "text-[#EDEDE8]/60"
+                        }`}
+                      >
+                        {activeLayer === "severity" && `Sev: ${sector.severity_index.toFixed(1)}/10`}
+                        {activeLayer === "epicenter" && `${sector.distance_to_epicenter_km.toFixed(0)} km`}
+                        {activeLayer === "isolation" && `${(sector.isolation_index * 100).toFixed(0)}% cut`}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Radar Footer */}
+              <div className="flex justify-between items-center text-[10px] font-mono-data text-[#EDEDE8]/40 border-t border-[#EDEDE8]/10 pt-2 z-10">
+                <span>LAT: 27.2°N - 28.2°N</span>
+                <span>LON: 84.5°E - 86.2°E</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Selected Sector Inspector Panel (5 Columns) */}
@@ -220,6 +269,23 @@ export default function GisMapPage() {
                   </strong>
                 </div>
               </div>
+
+              {/* Satellite Orbital Cross-Check Badge */}
+              {selectedSector.satellite_corroborated && (
+                <div className="bg-[#0A0A0A] border border-[#3FB950]/30 p-3.5 space-y-1.5 font-mono-data text-xs">
+                  <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-[#3FB950] font-bold uppercase flex items-center gap-1.5">
+                      <span>🛰️ SATELLITE ORBITAL CROSS-CHECK</span>
+                    </span>
+                    <span className="px-2 py-0.5 bg-[#3FB950]/15 text-[#3FB950] font-bold">
+                      CONFIRMED
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-[#EDEDE8]/80">
+                    SENSOR: <strong className="text-[#EDEDE8]">{selectedSector.satellite_sensor || "UNOSAT UNITAR / Sentinel-1 SAR"}</strong>
+                  </div>
+                </div>
+              )}
 
               {/* Operational Recommended Action (Level 3) */}
               <div className="bg-[#EDEDE8]/3 border-l-2 border-[#FFB800] p-4 text-xs font-body-prose">
@@ -303,7 +369,7 @@ export default function GisMapPage() {
               {data?.sectors.map((s, idx) => (
                 <tr
                   key={`${s.sector_id}-${idx}`}
-                  onClick={() => setSelectedSector(s)}
+                  onClick={() => setSelectedSectorId(s.sector_id)}
                   className={`hover:bg-[#EDEDE8]/5 cursor-pointer transition-colors ${
                     selectedSector?.sector_id === s.sector_id ? "bg-[#EDEDE8]/10 font-bold" : ""
                   }`}

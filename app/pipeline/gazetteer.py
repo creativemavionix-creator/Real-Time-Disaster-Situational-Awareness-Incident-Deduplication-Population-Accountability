@@ -24,9 +24,14 @@ LOCATIONS: dict[str, LocationInfo] = {
         lat=27.7172,
         lon=85.3240,
         aliases=[
+            # English / Romanized
             "kathmandu", "ktm", "kantipur", "thamel", "new road", "bhotahiti",
             "kalanki", "koteshwor", "maharajgunj", "balaju", "balkhu", "chabahil",
-            "patan gate", "singha durbar", "kmc", "tripureshwor", "teku"
+            "patan gate", "singha durbar", "kmc", "tripureshwor", "teku",
+            # Devanagari Nepali
+            "काठमाडौँ", "काठमाडौं", "कान्तिपुर", "ठमेल", "न्यु रोड", "नयाँ सडक",
+            "भोटाहिटी", "कलंकी", "कोटेश्वर", "महाराजगञ्ज", "सिंहदरबार", "सिहदरबार",
+            "बालाजु", "बल्खु", "चाबहिल", "टेकु", "त्रिपुरेश्वर"
         ],
         description="Capital valley center & major administrative hub"
     ),
@@ -36,8 +41,12 @@ LOCATIONS: dict[str, LocationInfo] = {
         lat=27.6710,
         lon=85.4298,
         aliases=[
+            # English / Romanized
             "bhaktapur", "bhadgaon", "durbar square", "sallaghari", "thimi",
-            "madhyapur", "suryabinayak", "changunarayan", "kamalbinayak"
+            "madhyapur", "suryabinayak", "changunarayan", "kamalbinayak",
+            # Devanagari Nepali
+            "भक्तपुर", "भादगाउँ", "दरबार स्क्वायर", "सलाघारी", "सल्लाघारी",
+            "थिमी", "मध्यपुर", "सूर्यविनायक", "चाँगुनारायण", "कमलबिनायक"
         ],
         description="Eastern valley historical district"
     ),
@@ -47,8 +56,12 @@ LOCATIONS: dict[str, LocationInfo] = {
         lat=27.9500,
         lon=85.7000,
         aliases=[
+            # English / Romanized
             "sindhupalchok", "sindhupalchowk", "chautara", "melamchi", "bahrabise",
-            "tatopani", "helambu", "sukute", "araniko highway", "balephi", "indrawati"
+            "tatopani", "helambu", "sukute", "araniko highway", "balephi", "indrawati",
+            # Devanagari Nepali
+            "सिन्धुपाल्चोक", "सिन्धुपाल्चोक", "चौतारा", "मेलम्ची", "बाह्रबिसे",
+            "तातोपानी", "हेलम्बु", "सुकुटे", "अरनिको राजमार्ग", "बलेफी", "इन्द्रावती"
         ],
         description="High-risk mountainous district northeast of Kathmandu"
     ),
@@ -58,8 +71,12 @@ LOCATIONS: dict[str, LocationInfo] = {
         lat=27.7500,
         lon=86.1000,
         aliases=[
+            # English / Romanized
             "dolakha", "dolkha", "charikot", "jiri", "tama koshi", "tamakoshi",
-            "singati", "bhimeshwor", "kalinchowk"
+            "singati", "bhimeshwor", "kalinchowk",
+            # Devanagari Nepali
+            "दोलखा", "चरीकोट", "चरिकोट", "जिरी", "तामाकोशी", "तामा कोशी",
+            "सिंगटी", "सिङ्गटी", "भीमेश्वर", "कालिञ्चोक", "कालिन्चोक"
         ],
         description="Eastern hill district near Tama Koshi river basin"
     ),
@@ -69,8 +86,12 @@ LOCATIONS: dict[str, LocationInfo] = {
         lat=27.9167,
         lon=85.1667,
         aliases=[
+            # English / Romanized
             "nuwakot", "bidur", "trishuli", "battar", "devighat", "ranipauwa",
-            "kakani", "samari"
+            "kakani", "samari",
+            # Devanagari Nepali
+            "नुवाकोट", "विदुर", "बिदुर", "त्रिशुली", "त्रिसुली", "बट्टार",
+            "देवीघाट", "रानीपौवा", "ककनी", "सामरी"
         ],
         description="Northwestern valley district connecting Trishuli valley"
     ),
@@ -80,8 +101,12 @@ LOCATIONS: dict[str, LocationInfo] = {
         lat=28.0000,
         lon=84.6333,
         aliases=[
+            # English / Romanized
             "gorkha", "gorkha bazaar", "barpak", "arughat", "laprak", "manakamana",
-            "palungtar", "daraundi", "larke"
+            "palungtar", "daraundi", "larke",
+            # Devanagari Nepali
+            "गोरखा", "गोरखा बजार", "बारपाक", "आरुघाट", "लाप्राक", "मनकामना",
+            "पालुङटार", "दरौँदी", "दरौदी", "लार्के"
         ],
         description="Epicenter region and western hill corridor"
     ),
@@ -91,8 +116,12 @@ LOCATIONS: dict[str, LocationInfo] = {
         lat=28.1500,
         lon=85.3000,
         aliases=[
+            # English / Romanized
             "rasuwa", "dhunche", "syabrubesi", "langtang", "timure", "rasuwagadhi",
-            "chilime", "betrawati", "gosainkunda"
+            "chilime", "betrawati", "gosainkunda",
+            # Devanagari Nepali
+            "रसुवा", "धुन्चे", "धुञ्चे", "स्याफ्रुबेसी", "स्याब्रुबेसी", "लाङटाङ",
+            "टिमुरे", "रसुवागढी", "चिलिमे", "बेत्रावती", "गोसाइँकुण्ड", "गोसाइकुण्ड"
         ],
         description="Northern border mountainous district with Langtang valley"
     ),
@@ -102,8 +131,12 @@ LOCATIONS: dict[str, LocationInfo] = {
         lat=27.2500,
         lon=85.9500,
         aliases=[
+            # English / Romanized
             "sindhuli", "kamalamai", "sindhulimadhi", "bp highway", "khurkot",
-            "dudhauli", "marin", "sindhuligadhi"
+            "dudhauli", "marin", "sindhuligadhi",
+            # Devanagari Nepali
+            "सिन्धुली", "कमलामाई", "सिन्धुलीमाढी", "विपि राजमार्ग", "बिपी राजमार्ग",
+            "खुर्कोट", "दुधौली", "मरिण", "सिन्धुलीगढी"
         ],
         description="Southeastern gateway connecting BP Highway"
     ),
@@ -126,6 +159,7 @@ def resolve_location_from_text(text: Optional[str]) -> Optional[LocationInfo]:
     """
     Fuzzy/keyword match against text to identify one of the 8 fixed locations.
     Matches longer alias phrases first to avoid false positives.
+    Works seamlessly across English, Romanized Nepali, and native Devanagari scripts.
     """
     if not text:
         return None
@@ -137,10 +171,8 @@ def resolve_location_from_text(text: Optional[str]) -> Optional[LocationInfo]:
     
     for loc in LOCATIONS.values():
         for alias in loc.aliases:
-            # Word boundary search
-            pattern = r'\b' + re.escape(alias) + r'\b'
+            pattern = r'(?:\b|[^\w\u0900-\u097F]|^)' + re.escape(alias.lower()) + r'(?:\b|[^\w\u0900-\u097F]|$)'
             if re.search(pattern, text_lower):
-                # Score match by alias length
                 matches.append((len(alias), loc))
                 break
                 

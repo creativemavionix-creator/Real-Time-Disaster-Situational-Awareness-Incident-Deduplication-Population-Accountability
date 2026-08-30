@@ -11,10 +11,12 @@ from app.models.schemas import (
     AllPopulationExposureResponse,
     MissingPersonCreate,
     MissingPersonResponse,
+    SectorPalikasResponse,
 )
 from app.pipeline.population_exposure import (
     calculate_all_population_exposure,
     register_missing_person,
+    get_sector_palika_breakdown,
 )
 from app.pipeline.gazetteer import get_location_by_id
 from app.simulation.clock import get_simulated_time
@@ -93,3 +95,25 @@ def create_missing_person(payload: MissingPersonCreate, db: Session = Depends(ge
         )
 
     return register_missing_person(db, payload)
+
+
+@router.get("/palikas/{sector_id}", response_model=SectorPalikasResponse, summary="Get municipal Palika demographics for a sector")
+def get_sector_palikas(sector_id: str, db: Session = Depends(get_db)):
+    """Retrieve municipal palika breakdown with household counts and estimated shelter requirements."""
+    loc = get_location_by_id(sector_id)
+    if not loc:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Sector '{sector_id}' not found."
+        )
+
+    res = get_sector_palika_breakdown(loc.id, db)
+    if not res:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No municipal palika records found for sector '{sector_id}'."
+        )
+
+    return res
+
+

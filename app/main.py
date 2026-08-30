@@ -12,7 +12,7 @@ from app.database import init_db, SessionLocal
 from app.pipeline.embedder import get_model
 from app.simulation.clock import get_or_create_clock, get_simulated_time
 from app.simulation.generator import seed_database
-from app.pipeline.population_exposure import seed_initial_missing_persons
+from app.pipeline.population_exposure import seed_initial_missing_persons, seed_palika_census_data
 from app.pipeline.dispatch_engine import seed_initial_resource_units
 from app.routers import (
     locations_router,
@@ -42,17 +42,18 @@ async def lifespan(app: FastAPI):
     # 1. Initialize SQLite Database
     init_db()
     
-    # 2. Initialize simulation clock, seed synthetic reports, missing persons, and tactical units
+    # 2. Initialize simulation clock, seed synthetic reports, missing persons, census palikas, and tactical units
     db = SessionLocal()
     try:
         get_or_create_clock(db)
         seeded_count = seed_database(db, force=False)
         mp_count = seed_initial_missing_persons(db)
+        palika_count = seed_palika_census_data(db)
         units_count = seed_initial_resource_units(db)
         sim_time = get_simulated_time(db)
         logger.info(
             f"Database initialized. Reports: {seeded_count}, Missing Persons: {mp_count}, "
-            f"Resource Units: {units_count}, Sim Time: {sim_time.isoformat()}"
+            f"2021 Census Palikas: {palika_count}, Resource Units: {units_count}, Sim Time: {sim_time.isoformat()}"
         )
     finally:
         db.close()

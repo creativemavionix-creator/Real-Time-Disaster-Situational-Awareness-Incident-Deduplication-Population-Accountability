@@ -10,7 +10,7 @@ import { useViewMode } from "@/context/ViewModeContext";
 
 export default function BlackoutIntelPage() {
   const [data, setData] = useState<AllBlackoutRisksResponse | null>(null);
-  const [selectedSector, setSelectedSector] = useState<BlackoutRiskAssessment | null>(null);
+  const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
   const [showFormula, setShowFormula] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { isAnalysis } = useViewMode();
@@ -19,9 +19,12 @@ export default function BlackoutIntelPage() {
     try {
       const res = await fetchBlackoutRisks();
       setData(res);
-      if (!selectedSector && res.assessments.length > 0) {
-        setSelectedSector(res.assessments[0]);
-      }
+      setSelectedSectorId((prev) => {
+        if (prev && res.assessments.some((a) => a.sector_id === prev)) {
+          return prev;
+        }
+        return res.assessments[0]?.sector_id || null;
+      });
     } catch (err: any) {
       setError(err.message || "Failed to load blackout intelligence");
     }
@@ -32,6 +35,11 @@ export default function BlackoutIntelPage() {
     const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const selectedSector =
+    data?.assessments.find((a) => a.sector_id === selectedSectorId) ||
+    data?.assessments[0] ||
+    null;
 
   const getPriorityColor = (priority: number) => {
     if (priority === 1) return "#E5484D";
@@ -82,7 +90,7 @@ export default function BlackoutIntelPage() {
               return (
                 <div
                   key={sector.sector_id}
-                  onClick={() => setSelectedSector(sector)}
+                  onClick={() => setSelectedSectorId(sector.sector_id)}
                   className={`surface-card p-5 cursor-pointer transition-all ${
                     isSelected
                       ? "surface-card-active shadow-md"
@@ -122,11 +130,15 @@ export default function BlackoutIntelPage() {
                     {sector.risk_explanation}
                   </p>
 
-                  <div className="flex flex-wrap items-center justify-between text-xs font-mono-data text-[#EDEDE8]/60">
+                  <div className="flex flex-wrap items-center justify-between text-xs font-mono-data text-[#EDEDE8]/60 gap-2">
                     <div className="flex items-center gap-3">
                       <span>{sector.spatial_physics.epicenter_distance_km.toFixed(0)} km to Epicenter</span>
                       <span>•</span>
                       <span>{sector.spatial_physics.slope_gradient_degrees}° Slope</span>
+                      <span>•</span>
+                      <span className="text-[#FFB800] font-bold">
+                        {((sector.spatial_physics.structural_fragility_index || 0.5) * 100).toFixed(0)}% Fragility
+                      </span>
                     </div>
 
                     <span className="text-[#FFB800] font-bold">
@@ -177,6 +189,49 @@ export default function BlackoutIntelPage() {
                 </div>
               </div>
 
+              {/* Structural Fragility & Material Profile (Calibrated from 260K Gorkha buildings) */}
+              <div className="bg-[#0A0A0A] border border-[#FFB800]/30 p-4 space-y-3 font-mono-data text-xs">
+                <div className="flex justify-between items-center">
+                  <span className="text-[#FFB800] font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <span>🏗️ STRUCTURAL FRAGILITY & MATERIAL PROFILE</span>
+                  </span>
+                  <span className="px-2 py-0.5 bg-[#FFB800]/20 text-[#FFB800] text-[10px] font-bold">
+                    INDEX: {((selectedSector.spatial_physics.structural_fragility_index || 0.5) * 100).toFixed(0)}/100
+                  </span>
+                </div>
+
+                <div className="text-[11px] text-[#EDEDE8]/70 italic">
+                  Typology: {selectedSector.spatial_physics.superstructure_dominant_type || "Mixed Masonry and Concrete"}
+                </div>
+
+                {/* Material Ratio Bar */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-[10px]">
+                    <span className="text-[#E5484D] font-bold">
+                      STONE/MUD MASONRY: {selectedSector.spatial_physics.masonry_ratio_pct?.toFixed(1) || "50.0"}%
+                    </span>
+                    <span className="text-[#3FB950] font-bold">
+                      RC CONCRETE: {selectedSector.spatial_physics.concrete_ratio_pct?.toFixed(1) || "50.0"}%
+                    </span>
+                  </div>
+                  <div className="h-2.5 w-full bg-[#0A0A0A] border border-[#EDEDE8]/20 flex overflow-hidden">
+                    <div
+                      style={{ width: `${selectedSector.spatial_physics.masonry_ratio_pct || 50}%` }}
+                      className="bg-[#E5484D] h-full"
+                    />
+                    <div
+                      style={{ width: `${selectedSector.spatial_physics.concrete_ratio_pct || 50}%` }}
+                      className="bg-[#3FB950] h-full"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-between text-[10px] text-[#EDEDE8]/60 pt-1 border-t border-[#EDEDE8]/10">
+                  <span>HISTORICAL COLLAPSE RATE:</span>
+                  <strong className="text-[#E5484D]">{selectedSector.spatial_physics.historical_collapse_rate_pct?.toFixed(1) || "50.0"}%</strong>
+                </div>
+              </div>
+
               {/* Plain Language Reasoning (Level 2) */}
               <div className="space-y-2">
                 <span className="font-mono-data text-[10px] text-[#EDEDE8]/50 uppercase font-bold block">
@@ -194,7 +249,7 @@ export default function BlackoutIntelPage() {
                 </span>
                 <p className="text-[#EDEDE8] text-sm font-medium">
                   {selectedSector.inferred_risk_score > 70
-                    ? "Immediate Aerial Reconnaissance (MI-17) + Deploy Satellite Cell-on-Wheels"
+                    ? "Immediate Aerial Reconnaissance (MI-17) + Deploy Heavy Excavators & USAR Canines"
                     : selectedSector.inferred_risk_score > 40
                     ? "Dispatch Highway Heavy Excavator & Ground APF Survey Team"
                     : "Secondary Reconnaissance & Remote Monitoring"}
@@ -220,6 +275,10 @@ export default function BlackoutIntelPage() {
                       <strong className="text-[#EDEDE8]">{selectedSector.spatial_physics.epicenter_distance_km.toFixed(1)} km</strong>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-[#EDEDE8]/60">STRUCTURAL FRAGILITY FACTOR:</span>
+                      <strong className="text-[#FFB800]">{selectedSector.spatial_physics.structural_fragility_index?.toFixed(2) || "0.50"}</strong>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-[#EDEDE8]/60">TERRAIN SLOPE:</span>
                       <strong className="text-[#EDEDE8]">{selectedSector.spatial_physics.slope_gradient_degrees}° gradient</strong>
                     </div>
@@ -230,7 +289,7 @@ export default function BlackoutIntelPage() {
                       </strong>
                     </div>
                     <div className="text-[10px] text-[#EDEDE8]/50 pt-2 border-t border-[#EDEDE8]/10">
-                      Formula: (E_hazard * 40) + (S_slope * 30) + (I_road * 30) * 1.15
+                      Formula: (E_hazard * 35) + (S_structural * 25) + (S_slope * 20) + (I_road * 20) * (1.15 if bridge severed)
                     </div>
                   </div>
                 )}

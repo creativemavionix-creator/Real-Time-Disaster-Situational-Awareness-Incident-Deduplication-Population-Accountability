@@ -148,6 +148,8 @@ class GisSectorTelemetry(BaseModel):
     estimated_casualties: int
     isolation_index: float  # 0.0 (connected) to 1.0 (severed)
     last_telemetry_timestamp: Optional[datetime] = None
+    satellite_corroborated: bool = False
+    satellite_sensor: Optional[str] = None
 
 
 class GisFeatureCollection(BaseModel):
@@ -181,6 +183,11 @@ class UnifiedTruthRecord(BaseModel):
     confidence_score: float
     representative_truth_text: str
     verification_status: str  # CORROBORATED_TRUTH, DISPUTED, UNVERIFIED_RUMOR
+    satellite_corroborated: bool = False
+    satellite_damage_points_count: int = 0
+    satellite_sensor_source: Optional[str] = None
+    satellite_evidence_summary: Optional[str] = None
+
 
 
 class UnifiedTruthResponse(BaseModel):
@@ -203,6 +210,12 @@ class SpatialPhysicsFactors(BaseModel):
     critical_bridge_severed: bool
     road_access_impedance: float  # 0 to 1
     elevation_meters: int
+    structural_fragility_index: float = 0.5  # 0.0 to 1.0 (Calibrated from 260K Gorkha buildings)
+    masonry_ratio_pct: float = 50.0  # Percentage of stone/mud mortar structures
+    concrete_ratio_pct: float = 50.0  # Percentage of reinforced concrete structures
+    historical_collapse_rate_pct: float = 50.0  # Historical Grade 3 collapse rate
+    superstructure_dominant_type: str = "Mixed Masonry / RC"
+
 
 
 class BlackoutRiskAssessment(BaseModel):
@@ -273,8 +286,37 @@ class MissingPersonResponse(BaseModel):
     contact_number: Optional[str] = None
     status: str  # missing, hospitalized, located_safe, deceased
     physical_description: Optional[str] = None
-    matched_hospital_notes: Optional[str] = None
     timestamp: datetime
+
+
+class PalikaResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    local_level_id: int
+    province_id: int
+    province_name: str
+    district_id: int
+    district_name: str
+    sector_id: str
+    local_level_name: str
+    households: int
+    total_population: int
+    male_population: int
+    female_population: int
+    estimated_tents_needed: int
+    estimated_ration_packs_needed: int
+
+
+class SectorPalikasResponse(BaseModel):
+    sector_id: str
+    sector_name: str
+    total_palikas: int
+    total_households: int
+    total_population: int
+    male_population: int
+    female_population: int
+    palikas: list[PalikaResponse]
+
 
 
 # -------------------------------------------------------------

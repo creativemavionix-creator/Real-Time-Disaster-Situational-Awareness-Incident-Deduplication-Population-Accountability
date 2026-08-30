@@ -112,3 +112,85 @@ def test_extract_all_edge_cases():
     assert res.damage_type == "structural"
     assert res.casualties == 10
     assert res.confidence_hint > 0.7
+
+
+def test_extract_devanagari_nepali_locations():
+    """Test location resolution from native Devanagari script."""
+    loc, method = extract_location("काठमाडौँ न्यु रोडमा ठूलो आगलागी")
+    assert loc is not None
+    assert loc.id == "kathmandu"
+    assert method == "text_keyword"
+
+    loc, method = extract_location("गोरखा बारपाकमा ढुङ्गाको घर भत्कियो")
+    assert loc is not None
+    assert loc.id == "gorkha"
+    assert method == "text_keyword"
+
+    loc, method = extract_location("सिन्धुपाल्चोक मेलम्चीमा बाढी")
+    assert loc is not None
+    assert loc.id == "sindhupalchok"
+    assert method == "text_keyword"
+
+    loc, method = extract_location("रसुवा धुन्चेमा पहिरोले बाटो बन्द")
+    assert loc is not None
+    assert loc.id == "rasuwa"
+    assert method == "text_keyword"
+
+    loc, method = extract_location("दोलखा चरीकोट बजार सुरक्षित")
+    assert loc is not None
+    assert loc.id == "dolakha"
+    assert method == "text_keyword"
+
+    loc, method = extract_location("भक्तपुर दरबार स्क्वायर सामान्य अवस्था")
+    assert loc is not None
+    assert loc.id == "bhaktapur"
+    assert method == "text_keyword"
+
+    loc, method = extract_location("नुवाकोट विदुरमा त्रिशुली पुल सञ्चालनमा छ")
+    assert loc is not None
+    assert loc.id == "nuwakot"
+    assert method == "text_keyword"
+
+    loc, method = extract_location("सिन्धुली कमलामाई बिपी राजमार्ग")
+    assert loc is not None
+    assert loc.id == "sindhuli"
+    assert method == "text_keyword"
+
+
+def test_extract_devanagari_nepali_casualties():
+    """Test casualty parsing with Devanagari digits and Nepali number words."""
+    # Devanagari numerals (३ -> 3, ५ -> 5)
+    assert extract_casualties("गोरखामा ३ जनाको मृत्यु र ५ जना घाइते") == 8
+    assert extract_casualties("सिन्धुपाल्चोकमा १२ जना घाइते अस्पताल भर्ना") == 12
+    assert extract_casualties("रसुवामा २ जना सम्पर्कविहीन") == 2
+    
+    # Nepali number words
+    assert extract_casualties("पाँच जना घाइते भएका छन्") == 5
+    assert extract_casualties("दुई जनाको मृत्यु") == 2
+    assert extract_casualties("दश जना पुरिएका") == 10
+
+    # Explicit zero casualties
+    assert extract_casualties("सबै सुरक्षित छन्, कुनै क्षति छैन") == 0
+    assert extract_casualties("कुनै हताहत छैन") == 0
+
+
+def test_extract_devanagari_nepali_damage_types():
+    """Test damage classification from native Devanagari crisis terms."""
+    assert extract_damage_type("घर भत्कियो र संरचना क्षतिग्रस्त") == "structural"
+    assert extract_damage_type("ठूलो पहिरो गयो र डाँडा भासियो") == "landslide"
+    assert extract_damage_type("नदी उर्लियो र बस्ती डुबानमा पर्यो") == "flood"
+    assert extract_damage_type("पुल भत्कियो र सडक अवरुद्ध भयो") == "road/bridge"
+    assert extract_damage_type("मोबाइल टावर डाउन र सम्पर्कविहीन") == "communication"
+    assert extract_damage_type("आगलागी भएर धुवाँ फैलियो") == "fire"
+    assert extract_damage_type("सबै सुरक्षित छन् र सामान्य अवस्था छ") == "safe_clear"
+
+
+def test_extract_all_devanagari_end_to_end():
+    """End-to-end extraction from a full Devanagari field report."""
+    res = extract_all("गोरखा बारपाकमा ढुङ्गाको घर भत्किएर ३ जनाको मृत्यु र ४ जना घाइते भएका छन्।")
+    assert res.location_id == "gorkha"
+    assert res.location_name == "Gorkha"
+    assert res.damage_type == "structural"
+    assert res.casualties == 7
+    assert res.confidence_hint > 0.7
+

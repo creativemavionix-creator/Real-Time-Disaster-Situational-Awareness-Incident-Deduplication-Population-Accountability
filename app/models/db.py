@@ -83,3 +83,20 @@ class DispatchMissionDB(Base):
     status = Column(String(32), nullable=False, default="dispatched")  # dispatched, en_route, on_scene, completed
     dispatched_at = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
     completed_at = Column(DateTime(timezone=True), nullable=True)
+
+
+class PalikaDB(Base):
+    __tablename__ = "palikas"
+
+    local_level_id = Column(Integer, primary_key=True, index=True)
+    province_id = Column(Integer, nullable=False)
+    province_name = Column(String(64), nullable=False)
+    district_id = Column(Integer, nullable=False, index=True)
+    district_name = Column(String(64), nullable=False, index=True)
+    sector_id = Column(String(64), nullable=False, index=True)
+    local_level_name = Column(String(128), nullable=False)
+    households = Column(Integer, nullable=False, default=0)
+    total_population = Column(Integer, nullable=False, default=0)
+    male_population = Column(Integer, nullable=False, default=0)
+    female_population = Column(Integer, nullable=False, default=0)
+
