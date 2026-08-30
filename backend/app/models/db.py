@@ -240,3 +240,18 @@ class ActionReviewAuditDB(Base):
     timestamp = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
 
 
+class LocationOverrideDB(Base):
+    """Human operator confirmation or override on location situational status."""
+    __tablename__ = "location_overrides"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    location_id = Column(String(64), nullable=False, index=True)
+    override_status = Column(String(32), nullable=False)  # verified_safe, verified_damaged, unverified, blackout, investigating
+    confirmed_safe = Column(Boolean, nullable=False, default=False)
+    operator_name = Column(String(128), nullable=False, default="Duty Commander")
+    operator_role = Column(String(32), nullable=False, default="Officer")
+    badge_or_unit = Column(String(128), nullable=True)
+    justification_notes = Column(Text, nullable=False)
+    timestamp = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+

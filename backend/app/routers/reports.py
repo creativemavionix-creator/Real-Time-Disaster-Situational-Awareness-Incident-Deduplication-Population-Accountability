@@ -160,3 +160,86 @@ def list_reports(
         )
         
     return results
+
+
+@router.post(
+    "/official",
+    response_model=ReportResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Structured Official First-Responder Intake (Police, APF, Hospitals)"
+)
+def create_official_report(
+    payload: dict,
+    db: Session = Depends(get_db)
+):
+    """
+    Structured official report intake for Police, APF, and District Hospitals.
+    Bypasses noisy unstructured NLP heuristics and immediately assigns 1.0 trust.
+    """
+    loc_id = payload.get("location_id", "kathmandu").lower()
+    agency = payload.get("reporting_agency", "Nepal Police")
+    officer_name = payload.get("officer_name", "Duty Officer")
+    badge_number = payload.get("badge_number", "NP-000")
+    damage_type = payload.get("damage_type", "structural_collapse")
+    casualties = int(payload.get("casualty_count", 0))
+    immediate_need = payload.get("immediate_need", "Tactical Support")
+    raw_notes = payload.get("raw_notes", f"Official dispatch from {agency} ({officer_name} / {badge_number})")
+    lat = payload.get("reported_lat")
+    lon = payload.get("reported_lon")
+
+    formatted_text = f"[OFFICIAL DISPATCH - {agency.upper()}] Officer: {officer_name} (Badge: {badge_number}). Damage: {damage_type}. Casualties: {casualties}. Priority Need: {immediate_need}. Notes: {raw_notes}"
+
+    sim_now = get_simulated_time(db)
+    embedding_vec = embed_text(formatted_text)
+    embedding_json = serialize_embedding(embedding_vec)
+
+    source_type = "hospital" if "hospital" in agency.lower() else "police"
+
+    db_report = ReportDB(
+        source_type=source_type,
+        raw_text=formatted_text,
+        reported_lat=lat,
+        reported_lon=lon,
+        timestamp=sim_now,
+        resolved_location_id=loc_id,
+        location_resolved_by="official_structured_form",
+        extracted_casualties=casualties,
+        extracted_damage_type=damage_type,
+        confidence_hint=1.0,
+        embedding_json=embedding_json,
+    )
+    db.add(db_report)
+    db.commit()
+    db.refresh(db_report)
+
+    rep_item = ReportItem(
+        id=db_report.id,
+        source_type=source_type,
+        raw_text=formatted_text,
+        reported_lat=lat,
+        reported_lon=lon,
+        timestamp=sim_now,
+        resolved_location_id=loc_id,
+        location_resolved_by="official_structured_form",
+        extracted_casualties=casualties,
+        extracted_damage_type=damage_type,
+        confidence_hint=1.0,
+    )
+    score_breakdown = compute_report_score(report=rep_item, cluster_size=1, simulated_now=sim_now)
+
+    return ReportResponse(
+        id=db_report.id,
+        source_type=source_type,
+        raw_text=formatted_text,
+        reported_lat=lat,
+        reported_lon=lon,
+        timestamp=sim_now,
+        resolved_location_id=loc_id,
+        resolved_location_name=loc_id.capitalize(),
+        location_resolved_by="official_structured_form",
+        extracted_casualties=casualties,
+        extracted_damage_type=damage_type,
+        score_breakdown=ScoreBreakdownSchema(**score_breakdown),
+        cluster_id=None,
+    )
+

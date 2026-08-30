@@ -76,7 +76,33 @@ class IncidentClusterResponse(BaseModel):
     reports: list[ReportResponse] = Field(default_factory=list)
 
 
-LocationStatusType = Literal["verified_safe", "verified_damaged", "unverified", "blackout"]
+LocationStatusType = Literal["verified_safe", "verified_damaged", "unverified", "blackout", "investigating"]
+
+
+class BiasAnalysisSchema(BaseModel):
+    informal_report_pct: float = Field(..., description="Percentage of reports from citizen or social media streams")
+    official_report_pct: float = Field(..., description="Percentage of reports from police or hospital sources")
+    bias_flag: Literal["INFORMAL_SKEW_HIGH", "OFFICIALLY_CONFIRMED", "BALANCED", "BLACKOUT_NO_TELEMETRY"] = "BALANCED"
+    explanation: str = ""
+
+
+class AccountableOfficerSchema(BaseModel):
+    name: str = "Duty Operations Officer"
+    agency: str = "Armed Police Force (APF) Disaster Response"
+    role: str = "Sector Commander"
+    contact_channel: str = "VHF Ch-04 / SAT-02"
+    last_attestation: Optional[datetime] = None
+
+
+class OperatorOverrideSchema(BaseModel):
+    is_overridden: bool = False
+    override_status: Optional[str] = None
+    confirmed_safe: bool = False
+    operator_name: Optional[str] = None
+    operator_role: Optional[str] = None
+    badge_or_unit: Optional[str] = None
+    justification_notes: Optional[str] = None
+    timestamp: Optional[datetime] = None
 
 
 class LocationStatusResponse(BaseModel):
@@ -92,12 +118,72 @@ class LocationStatusResponse(BaseModel):
     silence_duration_hours: Optional[float] = None
     top_incidents: list[IncidentClusterResponse] = Field(default_factory=list)
     status_reason: str
+    operator_override: Optional[OperatorOverrideSchema] = None
+    accountable_officer: Optional[AccountableOfficerSchema] = None
+    bias_analysis: Optional[BiasAnalysisSchema] = None
+    human_safe_confirmation_required: bool = False
+
+
+class LocationOverrideRequest(BaseModel):
+    override_status: LocationStatusType
+    confirmed_safe: bool = False
+    operator_name: str = Field(..., min_length=2)
+    operator_role: Literal["Officer", "Analyst", "Administrator"] = "Officer"
+    badge_or_unit: Optional[str] = None
+    justification_notes: str = Field(..., min_length=5, description="Mandatory operational justification for audit ledger")
+
+
+class LocationOverrideResponse(BaseModel):
+    success: bool
+    location_id: str
+    effective_status: str
+    confirmed_safe: bool
+    operator_name: str
+    timestamp: datetime
+    message: str
+
+
+class OfficialReportCreateRequest(BaseModel):
+    location_id: str
+    reporting_agency: Literal["Nepal Police", "Armed Police Force (APF)", "Nepal Army", "District Hospital", "Red Cross (NRCS)"]
+    officer_name: str = Field(..., min_length=2)
+    badge_number: str = Field(..., min_length=2)
+    damage_type: Literal["structural_collapse", "road_blocked", "medical_emergency", "landslide_debris", "safe_clear", "critical_hazard"]
+    casualty_count: int = Field(default=0, ge=0)
+    damage_grade: int = Field(default=3, ge=1, le=5, description="EMS Damage Grade 1 (Negligible) to 5 (Total Collapse)")
+    immediate_need: str = Field(..., description="E.g. SAR extraction team, surgical triage, heavy excavators")
+    reported_lat: Optional[float] = None
+    reported_lon: Optional[float] = None
+    raw_notes: str = Field(..., min_length=5)
+
+
+class OfficialReportCreateResponse(BaseModel):
+    success: bool
+    report_id: int
+    location_id: str
+    source_type: str = "police"
+    assigned_trust_weight: float = 1.0
+    status: str = "VERIFIED_OFFICIAL"
+    message: str
+
+
+class LocationVerificationRankSchema(BaseModel):
+    location_id: str
+    location_name: str
+    rank: int
+    urgency_score: float
+    silence_duration_hours: float
+    estimated_exposed_population: int
+    structural_vulnerability_index: float
+    recommended_recon_sortie: str
+    primary_reason: str
 
 
 class AllLocationsStatusResponse(BaseModel):
     simulated_time: datetime
     locations: list[LocationStatusResponse]
     summary_counts: dict[str, int] = Field(default_factory=dict)
+    verification_ranking: list[LocationVerificationRankSchema] = Field(default_factory=list)
 
 
 class SimulationStateResponse(BaseModel):

@@ -53,7 +53,45 @@ export interface ReportItem {
 
 type str = string;
 
-export type LocationStatusType = "verified_safe" | "verified_damaged" | "unverified" | "blackout";
+export type LocationStatusType = "verified_safe" | "verified_damaged" | "unverified" | "blackout" | "investigating";
+
+export interface BiasAnalysis {
+  informal_report_pct: number;
+  official_report_pct: number;
+  bias_flag: "INFORMAL_SKEW_HIGH" | "OFFICIALLY_CONFIRMED" | "BALANCED" | "BLACKOUT_NO_TELEMETRY";
+  explanation: string;
+}
+
+export interface AccountableOfficer {
+  name: string;
+  agency: string;
+  role: string;
+  contact_channel: string;
+  last_attestation?: string | null;
+}
+
+export interface OperatorOverride {
+  is_overridden: boolean;
+  override_status?: string | null;
+  confirmed_safe: boolean;
+  operator_name?: string | null;
+  operator_role?: string | null;
+  badge_or_unit?: string | null;
+  justification_notes?: string | null;
+  timestamp?: string | null;
+}
+
+export interface LocationVerificationRankItem {
+  location_id: string;
+  location_name: string;
+  rank: number;
+  urgency_score: number;
+  silence_duration_hours: number;
+  estimated_exposed_population: number;
+  structural_vulnerability_index: number;
+  recommended_recon_sortie: string;
+  primary_reason: string;
+}
 
 export interface IncidentCluster {
   cluster_id: number;
@@ -84,6 +122,10 @@ export interface LocationStatusItem {
   silence_duration_hours?: number | null;
   top_incidents: IncidentCluster[];
   status_reason: string;
+  operator_override?: OperatorOverride | null;
+  accountable_officer?: AccountableOfficer | null;
+  bias_analysis?: BiasAnalysis | null;
+  human_safe_confirmation_required?: boolean;
 }
 
 export interface AllLocationsStatusResponse {
@@ -94,7 +136,9 @@ export interface AllLocationsStatusResponse {
     verified_damaged?: number;
     unverified?: number;
     blackout?: number;
+    investigating?: number;
   };
+  verification_ranking?: LocationVerificationRankItem[];
 }
 
 export interface SimulationState {
@@ -1097,5 +1141,51 @@ export async function fetchAuditTrail(): Promise<AuditTrailResponse> {
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch audit trail`);
   return res.json();
 }
+
+export async function overrideLocationStatus(locationId: string, payload: {
+  override_status: string;
+  confirmed_safe: boolean;
+  operator_name: string;
+  operator_role: string;
+  badge_or_unit?: string;
+  justification_notes: string;
+}): Promise<{ success: boolean; location_id: string; effective_status: string; message: string }> {
+  const res = await fetch(`${API_BASE_URL}/locations/${encodeURIComponent(locationId)}/override`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to override location status`);
+  return res.json();
+}
+
+export async function submitOfficialReport(payload: {
+  location_id: string;
+  reporting_agency: string;
+  officer_name: string;
+  badge_number: string;
+  damage_type: string;
+  casualty_count: number;
+  damage_grade: number;
+  immediate_need: string;
+  reported_lat?: number;
+  reported_lon?: number;
+  raw_notes: string;
+}): Promise<ReportItem> {
+  const res = await fetch(`${API_BASE_URL}/reports/official`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to submit official report`);
+  return res.json();
+}
+
+export async function fetchLocationsVerificationRanking(): Promise<LocationVerificationRankItem[]> {
+  const res = await fetch(`${API_BASE_URL}/locations/verification-ranking`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch verification rankings`);
+  return res.json();
+}
+
 
 

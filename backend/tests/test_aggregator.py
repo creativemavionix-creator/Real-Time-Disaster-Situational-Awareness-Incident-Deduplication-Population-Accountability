@@ -117,10 +117,22 @@ def test_verified_safe():
     )
 
     t_now = t0 + timedelta(minutes=40)
-    status = aggregate_location(location=loc, reports=[r1, r2], simulated_now=t_now)
+    # 1. AI alone flags safe signals but requires human confirmation per policy guardrail
+    status_ai = aggregate_location(location=loc, reports=[r1, r2], simulated_now=t_now)
+    assert status_ai.status == "unverified"
+    assert status_ai.human_safe_confirmation_required is True
+    assert status_ai.confidence_score >= 0.60
 
-    assert status.status == "verified_safe"
-    assert status.confidence_score >= 0.60
+    # 2. Operator confirms safe -> Status becomes verified_safe
+    override = {
+        "is_overridden": True,
+        "override_status": "verified_safe",
+        "confirmed_safe": True,
+        "operator_name": "DSP KC",
+    }
+    status_confirmed = aggregate_location(location=loc, reports=[r1, r2], simulated_now=t_now, operator_override=override)
+    assert status_confirmed.status == "verified_safe"
+    assert status_confirmed.operator_override["confirmed_safe"] is True
 
 
 def test_unverified():
