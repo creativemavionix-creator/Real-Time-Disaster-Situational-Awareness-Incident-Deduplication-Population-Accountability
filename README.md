@@ -1,377 +1,311 @@
 <div align="center">
 
-# 🌫️ POST-DISASTER // INFORMATION FOG
-### National Disaster Response, Situational Awareness, Incident Deduplication & Population Accountability Platform
+# 🌐 PROJECT PRISM
+### Post-Disaster Real-Time Intelligence & Situational Mapping
+**Autonomous Crisis Reality Reconstruction • Multi-Agency Deduplication • Spatial Physics Blackout Intelligence • Dynamic Population Accountability**
 
-**An enterprise-grade, offline-first command platform for resolving post-disaster information asymmetry, deduplicating multi-agency field reports with dense semantic embeddings, calculating spatial physics blackout risk, tracking dynamic population exposure, automating tactical resource dispatch, and generating standardized UN OCHA SITREPs during the first 24 hours of catastrophic disaster.**
+*"Chaos outside. Clarity inside."*
 
 ---
 
 [![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Next.js 16](https://img.shields.io/badge/Next.js-16.3-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16.3%20(Turbopack)-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS%20v4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
-[![Sentence Transformers](https://img.shields.io/badge/Sentence--Transformers-all--MiniLM--L6--v2-FFA800?style=for-the-badge&logo=huggingface&logoColor=white)](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
-[![Tests](https://img.shields.io/badge/Tests-32%20Passing-3FB950?style=for-the-badge&logo=pytest&logoColor=white)](https://pytest.org)
+[![Uber H3](https://img.shields.io/badge/Uber%20H3-Res%208%20Hexagons-09090B?style=for-the-badge&logo=uber&logoColor=white)](https://h3geo.org)
+[![Tests](https://img.shields.io/badge/Tests-43%20Passed%20(100%25)-3FB950?style=for-the-badge&logo=pytest&logoColor=white)](https://pytest.org)
 
 </div>
 
 ---
 
-## ⚡ Quick Start: How to Run (Step-by-Step)
+## 📖 Executive Summary
 
-To run the complete platform, start both the backend and frontend in **two separate terminal tabs**:
+During catastrophic earthquakes and flash floods, emergency operations centers are paralyzed by the **Information Fog**:
+- **Massive Noise & Contradiction**: Hundreds of citizen SMS, emergency dispatch calls, and social media posts report the same incident with conflicting casualty estimates and inaccurate locations.
+- **The Silent Zone Fallacy**: Traditional dashboards mistake a total absence of reports for safety, whereas zero reports in an epicentral mountain ridge often indicates severed communications and total physical isolation.
+- **Fragmented Missing Records**: Missing inquiries from families cannot be matched against hospital admissions and emergency shelter intake logs.
 
-### 1️⃣ Terminal 1: Start the FastAPI AI Backend
+**Project PRISM** turns raw, chaotic disaster signals into verified rescue priorities using **Three Core AI Intelligence Engines**:
+1. **Noise Reduction & Time-Decay Triage Engine**: Deduplicates messages within a ~200m radius and applies continuous exponential confidence decay ($C_t = C_0 \cdot e^{-\lambda(t-t_0)}$).
+2. **"Silent Zone" (Blackout) & Risk Estimator**: Computes the Silent Sector Exposure Metric ($E_{cell}$) across Uber H3 hexagonal grid cells to identify cut-off mountain communities.
+3. **Dynamic Population Reconciliation Ledger**: Executes hybrid entity resolution using Jaro-Winkler phonetic similarity, attribute cosine token overlap, and age delta scoring to reconcile missing person reports against shelter and hospital intake check-ins.
+
+---
+
+## ⚡ Quick Start: How to Run the Platform
+
+### 1️⃣ Start the FastAPI AI Backend
 ```bash
-# 1. Navigate to backend
+# Navigate to backend directory
 cd backend
 
-# 2. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 3. Launch FastAPI server on port 8000
+# Launch FastAPI server on port 8000
 python -m uvicorn app.main:app --reload --port 8000
 ```
 - **API Root**: [http://localhost:8000](http://localhost:8000)
-- **Interactive Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
-- **ReDoc Documentation**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+- **Interactive OpenAPI / Swagger**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc Interactive Specs**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ---
 
-### 2️⃣ Terminal 2: Start the Next.js Multi-Page Frontend
+### 2️⃣ Start the Next.js Calm Crisis Frontend
 ```bash
-# 1. Navigate to frontend
+# Navigate to frontend directory
 cd frontend
 
-# 2. Install dependencies (first time only)
+# Install dependencies (first time only)
 npm install
 
-# 3. Start development server on port 3000
+# Start Next.js Turbopack development server on port 3000
 npm run dev -- --port 3000
 ```
-- **Live Command Dashboard**: [http://localhost:3000](http://localhost:3000)
+- **Live Command Matrix**: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-### 🐳 Alternative: Run Everything with Docker Compose
-```bash
-# Build and launch both backend and frontend containers
-docker compose up --build
-```
-
----
-
-### 3️⃣ Running Automated Tests
+### 3️⃣ Run Automated Test Suite
 ```bash
 cd backend
 pytest -v
 ```
-*(All 32 unit and API integration tests pass).*
-
-## 📑 Table of Contents
-
-1. [Platform Capabilities Overview](#-platform-capabilities-overview)
-2. [Multi-Page Frontend Architecture](#-multi-page-frontend-architecture)
-3. [AI Pipeline & Mathematical Formulations](#-ai-pipeline--mathematical-formulations)
-   - [1. Real-Time Situational GIS Telemetry](#1-real-time-situational-gis-telemetry)
-   - [2. Multi-Agency Deduplication & Unified Truth](#2-multi-agency-deduplication--unified-truth)
-   - [3. Silent Blackout Risk Intelligence](#3-silent-blackout-risk-intelligence)
-   - [4. Dynamic Population Exposure & Missing Persons](#4-dynamic-population-exposure--missing-persons)
-   - [5. Tactical Resource Dispatch Engine](#5-tactical-resource-dispatch-engine)
-   - [6. 24-Hour Timeline & Automated SITREP Generator](#6-24-hour-timeline--automated-sitrep-generator)
-4. [Fixed 8-Location Central Nepal Gazetteer](#-fixed-8-location-central-nepal-gazetteer)
-5. [Complete API Contract Reference](#-complete-api-contract-reference)
-6. [UI, Stability & Hydration Architecture](#-ui-stability--hydration-architecture)
-7. [Automated Verification & Test Matrix](#-automated-verification--test-matrix)
-8. [Project Directory Tree](#-project-directory-tree)
+*(All 43 unit, mathematical formula, entity resolution, and API integration tests pass in ~2.8s).*
 
 ---
 
-## 🛡️ Platform Capabilities Overview
-
-The platform implements **6 specialized operational capabilities** designed for disaster command centers (such as the Nepal National Emergency Operations Centre - NEOC):
+## 🧠 The 3 Core AI Intelligence Engines
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                      NATIONAL DISASTER COMMAND PLATFORM                         │
-├────────────────────────┬────────────────────────┬────────────────────────────────┤
-│ 01. SITUATIONAL GIS    │ 02. UNIFIED TRUTH      │ 03. BLACKOUT INTELLIGENCE      │
-│ Real-time spatial radar│ Resolves Police vs     │ Spatial physics inferred risk  │
-│ & hazard overlays      │ Hospital vs Social     │ for isolated mountain zones    │
-├────────────────────────┼────────────────────────┼────────────────────────────────┤
-│ 04. POPULATION TRACKER │ 05. TACTICAL DISPATCH  │ 06. 24-HR SITREP GENERATOR     │
-│ Commuter & tourist flux│ Priority SAR & air     │ Formal UN OCHA / NDMA          │
-│ + Missing registry     │ ambulance deployment   │ official operational reports   │
-└────────────────────────┴────────────────────────┴────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                               1. MULTI-SOURCE INGESTION LAYER                          │
+│        [Citizen SMS]   [Police Radios]   [Hospital ER Feeds]   [Social / Twitter]      │
+└───────────────────────────────────────────┬────────────────────────────────────────────┘
+                                            │ Raw Unstructured Ingestion
+                                            ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                              2. INTELLIGENCE PROCESSING CORE                           │
+│  ┌─────────────────────────┐  ┌──────────────────────────┐  ┌───────────────────────┐  │
+│  │ 1. Triage & Decay       │  │ 2. Blackout & Risk       │  │ 3. Population Ledger  │  │
+│  │ • 200m Deduplication    │  │ • H3 Hexagonal Grid      │  │ • Jaro-Winkler Match  │  │
+│  │ • Confidence Decay      │  │ • Silent Exposure E_cell │  │ • Shelter Reconciliation│ │
+│  │ • Stale Verification    │  │ • Terrain Physics Inversion│• Review Queue (65-84%) │  │
+│  └────────────┬────────────┘  └─────────────┬────────────┘  └───────────┬───────────┘  │
+└───────────────┼─────────────────────────────┼───────────────────────────┼──────────────┘
+                │                             │                           │
+                ▼                             ▼                           ▼
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                       3. OPERATIONAL CRISIS COMMAND CENTER                             │
+│       • Geospatial Cartography       • Active Sector Dossier       • SITREP Briefing   │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-1. **Real-Time Situational GIS Mapping**: Maps affected regions across Nepal into Verified Severe, Partially Affected, Safe, or Critical Blackout zones using interactive satellite telemetry, hazard heatmaps, and centroid distance coordinates.
-2. **Multi-Agency Deduplication & Unified Truth**: Cross-references and resolves conflicting reports from Police, Hospitals, Rescue Teams, Citizen SOS, and Social Media to establish a single reliable record.
-3. **Silent Blackout Risk Intelligence**: Calculates an Inferred Risk Score for isolated mountain zones using spatial physics (epicenter proximity, topography, bridge damage) so disconnected areas aren't mistaken for safe zones.
-4. **Dynamic Population Exposure & Tracking**: Replaces static census data with real-time exposure estimates—factoring in commuters, tourists, and evacuees—alongside a searchable Missing Persons Registry.
-5. **Tactical Resource Dispatch Engine**: Generates priority scores to deploy scarce search-and-rescue (SAR) units, air ambulances, and heavy equipment where risk and uncertainty are highest.
-6. **24-Hour Timeline & SITREP Generator**: Simulates time-phased data arrivals and blackout clearance patterns while automatically producing printable Situation Reports (SITREPs) for emergency leaders.
+---
+
+### 1. Information Triage & Time-Decay Engine
+
+#### Spatial & Semantic Deduplication
+- **Spatial Clustering**: Groups reports within a ~200m aperture into a single `MasterIncident` to prevent emergency responders from duplicating rescue deployments.
+- **Multi-Agency Consensus**: Reconciles varying casualty claims across Police, Hospital triage, and Citizen reports into a single weighted consensus record.
+
+#### Continuous Exponential Confidence Decay
+Damage states in disaster zones evolve rapidly. The engine applies an active Confidence Score ($C_t$) that decays over elapsed time ($t - t_0$):
+$$C_t = C_0 \cdot e^{-\lambda \cdot (t - t_0)}$$
+
+Where:
+- $C_0$: Source credibility weight (Hospital ER = 0.95, Police Dispatch = 0.90, Citizen SMS = 0.60, Social Media = 0.35).
+- $t - t_0$: Hours elapsed since original report ingestion.
+- $\lambda$: Hazard volatility decay rate ($\lambda = 0.25$).
+- **Stale Threshold**: When $C_t < 0.35$ or when a report is $>6\text{h}$ old without re-confirmation, the UI automatically flags it as `"Stale / Needs Ground Verification"`.
+
+#### The "Before & After" Showcase
+Demonstrates feeding **20 unstructured, chaotic, and duplicated messages** (with typos, conflicting casualty counts, and stale claims) and condensing them into **3 prioritized, actionable rescue tasks** with an **85.0% noise reduction ratio**:
+- **Task #1 (Patan Square)**: 4-story masonry collapse with 4 trapped individuals corroborated by Patan Hospital ER triage.
+- **Task #2 (Melamchi River Basin)**: Severe bridge severance isolating 15 families on the eastern riverbank.
+- **Task #3 (Barpak Epicenter)**: Inferred critical blackout requiring urgent UAV reconnaissance and airborne cellular restoration.
 
 ---
 
-## 🖥️ Multi-Page Frontend Architecture
+### 2. "Silent Zone" (Blackout) & Risk Estimator
 
-The frontend is built with a high-contrast **command-center brutalist design system** (strict 0-radius borders, 4–8px structural rules, `#0A0A0A`, `#EDEDE8`, `#FFB800`, `#3FB950`, `#E5484D`, `Space Grotesk` headlines, and `JetBrains Mono` telemetry).
+#### The Silent Sector Exposure Metric ($E_{cell}$)
+Instead of interpreting zero incoming messages as "safe", the engine calculates inferred risk by comparing baseline population against report frequency and adjacent seismic hazard:
 
-| Route | View Code | Functional Purpose |
-| :--- | :--- | :--- |
-| **`/`** | `[01: OVERVIEW]` | Mission Control Dashboard, Situation Matrix, signature fog lift, replay controls, live report injector. |
-| **`/gis-map`** | `[02: GIS MATRIX]` | Interactive satellite positioning radar, spatial coordinates, road isolation index, sector telemetry inspector. |
-| **`/deduplication`** | `[03: UNIFIED TRUTH]` | Dispute resolution ledger, casualty conflict range detector (Hospital vs Social Media), agency trust weighting. |
-| **`/blackout-intel`** | `[04: BLACKOUT INTEL]` | Spatial physics risk engine (epicenter distance, slope gradient, bridge severance, reconnaissance priority). |
-| **`/population`** | `[05: POPULATION]` | Dynamic sector population exposure calculator (census + commuters + tourists - evacuees) & Missing Persons Registry. |
-| **`/dispatch`** | `[06: TACTICAL DISPATCH]` | Priority-ranked deployment queue, resource inventory (SAR, MI-17 helicopters, excavators, COWs), and mission assignment console. |
-| **`/sitrep`** | `[07: SITREP GEN]` | UN OCHA standard Situation Report generator with printable export, casualty totals, and commander directives. |
+$$E_{cell} = \frac{\text{Baseline Population}_{cell}}{\max(1, \text{Report Frequency}_{cell, \Delta t})} \times \text{Adjacent Hazard Index}$$
 
----
+#### Flashing Grey/Black Silent Zone Detection
+- If a high-density sector suddenly drops to 0 incoming messages while surrounding sectors report severe shaking or bridge damage, the cell transitions to **Flashing Grey/Black: Critical Unverified Blackout Zone**.
+- This automatically triggers an emergency **Aerial UAV Reconnaissance Sortie** with mesh cellular restoration.
 
-## 🧮 AI Pipeline & Mathematical Formulations
-
-### 1. Real-Time Situational GIS Telemetry
-- Resolves unstructured report locations via exact/fuzzy keyword alias matching and spatial Haversine proximity fallback ($d \le 45\text{ km}$):
-  $$d = 2R \arcsin\left(\sqrt{\sin^2\left(\frac{\Delta \phi}{2}\right) + \cos(\phi_1)\cos(\phi_2)\sin^2\left(\frac{\Delta \lambda}{2}\right)}\right)$$
-- Computes per-sector Severity Index ($0.0 \le \text{Sev} \le 10.0$):
-  $$\text{Sev} = \min(10.0,\, (\text{Confidence} \times 5.0) + (E_{\text{hazard}} \times 3.0) + (S_{\text{landslide}} \times 2.0))$$
+#### Dynamic H3 Hexagonal Grid (Resolution 8)
+- Overlays regular hexagonal grid cells across Central Nepal with dynamic status color-coding:
+  - **Red**: Critical Severity ($E_{cell} \ge 0.75$).
+  - **Yellow**: Moderate Risk ($E_{cell} \ge 0.50$).
+  - **Flashing Grey/Black**: Critical Silent Blackout Zone.
+  - **Green**: Monitored Safe.
 
 ---
 
-### 2. Multi-Agency Deduplication & Unified Truth
-- **Sentence Embeddings**: 384-dimensional dense vectors generated with `sentence-transformers/all-MiniLM-L6-v2`.
-- **Cosine Distance Clustering**: Clusters duplicate reports with cosine similarity $\ge 0.75$ ($\text{dist} \le 0.25$).
-- **Dispute Detection**: Flags casualty discrepancies exceeding threshold (e.g. Social Media claiming 50 dead vs Hospital confirming 3). Prioritizes Hospital logs ($W=0.95$) and Police radios ($W=0.90$) over unverified social posts ($W=0.35$).
+### 3. Dynamic Population Reconciliation Ledger
 
----
+#### Probabilistic Entity Resolution
+Cross-references missing person inquiries from families against scattered hospital admissions, shelter registrations, and rescue team check-ins.
 
-### 3. Silent Blackout Risk Intelligence
-Mountain zones in communication blackout are evaluated using spatial physics rather than assuming lack of news means safety:
+#### Hybrid Matching Scoring Formula
+$$\text{Match Score} = w_1 \cdot \text{JaroWinkler}(\text{Name}_1, \text{Name}_2) + w_2 \cdot \text{CosineSim}(\vec{V}_{\text{attrs}1}, \vec{V}_{\text{attrs}2}) + w_3 \cdot \Delta_{\text{age}}$$
 
-$$\text{Inferred Risk} = (E_{\text{hazard}} \times 40.0) + (S_{\text{slope}} \times 30.0) + (I_{\text{road}} \times 30.0)$$
-
-- **Epicenter Proximity Hazard ($E_{\text{hazard}}$)**: Calculated relative to Barpak, Gorkha ($28.00^\circ\text{N}, 84.63^\circ\text{E}$):
-  $$E_{\text{hazard}} = \exp\left(-\frac{d_{\text{epi}}}{75.0\text{ km}}\right)$$
-- **Slope & Landslide Susceptibility ($S_{\text{slope}}$)**: Topographic gradient and terrain instability.
-- **Bridge Severance Multiplier**: $+15\%$ risk penalty if upstream transportation bridges are severed.
-
----
-
-### 4. Dynamic Population Exposure & Missing Persons
-Static census data severely undercounts exposed populations in disaster zones. The platform models:
-
-$$\text{Real-Time Exposed Pop} = \text{Census Baseline} + \text{Commuter Influx} + \text{Tourist Density} - \text{Evacuated}$$
-
-- **Missing Persons Matcher**: Heuristically matches registered missing person cases against incoming hospital intake casualty logs and safe citizen check-ins.
-
----
-
-### 5. Tactical Resource Dispatch Engine
-Computes a deterministic priority score ($0-100$) to allocate scarce rescue assets:
-
-$$\text{Priority Score} = \frac{\max(\text{Verified Threat},\, \text{Inferred Risk}) \times \log_{10}(\text{Exposed Pop}) \times (1.0 + \text{Isolation Index})}{\text{Assigned Missions} + 1}$$
-
-- Automatically matches specialized unit types:
-  - `air_ambulance` & `mobile_comms` for severed mountain blackouts.
-  - `heavy_excavator` for road blockages and bridge washouts.
-  - `sar_heavy` & `medical_triage` for urban multi-story structural collapse.
-
----
-
-### 6. 24-Hour Timeline & Automated SITREP Generator
-- Replay engine manages simulated time ($T_0$ to $T_{24\text{h}}$) with time-phased data arrivals.
-- Synthesizes formal UN OCHA Situation Reports detailing:
-  - Executive Operational Briefing.
-  - Reconciled Casualty Ledger (Fatalities, Injured, Trapped, Missing).
-  - Critical Sector Intervention Table.
-  - Silent Blackout Threat Briefing.
-  - Commander Priority Directives.
+- **Weights**: $w_1 = 0.55$ (Name Similarity), $w_2 = 0.25$ (Attribute Token Overlap), $w_3 = 0.20$ (Age Proximity), with a $+0.05$ geographic sector bonus.
+- **Abbreviation Awareness**: Automatically links variations like `"Rajesh Kumar, 34"` and `"Rajesh K., 35, Red Shirt"`.
+- **Classification Tiers**:
+  - **High-Confidence Auto-Match ($\text{Score} \ge 0.85$)**: Automatically reconciles the record to `"Accounted / Sheltered"` or `"In Hospital Triage"`.
+  - **Suggested Match Review Queue ($0.65 \le \text{Score} < 0.85$)**: Surfaces to dispatchers in a dedicated review queue with 1-click confirmation.
 
 ---
 
 ## 🗺️ Fixed 8-Location Central Nepal Gazetteer
 
-| Sector ID | District / Hub | Centroid Lat | Centroid Lon | Key Municipalities & Landmarks |
-| :--- | :--- | :--- | :--- | :--- |
-| `kathmandu` | **Kathmandu** | `27.7172° N` | `85.3240° E` | KTM, Thamel, New Road, Bhotahiti, Kalanki, Singha Durbar, Balaju |
-| `bhaktapur` | **Bhaktapur** | `27.6710° N` | `85.4298° E` | Bhadgaon, Durbar Square, Sallaghari, Thimi, Madhyapur, Suryabinayak |
-| `sindhupalchok`| **Sindhupalchok** | `27.9500° N` | `85.7000° E` | Chautara, Melamchi, Bahrabise, Tatopani, Helambu, Araniko Highway |
-| `dolakha` | **Dolakha** | `27.7500° N` | `86.1000° E` | Charikot, Jiri, Tama Koshi, Singati, Bhimeshwor, Kalinchowk |
-| `nuwakot` | **Nuwakot** | `27.9167° N` | `85.1667° E` | Bidur, Trishuli, Battar, Devighat, Kakani, Samari |
-| `gorkha` | **Gorkha** | `28.0000° N` | `84.6333° E` | Barpak (Epicenter), Arughat, Laprak, Manakamana, Palungtar |
-| `rasuwa` | **Rasuwa** | `28.1500° N` | `85.3000° E` | Dhunche, Syabrubesi, Langtang Valley, Timure, Betrawati |
-| `sindhuli` | **Sindhuli** | `27.2500° N` | `85.9500° E` | Kamalamai, Sindhulimadhi, BP Highway, Khurkot, Dudhauli |
+The system focuses on the 8 most critical disaster sectors across Central Nepal:
+
+| Sector ID | Sector Name | Lat / Lon | Elevation | Baseline Pop (2021 Census) | Critical Hazard Axis |
+|---|---|---|---|---|---|
+| `gorkha` | Gorkha | 28.00°N, 84.63°E | 1,900m | 75,130 | Barpak M7.8 Epicenter & Mountain Slopes |
+| `sindhupalchok` | Sindhupalchok | 27.77°N, 85.70°E | 1,450m | 83,764 | Melamchi River Basin & Araniko Highway |
+| `kathmandu` | Kathmandu | 27.72°N, 85.32°E | 1,400m | 1,092,626 | High-Density Masonry & Commuter Flux |
+| `bhaktapur` | Bhaktapur | 27.67°N, 85.43°E | 1,401m | 163,258 | Heritage Durbar Square & Clay Soil Shaking |
+| `rasuwa` | Rasuwa | 28.13°N, 85.30°E | 1,960m | 8,140 | Langtang Trekking Corridor & Dhunche Gorge |
+| `nuwakot` | Nuwakot | 27.91°N, 85.16°E | 1,020m | 54,320 | Trishuli Highway River Blockages & Bidur |
+| `dolakha` | Dolakha | 27.70°N, 86.05°E | 1,650m | 32,410 | Charikot Market & Tama Koshi Valley |
+| `sindhuli` | Sindhuli | 27.25°N, 85.92°E | 550m | 65,410 | BP Highway Mountain Cuts & Kamalamai Valley |
 
 ---
 
-## 📡 Complete API Contract Reference
+## 🎨 Calm Crisis Intelligence UX Architecture
 
-| Endpoint | Method | Capability Area | Description |
-| :--- | :--- | :--- | :--- |
-| `/gis/telemetry` | `GET` | Capability 1: GIS | Geospatial telemetry, coordinates, severity, isolation indices. |
-| `/deduplication/unified-truth` | `GET` | Capability 2: Truth | Deduplicated multi-agency consensus records and dispute summaries. |
-| `/blackout-intel/risk-assessment` | `GET` | Capability 3: Blackout | Spatial physics inferred risk scores for all 8 sectors. |
-| `/population/exposure` | `GET` | Capability 4: Population | Real-time exposed population counts with commuter and tourist flux. |
-| `/population/missing-persons` | `GET` / `POST` | Capability 4: Population | Search and register missing persons with auto-hospital matching. |
-| `/dispatch/dashboard` | `GET` | Capability 5: Dispatch | Priority deployment queue, resource unit status, active missions. |
-| `/dispatch/recommendations` | `GET` | Capability 5: Dispatch | Priority-ranked sector dispatch recommendations. |
-| `/dispatch/units` | `GET` | Capability 5: Dispatch | Specialized resource inventory (SAR, helicopters, excavators). |
-| `/dispatch/assign` | `POST` | Capability 5: Dispatch | Authorize tactical deployment mission. |
-| `/sitrep/current` | `GET` | Capability 6: SITREP | Live formal UN OCHA Situation Report document. |
-| `/locations/status` | `GET` | Core Matrix | Main situation status per sector. |
-| `/locations/{id}/incidents` | `GET` | Core Matrix | Deduplicated cluster dossiers with transparent scoring formulas. |
-| `/reports` | `POST` | Core Ingestion | Live field report injection with immediate AI pipeline execution. |
-| `/simulation/advance` | `POST` | Core Replay | Step simulation replay clock (+1h, +4h). |
-| `/simulation/reset` | `POST` | Core Replay | Reset clock to $T_0$ (`2026-08-30T06:00:00Z`). |
+The frontend follows the philosophy of **"Calm Crisis Intelligence"** (*Chaos outside. Clarity inside*):
+- **Editorial Typography**: `Newsreader` (narrative subtitles & quotes), `Plus Jakarta Sans` (display headlines), `Inter` (high-readability operational prose), and `JetBrains Mono` (telemetry & coordinates).
+- **Default Dark Mode**: Obsidian charcoal (`#0C0E12`) surfaces with warm off-white typography, quiet slate borders, restrained blue (`#2563EB`), amber (`#D97706`), crimson (`#E11D48`), and emerald (`#059669`).
+- **Spatial Command Arena**:
+  - **Left (7 Columns)**: Vector cartography with pulsating Barpak epicenter, smooth camera `flyTo` transitions, and toggleable H3 Hexagonal Grid.
+  - **Right (5 Columns)**: Active Sector Operational Action Dossier answering the 5 key operator questions in plain, non-jargon language.
+- **4 Operational Pillars in Navigation**:
+  1. `01 SITUATION` (`/` Command Matrix, `/gis-map` Full Cartography)
+  2. `02 INTELLIGENCE` (`/deduplication` Consensus Ledger, `/blackout-intel` Silent Risk, `/population` Population Exposure)
+  3. `03 RESPONSE` (`/dispatch` Tactical Queue)
+  4. `04 REPORT` (`/sitrep` Automated UN OCHA SITREP)
 
 ---
 
-## ⚙️ UI, Stability & Hydration Architecture
+## 🔌 API Endpoint Reference
 
-1. **Hydration Warning Safety**:
-   - `suppressHydrationWarning` is configured on root `<html>` and `<body>` elements in `app/layout.tsx` to handle browser extension attributes (such as `cz-shortcut-listen="true"`).
-2. **Conflict-Free Composite React Keys**:
-   - Across all multi-page grids and tables, mapped elements use sector-scoped composite keys (e.g. `${record.sector_id}-${record.cluster_id}-${index}`) preventing collision warnings across regional clusters.
-3. **Live State Synchronization**:
-   - Polling engine synchronizes status changes every 2.5s with non-blocking async background timers.
+### 1. Ingestion & Simulation
+- `POST /reports`: Ingest raw emergency report (English / Nepali) with instant NLP extraction and deduplication.
+- `POST /simulation/advance`: Advance simulated clock timeline (`+1.0h`, `+4.0h`).
+- `POST /simulation/reset`: Reset simulation clock to $T_0$ (2026-08-30 06:00 UTC).
+- `POST /seed`: Seed 84 realistic multi-agency disaster reports.
+
+### 2. GIS & H3 Hexagonal Cartography
+- `GET /gis/telemetry`: Retrieve real-time GIS spatial telemetry for all 8 sectors.
+- `GET /gis/h3-grid`: Retrieve Uber H3 hexagonal grid cells (Resolution 8) with $E_{cell}$ Silent Exposure metrics.
+
+### 3. Deduplication & Unified Truth
+- `GET /deduplication/unified-truth`: Retrieve multi-agency deduplicated consensus records with dispute ranges and satellite cross-validation.
+- `GET /deduplication/before-after-showcase`: Retrieve the 20 raw chaotic messages condensed into 3 prioritized rescue tasks.
+
+### 4. Silent Blackout Intelligence
+- `GET /blackout-intel/risk-assessment`: Retrieve spatial physics inferred risk scores, terrain slopes, and reconnaissance priority queues.
+
+### 5. Population Exposure & Entity Resolution
+- `GET /population/exposure`: Dynamic exposed population accounting for commuters, tourists, and evacuations.
+- `GET /population/missing-persons`: Searchable missing persons inquiries registry.
+- `POST /population/missing-persons`: Register a new missing person inquiry.
+- `GET /population/reconciliation-ledger`: Split-view Missing vs. Found table with auto-matches ($>0.85$) and suggested review queue ($0.65-0.84$).
+- `POST /population/confirm-match`: Confirm a suggested entity match and update victim status.
+- `GET /population/palikas/{sector_id}`: Official 2021 NSO Census municipal breakdown with shelter tent requirements.
+
+### 6. Tactical Dispatch & SITREP
+- `GET /dispatch/dashboard`: Priority-ranked dispatch queue with resource inventory.
+- `POST /dispatch/assign`: Authorize and deploy a specialized response unit.
+- `GET /sitrep/current`: Automated UN OCHA / NDMA standardized Situation Report.
 
 ---
 
 ## 🧪 Automated Verification & Test Matrix
 
-Run the automated test suite across all 6 capabilities and pipeline modules:
 ```bash
-python -m pytest -v
+cd backend
+pytest -v
 ```
 
-### Test Results (32/32 Passing):
-```
-tests/test_aggregator.py::test_blackout_no_reports PASSED                [  3%]
-tests/test_aggregator.py::test_blackout_silence_window_exceeded PASSED   [  6%]
-tests/test_aggregator.py::test_verified_damaged PASSED                   [  9%]
-tests/test_aggregator.py::test_verified_safe PASSED                      [ 12%]
-tests/test_aggregator.py::test_unverified PASSED                         [ 15%]
-tests/test_api.py::test_root_endpoint PASSED                             [ 18%]
-tests/test_api.py::test_get_locations PASSED                             [ 21%]
-tests/test_api.py::test_all_locations_status PASSED                      [ 25%]
-tests/test_api.py::test_single_location_status PASSED                    [ 28%]
-tests/test_api.py::test_location_incidents PASSED                        [ 31%]
-tests/test_api.py::test_post_report_valid_and_invalid PASSED             [ 34%]
-tests/test_api.py::test_simulation_clock_lifecycle PASSED                [ 37%]
-tests/test_api.py::test_seed_endpoint PASSED                             [ 40%]
-tests/test_capabilities.py::test_gis_telemetry PASSED                    [ 43%]
-tests/test_capabilities.py::test_deduplication_unified_truth PASSED      [ 46%]
-tests/test_capabilities.py::test_blackout_risk_intelligence PASSED       [ 50%]
-tests/test_capabilities.py::test_population_exposure_and_missing_persons PASSED [ 53%]
-tests/test_capabilities.py::test_tactical_resource_dispatch PASSED       [ 56%]
-tests/test_capabilities.py::test_timeline_sitrep_generator PASSED        [ 59%]
-tests/test_clustering.py::test_clustering_near_duplicates PASSED         [ 62%]
-tests/test_clustering.py::test_clustering_distinct_events PASSED         [ 65%]
-tests/test_clustering.py::test_clustering_empty_and_single PASSED        [ 68%]
-tests/test_extractor.py::test_extract_location_by_keyword PASSED         [ 71%]
-tests/test_extractor.py::test_extract_location_by_coordinates_fallback PASSED [ 75%]
-tests/test_extractor.py::test_extract_location_unresolved PASSED         [ 78%]
-tests/test_extractor.py::test_extract_casualties PASSED                  [ 81%]
-tests/test_extractor.py::test_extract_damage_type PASSED                 [ 84%]
-tests/test_extractor.py::test_extract_all_edge_cases PASSED              [ 87%]
-tests/test_scoring.py::test_source_trust_weights PASSED                  [ 90%]
-tests/test_scoring.py::test_coordinate_bonus PASSED                      [ 93%]
-tests/test_scoring.py::test_staleness_decay_half_life PASSED             [ 96%]
-tests/test_scoring.py::test_corroboration_bonus PASSED                   [100%]
-
-============================= 32 passed in 15.41s =============================
-```
+| Test Suite | Tests | Description |
+|---|---|---|
+| `test_reconciliation_and_showcases.py` | 5 | Jaro-Winkler similarity, hybrid entity scoring, H3 grid, Before/After showcase |
+| `test_extractor.py` | 10 | Bilingual regex & NLP extraction (casualties, damage types, locations) |
+| `test_clustering.py` | 3 | Agglomerative clustering on cosine distance & 200m spatial deduplication |
+| `test_scoring.py` | 4 | Source trust weighting, coordinate bonuses, and exponential confidence decay |
+| `test_aggregator.py` | 5 | Location status transitions (`verified_damaged`, `blackout`, `verified_safe`) |
+| `test_capabilities.py` | 7 | GIS telemetry, population exposure, blackout risk, tactical dispatch, SITREP |
+| `test_api.py` | 9 | FastAPI HTTP routes, payload validation, simulation clock controls |
+| **Total** | **43 Passing** | **100% Passing in ~2.8 seconds** |
 
 ---
 
-## 📁 Project Directory Tree
+## 📁 Repository Directory Structure
 
 ```
 .
-├── backend/                            # FastAPI AI Backend Service
-│   ├── Dockerfile                      # Production Docker container definition
-│   ├── .dockerignore                   # Docker build exclusions
-│   ├── requirements.txt                # Python dependencies (FastAPI, PyTorch, SentenceTransformers)
-│   ├── prepare_dataset.py              # Automated dataset retrieval script
-│   ├── app/                            # Core Application Package
-│   │   ├── config.py                   # Project configuration & scoring weights
-│   │   ├── database.py                 # SQLite engine & session management
-│   │   ├── main.py                     # FastAPI lifespan, CORS, error handlers, router mounting
+├── backend/
+│   ├── app/
+│   │   ├── config.py                 # System configuration & thresholds
+│   │   ├── database.py               # SQLite / SQLAlchemy connection
+│   │   ├── main.py                   # FastAPI application & middleware
 │   │   ├── models/
-│   │   │   ├── db.py                   # SQLAlchemy ORM models (Reports, Clock, MissingPerson, ResourceUnit, DispatchMission)
-│   │   │   └── schemas.py              # Pydantic v2 schemas for all 6 capabilities
+│   │   │   ├── db.py                 # SQLAlchemy ORM database models
+│   │   │   └── schemas.py            # Pydantic v2 validation models
 │   │   ├── pipeline/
-│   │   │   ├── gazetteer.py            # 8 Nepal locations, aliases, Haversine fallback
-│   │   │   ├── extractor.py            # Regex extraction (places, casualties, damage tags)
-│   │   │   ├── embedder.py             # SentenceTransformer embedding with caching
-│   │   │   ├── clustering.py           # Cosine similarity clustering (≥ 0.75)
-│   │   │   ├── scoring.py              # Explainable reliability scoring & exponential decay
-│   │   │   ├── aggregator.py           # Per-location status machine & blackout detection
-│   │   │   ├── blackout_risk.py        # Spatial physics inferred risk engine for silent zones
-│   │   │   ├── population_exposure.py  # Dynamic population exposure & missing persons matcher
-│   │   │   ├── dispatch_engine.py      # Tactical resource dispatch recommendation ranking
-│   │   │   └── sitrep_generator.py     # Automated UN OCHA Situation Report compiler
-│   │   ├── routers/
-│   │   │   ├── locations.py            # /locations, /status, /{id}/status, /{id}/incidents
-│   │   │   ├── reports.py              # POST /reports (live ingest) & GET /reports
-│   │   │   ├── simulation.py           # /simulation/state, advance, reset, seed
-│   │   │   ├── gis.py                  # /gis/telemetry
-│   │   │   ├── deduplication.py        # /deduplication/unified-truth
-│   │   │   ├── blackout_intel.py       # /blackout-intel/risk-assessment
-│   │   │   ├── population.py           # /population/exposure, /missing-persons
-│   │   │   ├── dispatch.py             # /dispatch/dashboard, recommendations, assign
-│   │   │   └── sitrep.py               # /sitrep/current
-│   │   └── simulation/
-│   │       ├── clock.py                # 24-hour replay clock manager
-│   │       └── generator.py            # 280+ realistic synthetic disaster dataset generator
-│   └── tests/                          # Pytest Automated Test Suite
-│       ├── conftest.py                 # Shared test fixtures (TestClient, DB setup)
-│       ├── test_extractor.py           # Regex extraction tests
-│       ├── test_clustering.py          # Dense vector clustering tests
-│       ├── test_scoring.py             # Source weights & staleness decay tests
-│       ├── test_aggregator.py          # Status state machine & silence window tests
-│       ├── test_api.py                 # Core API integration tests
-│       └── test_capabilities.py        # Integration tests for all 6 new capabilities
-├── frontend/                           # Next.js 16 Brutalist Multi-Page App
-│   ├── Dockerfile                      # Standalone frontend Dockerfile
-│   ├── .dockerignore                   # Frontend Docker exclusions
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── globals.css             # Brutalist theme tokens, zero-radius, CSS variables
-│   │   │   ├── layout.tsx              # Root layout with global Navbar & font loaders
-│   │   │   ├── page.tsx                # [01: OVERVIEW] Mission Control & Situation Matrix
-│   │   │   ├── gis-map/page.tsx        # [02: GIS MATRIX] Satellite Telemetry & Spatial Heatmap
-│   │   │   ├── deduplication/page.tsx  # [03: UNIFIED TRUTH] Multi-Agency Conflict Resolver
-│   │   │   ├── blackout-intel/page.tsx # [04: BLACKOUT INTEL] Spatial Physics Risk Engine
-│   │   │   ├── population/page.tsx     # [05: POPULATION] Exposure Tracker & Missing Registry
-│   │   │   ├── dispatch/page.tsx       # [06: TACTICAL DISPATCH] Resource Allocation Center
-│   │   │   └── sitrep/page.tsx         # [07: SITREP GEN] Official Printable Situation Report
-│   │   ├── components/
-│   │   │   ├── Navbar.tsx              # Global navigation bar across all 7 pages
-│   │   │   ├── HeroFog.tsx             # Signature hero with scroll/time-based fog lift
-│   │   │   ├── SimulationControls.tsx  # Persistent replay toolbar (+1h, +4h, reset, re-seed)
-│   │   │   ├── StatusGrid.tsx          # 8-sector situation matrix cards
-│   │   │   ├── LocationDetailModal.tsx # Incident cluster dossiers & scoring formulas
-│   │   │   ├── ReportInjectionForm.tsx # Field report injector with instant AI feedback
-│   │   │   └── SystemArchitecture.tsx  # Gazetteer reference & formula specifications
-│   │   └── lib/
-│   │       └── api.ts                  # Type-safe API client for all backend capabilities
-│   ├── package.json
-│   └── tsconfig.json
-├── docker-compose.yml                  # Root multi-container orchestration
-├── render.yaml                         # Render Infrastructure-as-Code blueprint
-├── .gitignore                          # Monorepo gitignore rules
-└── README.md                           # Master Documentation
+│   │   │   ├── aggregator.py         # Location status aggregation
+│   │   │   ├── before_after_engine.py# 20 raw messages -> 3 rescue tasks engine
+│   │   │   ├── blackout_risk.py      # Spatial physics & Bayesian silence model
+│   │   │   ├── clustering.py         # Cosine semantic & spatial clustering
+│   │   │   ├── dispatch_engine.py    # Resource priority ranking & allocation
+│   │   │   ├── embedder.py           # Dense sentence-transformers embedding
+│   │   │   ├── extractor.py          # Bilingual NLP info extraction
+│   │   │   ├── gazetteer.py          # Central Nepal 8-sector gazetteer
+│   │   │   ├── h3_grid.py            # Uber H3 Hexagonal Grid & E_cell generator
+│   │   │   ├── nepali_nlp.py         # Devanagari transliteration dictionary
+│   │   │   ├── population_exposure.py# 2021 Census & dynamic exposure
+│   │   │   ├── reconciliation.py     # Jaro-Winkler hybrid entity resolution
+│   │   │   ├── satellite_evidence.py # Copernicus Sentinel-1 radar cross-validation
+│   │   │   ├── scoring.py            # Source credibility & time-decay scoring
+│   │   │   ├── sitrep_generator.py   # UN OCHA SITREP briefing generator
+│   │   │   └── structural_fragility.py# 260K building census fragility priors
+│   │   ├── routers/                  # Modular FastAPI route handlers
+│   │   └── simulation/               # 24-hour simulation clock engine
+│   ├── tests/                        # 43 automated pytest unit & integration tests
+│   └── requirements.txt
+│
+└── frontend/
+    ├── src/
+    │   ├── app/
+    │   │   ├── layout.tsx            # Next.js Root Layout with Newsreader & Inter fonts
+    │   │   ├── globals.css           # Calm Crisis design tokens & dark theme
+    │   │   ├── page.tsx              # Unified Command Arena & 4-Pillar Hub
+    │   │   ├── gis-map/page.tsx      # Full GIS Cartography with H3 overlay
+    │   │   ├── deduplication/page.tsx# Unified Truth Consensus Ledger
+    │   │   ├── blackout-intel/page.tsx# Silent Blackout Intelligence Dossier
+    │   │   ├── population/page.tsx   # Population & Probabilistic Reconciliation
+    │   │   ├── dispatch/page.tsx     # Tactical Resource Dispatch Queue
+    │   │   └── sitrep/page.tsx       # Automated UN OCHA Situation Report
+    │   ├── components/               # React components (Map, Dossier, Showcase, Ledger)
+    │   ├── context/                  # ThemeContext & ViewModeContext
+    │   └── lib/                      # Type-safe API client (api.ts)
+    └── package.json
 ```
 
 ---
 
 <div align="center">
-
-**Post-Disaster Information Fog** — Built as a reliable, load-bearing national disaster-response command system.
-
+  <sub>Built for the National Emergency Operations Centre (NEOC) • Project PRISM 2026</sub>
 </div>
