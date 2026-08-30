@@ -7,7 +7,7 @@ import { useViewMode } from "@/context/ViewModeContext";
 
 const InteractiveVectorMap = dynamic(
   () => import("@/components/InteractiveVectorMap"),
-  { ssr: false, loading: () => <div className="h-[520px] bg-[#0A0A0A] border border-[#EDEDE8]/15 flex items-center justify-center font-mono-data text-xs text-[#EDEDE8]/50">INITIALIZING LEAFLET VECTOR CARTOGRAPHY...</div> }
+  { ssr: false, loading: () => <div className="h-[520px] bg-slate-100 dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 flex items-center justify-center font-mono text-xs text-slate-400">INITIALIZING LEAFLET VECTOR CARTOGRAPHY...</div> }
 );
 
 export default function GisMapPage() {
@@ -48,12 +48,12 @@ export default function GisMapPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "verified_safe":
-        return "#3FB950";
+        return "#10B981";
       case "verified_damaged":
       case "blackout":
-        return "#E5484D";
+        return "#F43F5E";
       default:
-        return "#FFB800";
+        return "#F59E0B";
     }
   };
 
@@ -61,7 +61,7 @@ export default function GisMapPage() {
     if (sector.status === "verified_damaged") {
       return "Deploy Urban SAR Heavy Battalion + Emergency Field Hospital";
     } else if (sector.status === "blackout" || sector.isolation_index > 0.7) {
-      return "Deploy MI-17 Aerial Reconnaissance + Satellite Comms Restoration";
+      return "Deploy High-Altitude Reconnaissance + Satellite Comms Restoration";
     } else if (sector.status === "unverified") {
       return "Dispatch APF First-Responder Reconnaissance Patrol";
     } else {
@@ -71,31 +71,33 @@ export default function GisMapPage() {
 
   return (
     <div className="p-6 sm:p-10 lg:p-14 space-y-8 max-w-7xl mx-auto w-full">
-      {/* Page Header: WHAT IS HAPPENING */}
-      <div className="border-b border-[#EDEDE8]/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
-            01 // SITUATION MAP
+      {/* Page Header */}
+      <div className="border-b border-slate-200 dark:border-slate-800 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <div className="prism-badge-cyan">
+            <span>01</span>
+            <span>//</span>
+            <span>SITUATION MAP</span>
           </div>
-          <h1 className="font-display text-3xl sm:text-5xl font-bold tracking-tight text-[#EDEDE8]">
-            WHERE IS THE PROBLEM?
+          <h1 className="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white tracking-tight">
+            Geospatial Radar & Regional Telemetry
           </h1>
-          <p className="font-body-prose text-sm text-[#EDEDE8]/70 mt-1 max-w-2xl leading-relaxed">
+          <p className="font-body-prose text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
             Real-time geospatial radar tracking earthquake epicenter impact, road isolation impedance, and critical population centers across Central Nepal.
           </p>
         </div>
 
         {/* Layer Filters */}
-        <div className="flex items-center gap-2 font-mono-data text-xs">
-          <span className="text-[#EDEDE8]/50 text-[11px] uppercase mr-1">OVERLAY:</span>
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <span className="text-slate-400 text-[11px] uppercase mr-1">OVERLAY:</span>
           {(["severity", "epicenter", "isolation"] as const).map((layer) => (
             <button
               key={layer}
               onClick={() => setActiveLayer(layer)}
-              className={`px-3 py-1.5 font-medium uppercase border transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-full font-bold uppercase transition-all cursor-pointer border ${
                 activeLayer === layer
-                  ? "bg-[#EDEDE8] text-[#0A0A0A] border-[#EDEDE8] font-bold"
-                  : "bg-transparent text-[#EDEDE8]/70 border-[#EDEDE8]/20 hover:border-[#EDEDE8]/40"
+                  ? "bg-[#0088A9] text-white border-[#0088A9] shadow-xs"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700"
               }`}
             >
               {layer}
@@ -105,7 +107,7 @@ export default function GisMapPage() {
       </div>
 
       {error && (
-        <div className="bg-[#E5484D]/10 border border-[#E5484D] p-4 font-mono-data text-xs text-[#E5484D]">
+        <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 p-4 rounded-2xl font-mono text-xs text-rose-700 dark:text-rose-300">
           [GIS_TELEMETRY_ERROR]: {error}
         </div>
       )}
@@ -113,33 +115,33 @@ export default function GisMapPage() {
       {/* Main Map & Detail Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
         {/* Visual Map Canvas (7 Columns) */}
-        <div className="lg:col-span-7 surface-card p-6 relative space-y-4">
-          <div className="flex flex-wrap items-center justify-between border-b border-[#EDEDE8]/10 pb-3 gap-2 font-mono-data text-xs">
+        <div className="lg:col-span-7 prism-card p-6 relative space-y-4">
+          <div className="flex flex-wrap items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 gap-2 font-mono text-xs">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 bg-[#FFB800] inline-block" />
-              <span className="font-bold text-[#EDEDE8]">
+              <span className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
+              <span className="font-bold text-slate-800 dark:text-slate-200">
                 {mapViewMode === "vector" ? "HDX UN OCHA VECTOR MAP" : "SPATIAL RADAR HUD"} // 8 SECTORS
               </span>
             </div>
 
             {/* Dual Mode Switcher */}
-            <div className="flex items-center gap-1 bg-[#0A0A0A] p-1 border border-[#EDEDE8]/20">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-full border border-slate-200 dark:border-slate-700">
               <button
                 onClick={() => setMapViewMode("vector")}
-                className={`px-2.5 py-1 text-[11px] font-bold uppercase transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-full text-xs font-bold uppercase transition-all cursor-pointer ${
                   mapViewMode === "vector"
-                    ? "bg-[#FFB800] text-[#0A0A0A]"
-                    : "text-[#EDEDE8]/60 hover:text-[#EDEDE8]"
+                    ? "bg-[#0088A9] text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
                 }`}
               >
                 🗺️ Vector Map
               </button>
               <button
                 onClick={() => setMapViewMode("radar")}
-                className={`px-2.5 py-1 text-[11px] font-bold uppercase transition-all cursor-pointer ${
+                className={`px-3 py-1 rounded-full text-xs font-bold uppercase transition-all cursor-pointer ${
                   mapViewMode === "radar"
-                    ? "bg-[#FFB800] text-[#0A0A0A]"
-                    : "text-[#EDEDE8]/60 hover:text-[#EDEDE8]"
+                    ? "bg-[#0088A9] text-white shadow-xs"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
                 }`}
               >
                 📡 Radar HUD
@@ -156,11 +158,11 @@ export default function GisMapPage() {
               activeLayer={activeLayer}
             />
           ) : (
-            <div className="relative aspect-[4/3] bg-[#0A0A0A] border border-[#EDEDE8]/15 p-6 overflow-hidden flex flex-col justify-between">
+            <div className="relative aspect-[4/3] bg-slate-950 rounded-2xl border border-slate-800 p-6 overflow-hidden flex flex-col justify-between text-white">
               {/* Subtle Grid Lines */}
-              <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-5 pointer-events-none">
+              <div className="absolute inset-0 grid grid-cols-6 grid-rows-6 opacity-10 pointer-events-none">
                 {Array.from({ length: 36 }).map((_, i) => (
-                  <div key={i} className="border border-[#EDEDE8]" />
+                  <div key={i} className="border border-slate-700" />
                 ))}
               </div>
 
@@ -169,11 +171,11 @@ export default function GisMapPage() {
                 className="absolute pointer-events-none z-10 -translate-x-1/2 -translate-y-1/2"
                 style={{ left: "15%", top: "35%" }}
               >
-                <div className="w-8 h-8 rounded-full border border-[#E5484D] opacity-40 animate-ping absolute inset-0" />
-                <div className="w-3 h-3 bg-[#E5484D] flex items-center justify-center font-mono-data text-[8px] text-[#EDEDE8] font-bold">
+                <div className="w-8 h-8 rounded-full border border-rose-500 opacity-50 animate-ping absolute inset-0" />
+                <div className="w-3.5 h-3.5 rounded-full bg-rose-500 flex items-center justify-center font-mono text-[9px] text-white font-bold">
                   ✕
                 </div>
-                <span className="absolute left-4 top-0 whitespace-nowrap font-mono-data text-[9px] text-[#E5484D] font-bold bg-[#0A0A0A]/90 px-1 border border-[#E5484D]/40">
+                <span className="absolute left-5 top-0 whitespace-nowrap font-mono text-[10px] text-rose-400 font-bold bg-slate-900/90 px-2 py-0.5 rounded-md border border-rose-500/40">
                   M7.8 EPICENTER
                 </span>
               </div>
@@ -191,20 +193,20 @@ export default function GisMapPage() {
                       key={`${sector.sector_id}-${idx}`}
                       onClick={() => setSelectedSectorId(sector.sector_id)}
                       style={{ left: `${normX}%`, top: `${normY}%` }}
-                      className={`absolute -translate-x-1/2 -translate-y-1/2 p-2 border transition-all select-none text-left cursor-pointer ${
+                      className={`absolute -translate-x-1/2 -translate-y-1/2 p-2.5 rounded-xl border transition-all select-none text-left cursor-pointer ${
                         isSelected
-                          ? "bg-[#EDEDE8] text-[#0A0A0A] border-[#FFB800] z-30 shadow-lg scale-105"
-                          : "bg-[#0A0A0A]/90 text-[#EDEDE8] border-[#EDEDE8]/20 hover:border-[#EDEDE8] z-20"
+                          ? "bg-white text-slate-900 border-cyan-500 z-30 shadow-xl scale-105"
+                          : "bg-slate-900/90 text-white border-slate-700 hover:border-slate-500 z-20"
                       }`}
                     >
-                      <div className="flex items-center gap-1.5 font-mono-data text-[10px] font-bold">
-                        <span className="w-1.5 h-1.5" style={{ backgroundColor: color }} />
+                      <div className="flex items-center gap-1.5 font-mono text-[10px] font-bold">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
                         <span className="uppercase">{sector.sector_name}</span>
                       </div>
 
                       <div
-                        className={`text-[9px] font-mono-data mt-0.5 ${
-                          isSelected ? "text-[#0A0A0A]/70" : "text-[#EDEDE8]/60"
+                        className={`text-[9.5px] font-mono mt-0.5 ${
+                          isSelected ? "text-slate-600" : "text-slate-400"
                         }`}
                       >
                         {activeLayer === "severity" && `Sev: ${sector.severity_index.toFixed(1)}/10`}
@@ -217,7 +219,7 @@ export default function GisMapPage() {
               </div>
 
               {/* Radar Footer */}
-              <div className="flex justify-between items-center text-[10px] font-mono-data text-[#EDEDE8]/40 border-t border-[#EDEDE8]/10 pt-2 z-10">
+              <div className="flex justify-between items-center text-[10px] font-mono text-slate-400 border-t border-slate-800 pt-2 z-10">
                 <span>LAT: 27.2°N - 28.2°N</span>
                 <span>LON: 84.5°E - 86.2°E</span>
               </div>
@@ -226,20 +228,20 @@ export default function GisMapPage() {
         </div>
 
         {/* Selected Sector Inspector Panel (5 Columns) */}
-        <div className="lg:col-span-5 surface-card p-6 space-y-6">
+        <div className="lg:col-span-5 prism-card p-6 space-y-6">
           {selectedSector ? (
             <div className="space-y-6">
               {/* Sector Title & Status */}
               <div>
-                <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1">
-                  SECTOR TELEMETRY DOSSIER
+                <div className="prism-badge-cyan mb-1.5">
+                  <span>SECTOR TELEMETRY DOSSIER</span>
                 </div>
-                <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#EDEDE8]">
+                <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white">
                   {selectedSector.sector_name}
                 </h2>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-2 mt-2.5">
                   <span
-                    className="px-2.5 py-0.5 font-mono-data text-xs font-bold border uppercase"
+                    className="px-3 py-1 rounded-full font-mono text-xs font-bold uppercase border"
                     style={{
                       borderColor: getStatusColor(selectedSector.status),
                       color: getStatusColor(selectedSector.status),
@@ -248,153 +250,71 @@ export default function GisMapPage() {
                   >
                     {selectedSector.status.replace("_", " ")}
                   </span>
-                  <span className="text-xs font-mono-data text-[#EDEDE8]/50">
-                    THREAT: {selectedSector.threat_tier}
+                  <span className="text-xs font-mono text-slate-500">
+                    ID: {selectedSector.sector_id.toUpperCase()}
                   </span>
                 </div>
               </div>
 
-              {/* Human Impact Summary */}
-              <div className="grid grid-cols-2 gap-3 font-mono-data text-xs">
-                <div className="bg-[#EDEDE8]/3 p-3 border border-[#EDEDE8]/10">
-                  <span className="text-[#EDEDE8]/50 text-[10px] block uppercase">EST. CASUALTIES</span>
-                  <strong className="text-[#E5484D] text-lg font-bold">
-                    {selectedSector.estimated_casualties}
-                  </strong>
-                </div>
-                <div className="bg-[#EDEDE8]/3 p-3 border border-[#EDEDE8]/10">
-                  <span className="text-[#EDEDE8]/50 text-[10px] block uppercase">ROAD ISOLATION</span>
-                  <strong className="text-[#FFB800] text-lg font-bold">
-                    {(selectedSector.isolation_index * 100).toFixed(0)}%
-                  </strong>
-                </div>
-              </div>
-
-              {/* Satellite Orbital Cross-Check Badge */}
-              {selectedSector.satellite_corroborated && (
-                <div className="bg-[#0A0A0A] border border-[#3FB950]/30 p-3.5 space-y-1.5 font-mono-data text-xs">
-                  <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-[#3FB950] font-bold uppercase flex items-center gap-1.5">
-                      <span>🛰️ SATELLITE ORBITAL CROSS-CHECK</span>
-                    </span>
-                    <span className="px-2 py-0.5 bg-[#3FB950]/15 text-[#3FB950] font-bold">
-                      CONFIRMED
-                    </span>
-                  </div>
-                  <div className="text-[11px] text-[#EDEDE8]/80">
-                    SENSOR: <strong className="text-[#EDEDE8]">{selectedSector.satellite_sensor || "UNOSAT UNITAR / Sentinel-1 SAR"}</strong>
-                  </div>
-                </div>
-              )}
-
-              {/* Operational Recommended Action (Level 3) */}
-              <div className="bg-[#EDEDE8]/3 border-l-2 border-[#FFB800] p-4 text-xs font-body-prose">
-                <span className="font-mono-data text-[10px] text-[#FFB800] uppercase font-bold block mb-1">
-                  RECOMMENDED ACTION:
+              {/* Action Directive */}
+              <div className="p-4 rounded-2xl bg-cyan-50/60 dark:bg-cyan-950/30 border-l-4 border-[#0088A9] text-xs">
+                <span className="font-mono text-[10px] font-bold text-cyan-700 dark:text-cyan-400 uppercase block mb-1">
+                  OPERATIONAL DIRECTIVE:
                 </span>
-                <p className="text-[#EDEDE8] text-sm font-medium">
+                <p className="font-body-prose font-semibold text-slate-800 dark:text-slate-200">
                   {getRecommendedAction(selectedSector)}
                 </p>
               </div>
 
-              {/* Progressive Disclosure: Why This Risk? */}
-              <div className="pt-2 border-t border-[#EDEDE8]/10 space-y-3 font-mono-data text-xs">
-                <button
-                  onClick={() => setShowEvidence(!showEvidence)}
-                  className="text-[#FFB800] text-xs font-bold hover:underline flex items-center justify-between w-full cursor-pointer"
-                >
-                  <span>{showEvidence ? "▼ HIDE" : "► VIEW"} WHY THIS RISK?</span>
-                  <span className="text-[#EDEDE8]/40 text-[10px]">
-                    {showEvidence ? "COLLAPSE" : "EXPAND"}
-                  </span>
-                </button>
+              {/* Critical Telemetry Metrics */}
+              <div className="grid grid-cols-2 gap-3 font-mono text-xs">
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">SEVERITY INDEX</span>
+                  <strong className="text-lg text-rose-600 dark:text-rose-400 font-bold">
+                    {selectedSector.severity_index.toFixed(1)} / 10.0
+                  </strong>
+                </div>
 
-                {(showEvidence || isAnalysis) && (
-                  <div className="space-y-2 p-3 bg-[#EDEDE8]/3 border border-[#EDEDE8]/10 text-[11px] text-[#EDEDE8]/80 animate-fade-in">
-                    <div className="flex justify-between">
-                      <span className="text-[#EDEDE8]/60">EPICENTER DISTANCE:</span>
-                      <strong className="text-[#EDEDE8]">
-                        {selectedSector.distance_to_epicenter_km.toFixed(1)} km
-                      </strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#EDEDE8]/60">SEVERITY INDEX:</span>
-                      <strong className="text-[#FFB800]">
-                        {selectedSector.severity_index.toFixed(1)} / 10.0
-                      </strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#EDEDE8]/60">ACTIVE INCIDENT CLUSTERS:</span>
-                      <strong className="text-[#EDEDE8]">
-                        {selectedSector.active_incidents_count}
-                      </strong>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#EDEDE8]/60">COORDINATES:</span>
-                      <span>
-                        {selectedSector.latitude.toFixed(4)}°N, {selectedSector.longitude.toFixed(4)}°E
-                      </span>
-                    </div>
-                  </div>
-                )}
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">EPICENTER DISTANCE</span>
+                  <strong className="text-lg text-slate-800 dark:text-slate-200 font-bold">
+                    {selectedSector.distance_to_epicenter_km.toFixed(0)} km
+                  </strong>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">ISOLATION IMPEDANCE</span>
+                  <strong className="text-lg text-amber-600 dark:text-amber-400 font-bold">
+                    {(selectedSector.isolation_index * 100).toFixed(0)}%
+                  </strong>
+                </div>
+
+                <div className="bg-slate-50 dark:bg-slate-800/60 p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-700">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">ESTIMATED CASUALTIES</span>
+                  <strong className="text-lg text-rose-600 dark:text-rose-400 font-bold">
+                    {selectedSector.estimated_casualties || 0}
+                  </strong>
+                </div>
               </div>
+
+              {/* Satellite Evidence Corroboration Badge */}
+              {selectedSector.satellite_corroborated && (
+                <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 rounded-2xl font-mono text-xs space-y-1">
+                  <div className="text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1.5">
+                    <span>🛰️</span>
+                    <span>SATELLITE CORROBORATED: {selectedSector.satellite_sensor || "COPERNICUS SENTINEL-1 SAR"}</span>
+                  </div>
+                  <div className="text-slate-600 dark:text-slate-300 text-[11px]">
+                    Orbital synthetic aperture radar cross-validated ground collapse pattern.
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
-            <p className="font-mono-data text-xs text-[#EDEDE8]/50">
-              Click a sector pin on the radar map to view telemetry.
-            </p>
+            <div className="py-16 text-center font-mono text-xs text-slate-400">
+              SELECT A SECTOR ON THE MAP TO INSPECT TELEMETRY.
+            </div>
           )}
-        </div>
-      </div>
-
-      {/* Comprehensive Sector Ledger Table */}
-      <div className="surface-card p-6 sm:p-8">
-        <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-3">
-          SECTOR TELEMETRY LEDGER // ALL 8 REGIONS
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left font-mono-data text-xs border-collapse">
-            <thead>
-              <tr className="bg-[#EDEDE8]/5 border-b border-[#EDEDE8]/15 text-[#EDEDE8]">
-                <th className="p-3">SECTOR</th>
-                <th className="p-3">STATUS</th>
-                <th className="p-3">SEVERITY</th>
-                <th className="p-3">EPICENTER DIST</th>
-                <th className="p-3">ISOLATION</th>
-                <th className="p-3">EST. CASUALTIES</th>
-                <th className="p-3">CLUSTERS</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#EDEDE8]/10">
-              {data?.sectors.map((s, idx) => (
-                <tr
-                  key={`${s.sector_id}-${idx}`}
-                  onClick={() => setSelectedSectorId(s.sector_id)}
-                  className={`hover:bg-[#EDEDE8]/5 cursor-pointer transition-colors ${
-                    selectedSector?.sector_id === s.sector_id ? "bg-[#EDEDE8]/10 font-bold" : ""
-                  }`}
-                >
-                  <td className="p-3 uppercase font-bold text-[#EDEDE8]">{s.sector_name}</td>
-                  <td className="p-3">
-                    <span
-                      className="px-2 py-0.5 border text-[10px] font-bold uppercase"
-                      style={{
-                        borderColor: getStatusColor(s.status),
-                        color: getStatusColor(s.status),
-                      }}
-                    >
-                      {s.status.replace("_", " ")}
-                    </span>
-                  </td>
-                  <td className="p-3 text-[#FFB800]">{s.severity_index.toFixed(1)}/10</td>
-                  <td className="p-3">{s.distance_to_epicenter_km.toFixed(0)} km</td>
-                  <td className="p-3">{(s.isolation_index * 100).toFixed(0)}%</td>
-                  <td className="p-3 text-[#E5484D]">{s.estimated_casualties}</td>
-                  <td className="p-3">{s.active_incidents_count}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
         </div>
       </div>
     </div>

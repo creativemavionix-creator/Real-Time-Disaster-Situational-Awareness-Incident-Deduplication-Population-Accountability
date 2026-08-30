@@ -1,244 +1,140 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "@/context/ThemeContext";
 import { useViewMode } from "@/context/ViewModeContext";
-
-interface NavPillar {
-  id: string;
-  code: string;
-  label: string;
-  subtitle: string;
-  primaryHref: string;
-  routes: {
-    label: string;
-    href: string;
-    tagline: string;
-  }[];
-}
-
-const NAV_PILLARS: NavPillar[] = [
-  {
-    id: "situation",
-    code: "01",
-    label: "SITUATION",
-    subtitle: "What is happening?",
-    primaryHref: "/",
-    routes: [
-      { label: "Overview", href: "/", tagline: "Critical crisis matrix & simulation" },
-      { label: "Live Map", href: "/gis-map", tagline: "Spatial radar & regional telemetry" },
-    ],
-  },
-  {
-    id: "intelligence",
-    code: "02",
-    label: "INTELLIGENCE",
-    subtitle: "What can we trust & see?",
-    primaryHref: "/deduplication",
-    routes: [
-      { label: "Unified Truth", href: "/deduplication", tagline: "Resolved multi-agency reports" },
-      { label: "Blackout Risk", href: "/blackout-intel", tagline: "Inferred risk in silent zones" },
-      { label: "Population", href: "/population", tagline: "Exposed people & missing registry" },
-    ],
-  },
-  {
-    id: "response",
-    code: "03",
-    label: "RESPONSE",
-    subtitle: "Where should we act?",
-    primaryHref: "/dispatch",
-    routes: [
-      { label: "Tactical Dispatch", href: "/dispatch", tagline: "Priority rescue & resource queue" },
-    ],
-  },
-  {
-    id: "report",
-    code: "04",
-    label: "REPORT",
-    subtitle: "Official situation report",
-    primaryHref: "/sitrep",
-    routes: [
-      { label: "SITREP", href: "/sitrep", tagline: "UN OCHA standardized briefing" },
-    ],
-  },
-];
 
 export function Navbar() {
   const pathname = usePathname();
-  const { mode, toggleMode, isAnalysis } = useViewMode();
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const { isDark, toggleTheme } = useTheme();
+  const { isAnalysis, toggleMode } = useViewMode();
 
-  // Find active pillar
-  const currentPillar = NAV_PILLARS.find((pillar) =>
-    pillar.routes.some((r) => r.href === pathname)
-  ) || NAV_PILLARS[0];
+  const navLinks = [
+    { label: "Home", href: "/" },
+    { label: "Live Map", href: "/gis-map" },
+    { label: "Unified Truth", href: "/deduplication" },
+    { label: "Blackout Intel", href: "/blackout-intel" },
+    { label: "Population", href: "/population" },
+    { label: "Dispatch", href: "/dispatch" },
+    { label: "How It Works", href: "/#methodology" },
+  ];
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-[#EDEDE8]/15 select-none transition-all">
-      {/* Top Operational Status Bar */}
-      <div className="bg-[#EDEDE8]/5 border-b border-[#EDEDE8]/10 px-4 py-1.5 flex items-center justify-between text-[11px] font-mono-data">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 bg-[#E5484D] inline-block" />
-            <span className="text-[#EDEDE8] font-bold tracking-wider">
-              CENTRAL NEPAL CRISIS PROTOCOL
-            </span>
-          </div>
-          <span className="text-[#EDEDE8]/40 hidden md:inline">•</span>
-          <span className="text-[#EDEDE8]/70 hidden md:inline">M7.8 Seismological Sequence</span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-[#EDEDE8]/50">STATUS:</span>
-            <span className="text-[#FFB800] font-bold">6/8 SECTORS ACTIVE</span>
-          </div>
-          <span className="text-[#EDEDE8]/30 hidden sm:inline">|</span>
-          <span className="text-[#EDEDE8]/60 hidden sm:inline">NEOC CRISIS COMMAND</span>
-        </div>
-      </div>
-
-      {/* Main Header & Four Pillars */}
-      <div className="px-4 sm:px-6 py-3 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#EDEDE8]/10">
-        {/* Brand Lockup */}
+    <header className="sticky top-0 z-50 bg-white/80 dark:bg-[#090D16]/80 backdrop-blur-md border-b border-slate-200/70 dark:border-slate-800/80 transition-colors duration-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between gap-4">
+        {/* Left: Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-3.5 h-3.5 bg-[#FFB800] transition-transform group-hover:scale-110" />
+          <div className="w-9 h-9 rounded-xl bg-slate-950 dark:bg-slate-900 border border-slate-800 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+            <svg
+              className="w-5 h-5 text-cyan-400"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
+              <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.4" />
+              <circle cx="12" cy="12" r="2" fill="currentColor" />
+              <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4" />
+              <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1" />
+            </svg>
+          </div>
           <div>
-            <div className="font-display text-base sm:text-lg font-bold tracking-tight text-[#EDEDE8] flex items-center gap-2">
-              POST-DISASTER <span className="text-[#EDEDE8]/40 font-light">//</span> INFORMATION FOG
+            <div className="font-display font-extrabold text-base sm:text-lg tracking-tight text-slate-900 dark:text-white flex items-center gap-1.5">
+              PROJECT PRISM
+              <span className="text-cyan-600 dark:text-cyan-400 text-xs font-mono">Ω</span>
             </div>
-            <div className="font-mono-data text-[10px] text-[#FFB800] tracking-widest font-medium uppercase">
-              National Situational Awareness Platform
+            <div className="font-mono text-[9.5px] font-semibold text-slate-500 dark:text-slate-400 tracking-wider uppercase -mt-0.5">
+              Disaster Intelligence & Situational Mapping
             </div>
           </div>
         </Link>
 
-        {/* Four Primary Navigation Pillars */}
-        <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto scrollbar-none py-1">
-          {NAV_PILLARS.map((pillar) => {
-            const isPillarActive = pillar.routes.some((r) => r.href === pathname);
-            const hasMultipleRoutes = pillar.routes.length > 1;
-
+        {/* Center: Floating Pill Navigation */}
+        <nav className="hidden lg:flex items-center bg-slate-100/90 dark:bg-slate-900/90 p-1 rounded-full border border-slate-200/80 dark:border-slate-800 shadow-inner">
+          {navLinks.map((link) => {
+            const isActive = pathname === link.href;
             return (
-              <div
-                key={pillar.id}
-                className="relative"
-                onMouseEnter={() => hasMultipleRoutes && setActiveDropdown(pillar.id)}
-                onMouseLeave={() => setActiveDropdown(null)}
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                  isActive
+                    ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50"
+                }`}
               >
-                <Link
-                  href={pillar.primaryHref}
-                  className={`px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs transition-all flex items-center gap-2 border ${
-                    isPillarActive
-                      ? "bg-[#EDEDE8] text-[#0A0A0A] border-[#EDEDE8] font-bold shadow-sm"
-                      : "text-[#EDEDE8]/70 hover:text-[#EDEDE8] bg-transparent border-transparent hover:border-[#EDEDE8]/20 hover:bg-[#EDEDE8]/5"
-                  }`}
-                >
-                  <span
-                    className={`font-mono-data text-[10px] ${
-                      isPillarActive ? "text-[#0A0A0A]/60" : "text-[#FFB800]"
-                    }`}
-                  >
-                    {pillar.code}
-                  </span>
-                  <span className="tracking-wider">{pillar.label}</span>
-                </Link>
-
-                {/* Dropdown for multi-route pillars on hover */}
-                {hasMultipleRoutes && activeDropdown === pillar.id && (
-                  <div className="absolute top-full left-0 mt-1 w-56 bg-[#0A0A0A] border border-[#EDEDE8]/20 p-2 shadow-2xl z-50 space-y-1 animate-fade-in">
-                    <div className="px-2 py-1 text-[10px] font-mono-data text-[#EDEDE8]/40 uppercase border-b border-[#EDEDE8]/10 mb-1">
-                      {pillar.subtitle}
-                    </div>
-                    {pillar.routes.map((subRoute) => (
-                      <Link
-                        key={subRoute.href}
-                        href={subRoute.href}
-                        onClick={() => setActiveDropdown(null)}
-                        className={`block px-2.5 py-1.5 text-xs transition-colors ${
-                          pathname === subRoute.href
-                            ? "bg-[#FFB800] text-[#0A0A0A] font-bold"
-                            : "text-[#EDEDE8]/80 hover:text-[#EDEDE8] hover:bg-[#EDEDE8]/10"
-                        }`}
-                      >
-                        <div className="font-medium">{subRoute.label}</div>
-                        <div
-                          className={`text-[10px] font-mono-data ${
-                            pathname === subRoute.href ? "text-[#0A0A0A]/80" : "text-[#EDEDE8]/50"
-                          }`}
-                        >
-                          {subRoute.tagline}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
+                {link.label}
+              </Link>
             );
           })}
         </nav>
 
-        {/* View Mode Toggle: Command vs. Analysis */}
-        <div className="flex items-center gap-3">
+        {/* Right: Actions (Theme Toggle, SITREP Button, Explore CTA) */}
+        <div className="flex items-center gap-2.5">
+          {/* Dark / Light Mode Pill Toggle */}
           <button
-            onClick={toggleMode}
-            title={
-              isAnalysis
-                ? "Switch to Command Mode: Simple human-readable operational summaries"
-                : "Switch to Analysis Mode: Reveal formulas, embeddings, source weights, and telemetry"
-            }
-            className={`px-3 py-1.5 text-xs font-mono-data border transition-all flex items-center gap-2 ${
-              isAnalysis
-                ? "bg-[#FFB800]/10 border-[#FFB800] text-[#FFB800] hover:bg-[#FFB800]/20"
-                : "bg-[#EDEDE8]/5 border-[#EDEDE8]/20 text-[#EDEDE8]/80 hover:border-[#EDEDE8]/40"
-            }`}
+            onClick={toggleTheme}
+            type="button"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300 transition-all cursor-pointer shadow-xs"
+            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
           >
-            <span className="text-[10px]">
-              {isAnalysis ? "⚙" : "◉"}
-            </span>
-            <span className="font-bold uppercase tracking-wider">
-              {isAnalysis ? "ANALYSIS MODE" : "COMMAND MODE"}
-            </span>
+            {isDark ? (
+              <>
+                <span className="text-amber-400">☀️</span>
+                <span className="hidden sm:inline text-[11px]">Light Mode</span>
+              </>
+            ) : (
+              <>
+                <span className="text-indigo-600 dark:text-indigo-400">🌙</span>
+                <span className="hidden sm:inline text-[11px]">Dark Mode</span>
+              </>
+            )}
           </button>
+
+          {/* SITREP Briefing Button */}
+          <Link
+            href="/sitrep"
+            className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-cyan-50 dark:bg-cyan-950/40 hover:bg-cyan-100 dark:hover:bg-cyan-900/50 border border-cyan-200 dark:border-cyan-800 text-xs font-bold text-cyan-800 dark:text-cyan-300 transition-all shadow-xs"
+          >
+            <span className="text-cyan-600 dark:text-cyan-400">✨</span>
+            <span>SITREP BRIEFING</span>
+          </Link>
+
+          {/* Primary Explore CTA */}
+          <Link
+            href="/gis-map"
+            className="btn-primary-cyan text-xs py-1.5 px-4 shadow-sm"
+          >
+            <span>EXPLORE</span>
+            <span>→</span>
+          </Link>
         </div>
       </div>
 
-      {/* Contextual Sub-Route Pill Bar (when inside a multi-route pillar) */}
-      {currentPillar.routes.length > 1 && (
-        <div className="bg-[#EDEDE8]/3 px-4 sm:px-6 py-1.5 border-b border-[#EDEDE8]/10 flex items-center justify-between text-xs font-mono-data">
-          <div className="flex items-center gap-3">
-            <span className="text-[#FFB800] text-[10px] uppercase font-bold">
-              {currentPillar.label} // {currentPillar.subtitle}
-            </span>
-            <span className="text-[#EDEDE8]/30">|</span>
-            <div className="flex items-center gap-2">
-              {currentPillar.routes.map((sub) => {
-                const isCurrent = pathname === sub.href;
-                return (
-                  <Link
-                    key={sub.href}
-                    href={sub.href}
-                    className={`px-2 py-0.5 text-[11px] transition-colors border ${
-                      isCurrent
-                        ? "bg-[#EDEDE8]/20 border-[#EDEDE8] text-[#EDEDE8] font-bold"
-                        : "border-transparent text-[#EDEDE8]/60 hover:text-[#EDEDE8]"
-                    }`}
-                  >
-                    {sub.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="text-[10px] text-[#EDEDE8]/40 hidden lg:block">
-            {isAnalysis
-              ? "Exposing mathematical weights, dense embeddings & raw telemetry"
-              : "Showing human-readable operational summaries"}
-          </div>
-        </div>
-      )}
+      {/* Mobile Navigation Pill Bar */}
+      <div className="lg:hidden px-4 pb-2.5 flex items-center gap-1 overflow-x-auto scrollbar-none">
+        {navLinks.map((link) => {
+          const isActive = pathname === link.href;
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
+                isActive
+                  ? "bg-[#0088A9] text-white font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200"
+              }`}
+            >
+              {link.label}
+            </Link>
+          );
+        })}
+      </div>
     </header>
   );
 }

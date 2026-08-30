@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, JetBrains_Mono, Inter } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { ViewModeProvider } from "@/context/ViewModeContext";
 
-const spaceGrotesk = Space_Grotesk({
+const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -19,12 +20,12 @@ const jetbrainsMono = JetBrains_Mono({
 const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600"],
+  weight: ["300", "400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "POST-DISASTER // INFORMATION FOG — National Situational Awareness Platform",
-  description: "Real-time command platform for disaster situational awareness, report deduplication, blackout intelligence, population exposure, and tactical dispatch.",
+  title: "Project PRISM — Post-disaster Real-time Intelligence & Situational Mapping",
+  description: "Autonomous disaster reality reconstruction analyzing evidence, uncertainty, silence, and information gaps across Central Nepal.",
 };
 
 export default function RootLayout({
@@ -36,13 +37,15 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased dark`}
+      className={`${plusJakarta.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased`}
     >
-      <body suppressHydrationWarning className="min-h-full flex flex-col bg-[#0A0A0A] text-[#EDEDE8]">
-        <ViewModeProvider>
-          <Navbar />
-          <main className="flex-1 flex flex-col">{children}</main>
-        </ViewModeProvider>
+      <body suppressHydrationWarning className="min-h-full flex flex-col bg-[#F4F8FC] dark:bg-[#090D16] text-[#0F172A] dark:text-[#F8FAFC]">
+        <ThemeProvider>
+          <ViewModeProvider>
+            <Navbar />
+            <main className="flex-1 flex flex-col">{children}</main>
+          </ViewModeProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

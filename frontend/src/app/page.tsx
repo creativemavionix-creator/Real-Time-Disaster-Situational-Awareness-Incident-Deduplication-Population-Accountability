@@ -3,7 +3,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   API_BASE_URL,
-  AllLocationsStatusResponse,
   LocationStatusItem,
   SimulationState,
   fetchAllLocationsStatus,
@@ -13,6 +12,10 @@ import {
   seedDatabase,
 } from "@/lib/api";
 import { HeroFog } from "@/components/HeroFog";
+import { CriticalFailureModes } from "@/components/CriticalFailureModes";
+import { HistoricalCaseStudies } from "@/components/HistoricalCaseStudies";
+import { NegativeEvidenceSimulator } from "@/components/NegativeEvidenceSimulator";
+import { AlgorithmicFoundations } from "@/components/AlgorithmicFoundations";
 import { SimulationControls } from "@/components/SimulationControls";
 import { StatusGrid } from "@/components/StatusGrid";
 import { LocationDetailModal } from "@/components/LocationDetailModal";
@@ -55,7 +58,7 @@ export default function Home() {
     if (!autoPoll) return;
     const interval = setInterval(() => {
       refreshData();
-    }, 2500);
+    }, 3000);
     return () => clearInterval(interval);
   }, [autoPoll, refreshData]);
 
@@ -107,34 +110,48 @@ export default function Home() {
   ).length || 6;
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-[#EDEDE8] flex flex-col selection:bg-[#FFB800] selection:text-[#0A0A0A]">
+    <div className="min-h-screen bg-[#F4F8FC] dark:bg-[#090D16] text-[#0F172A] dark:text-[#F8FAFC] flex flex-col selection:bg-[#0088A9] selection:text-white transition-colors duration-200">
       {/* Backend Offline Warning Banner */}
       {backendError && (
-        <div className="bg-[#E5484D] text-[#EDEDE8] px-4 py-2 font-mono-data text-xs font-bold text-center flex items-center justify-center gap-2 border-b border-[#0A0A0A]">
+        <div className="bg-rose-600 text-white px-4 py-2 font-mono text-xs font-bold text-center flex items-center justify-center gap-3">
           <span>[ALERT: BACKEND DISCONNECTED]</span>
           <span>{backendError}</span>
           <button
             onClick={refreshData}
-            className="underline hover:text-[#FFB800] cursor-pointer"
+            className="underline hover:text-amber-200 cursor-pointer"
           >
             [RETRY NOW]
           </button>
         </div>
       )}
 
-      {/* 1. Hero with Signature Fog Lift & Clear Crisis Statement */}
-      <HeroFog
-        elapsedHours={simulationState?.elapsed_hours || 0}
-        simulatedTime={simulationState?.simulated_time || ""}
-        totalReports={simulationState?.total_reports_seeded || 0}
-        activeCriticalCount={activeCriticalCount}
-        onExploreClick={() => {
-          const el = document.getElementById("situation-matrix");
-          if (el) el.scrollIntoView({ behavior: "smooth" });
-        }}
-      />
+      {/* 1. Hero Section matching Screenshot 1 */}
+      <div className="prism-hero-bg">
+        <HeroFog
+          elapsedHours={simulationState?.elapsed_hours || 0}
+          simulatedTime={simulationState?.simulated_time || ""}
+          totalReports={simulationState?.total_reports_seeded || 0}
+          activeCriticalCount={activeCriticalCount}
+          onExploreClick={() => {
+            const el = document.getElementById("situation-matrix");
+            if (el) el.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+      </div>
 
-      {/* 2. Persistent Simulation Controls Bar */}
+      {/* 2. Critical Failure Modes Section matching Screenshot 4 */}
+      <CriticalFailureModes />
+
+      {/* 3. Negative-Evidence Intelligence Simulator matching Screenshot 3 */}
+      <NegativeEvidenceSimulator />
+
+      {/* 4. Real-World Nepal Disaster Case Studies matching Screenshot 2 */}
+      <HistoricalCaseStudies />
+
+      {/* 5. Mathematical Methodology & Axioms matching Screenshot 5 */}
+      <AlgorithmicFoundations />
+
+      {/* 6. Sticky Simulation Controls Bar */}
       <SimulationControls
         simulationState={simulationState}
         summaryCounts={summaryCounts}
@@ -146,38 +163,40 @@ export default function Home() {
         onSeed={handleSeed}
       />
 
-      {/* 3. Live 8-Sector Situation Matrix Grid (WHAT -> WHY -> ACTION) */}
+      {/* 7. Live 8-Sector Situation Matrix Grid */}
       <StatusGrid
         locations={locationsStatus}
         onSelectLocation={(id) => setSelectedLocationId(id)}
       />
 
-      {/* 4. Live Report Injection Drawer */}
+      {/* 8. Live Report Injection Drawer */}
       <ReportInjectionForm onReportInjected={refreshData} />
 
-      {/* 5. Pipeline Architecture & Reference Drawer */}
+      {/* 9. Pipeline Architecture & Reference Drawer */}
       <SystemArchitecture />
 
-      {/* 6. Location Detail Modal / Incident Dossier */}
+      {/* 10. Location Detail Modal / Incident Dossier */}
       <LocationDetailModal
         location={selectedLocation}
         onClose={() => setSelectedLocationId(null)}
       />
 
-      {/* Clean Minimal Editorial Footer */}
-      <footer className="border-t border-[#EDEDE8]/10 p-8 sm:px-14 font-mono-data text-xs text-[#EDEDE8]/50 flex flex-wrap items-center justify-between gap-4 bg-[#0A0A0A]">
+      {/* Modern Editorial Footer */}
+      <footer className="border-t border-slate-200 dark:border-slate-800 p-8 sm:px-14 font-mono text-xs text-slate-500 dark:text-slate-400 flex flex-wrap items-center justify-between gap-4 bg-white dark:bg-[#090D16] transition-colors">
         <div>
-          <span className="text-[#EDEDE8]/80 font-bold">POST-DISASTER // INFORMATION FOG</span>
-          <span className="block text-[11px] text-[#EDEDE8]/40 mt-0.5">
-            National Situational Awareness & Operational Crisis Command Platform
+          <span className="text-slate-900 dark:text-white font-extrabold text-sm">
+            Project PRISM
+          </span>
+          <span className="block text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            Post-disaster Real-time Intelligence & Situational Mapping
           </span>
         </div>
-        <div className="flex gap-4 text-xs">
+        <div className="flex gap-4 text-xs font-semibold">
           <a
             href={`${API_BASE_URL}/docs`}
             target="_blank"
             rel="noreferrer"
-            className="hover:text-[#FFB800] underline"
+            className="hover:text-cyan-600 dark:hover:text-cyan-400 underline"
           >
             [API SWAGGER]
           </a>
@@ -185,7 +204,7 @@ export default function Home() {
             href={`${API_BASE_URL}/redoc`}
             target="_blank"
             rel="noreferrer"
-            className="hover:text-[#FFB800] underline"
+            className="hover:text-cyan-600 dark:hover:text-cyan-400 underline"
           >
             [REDOC]
           </a>
