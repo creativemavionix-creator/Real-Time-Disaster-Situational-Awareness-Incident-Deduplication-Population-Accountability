@@ -166,7 +166,11 @@ export default function OverviewPage() {
               <Network className="w-8 h-8 text-[#E11D48] mb-6 group-hover:scale-110 transition-transform" />
               <h3 className="font-display-calm text-2xl mb-3">Triage & Deduplication Engine</h3>
               <p className="font-body-prose text-[#94A3B8] leading-relaxed">
-                Groups spatial reports within a 200m aperture. Applies continuous exponential confidence decay ({"$C_t = C_0 \\cdot e^{-\\lambda t}$"}) to flag stale records requiring ground re-verification.
+                Groups spatial reports within a 200m aperture. Applies continuous exponential confidence decay{" "}
+                <span className="font-mono-data px-2 py-0.5 rounded bg-white/10 text-rose-300 text-xs inline-flex items-center font-bold">
+                  C<sub>t</sub> = C<sub>0</sub> &middot; e<sup>-&lambda;t</sup>
+                </span>{" "}
+                to flag stale records requiring ground re-verification.
               </p>
             </motion.div>
 
@@ -174,7 +178,11 @@ export default function OverviewPage() {
               <Radio className="w-8 h-8 text-[#94A3B8] mb-6 group-hover:scale-110 transition-transform" />
               <h3 className="font-display-calm text-2xl mb-3">Silent Zone Risk Estimator</h3>
               <p className="font-body-prose text-[#94A3B8] leading-relaxed">
-                Computes the Silent Sector Exposure Metric ({"$E_{cell}$"}) across Uber H3 hexagonal grid cells to identify cut-off communities that have gone dark, triggering UAV reconnaissance.
+                Computes the Silent Sector Exposure Metric{" "}
+                <span className="font-mono-data px-2 py-0.5 rounded bg-white/10 text-amber-300 text-xs inline-flex items-center font-bold">
+                  E<sub>cell</sub> = Pop<sub>cell</sub> &middot; (1 - e<sup>-t/&tau;</sup>)
+                </span>{" "}
+                across Uber H3 hexagonal grid cells to identify cut-off communities that have gone dark, triggering UAV reconnaissance.
               </p>
             </motion.div>
 
@@ -182,7 +190,11 @@ export default function OverviewPage() {
               <Users className="w-8 h-8 text-[#D97706] mb-6 group-hover:scale-110 transition-transform" />
               <h3 className="font-display-calm text-2xl mb-3">Dynamic Population Ledger</h3>
               <p className="font-body-prose text-[#94A3B8] leading-relaxed">
-                Executes hybrid entity resolution using Jaro-Winkler phonetic similarity and cosine token overlap to reconcile missing person reports against shelter and hospital intake check-ins.
+                Executes hybrid entity resolution{" "}
+                <span className="font-mono-data px-2 py-0.5 rounded bg-white/10 text-emerald-300 text-xs inline-flex items-center font-bold">
+                  Score = 0.55&middot;JW + 0.25&middot;Cos + 0.20&middot;Age
+                </span>{" "}
+                to reconcile missing person reports against shelter and hospital intake check-ins.
               </p>
             </motion.div>
 
@@ -289,6 +301,84 @@ export default function OverviewPage() {
                   ))}
                 </ul>
               </div>
+            </motion.div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* SECTION 3.8: MATHEMATICAL & SCIENTIFIC FORMULATIONS */}
+      <section className="relative py-28 flex items-center justify-center p-6 sm:p-12 z-10 border-t border-white/5 bg-[#090B0E]">
+        <motion.div 
+          initial="hidden" 
+          whileInView="show" 
+          viewport={{ once: true, margin: "-100px" }} 
+          variants={staggerContainerVars} 
+          className="max-w-6xl w-full space-y-16"
+        >
+          <div className="text-center space-y-4">
+            <motion.h2 variants={fadeUpVars} className="font-display-calm text-4xl sm:text-5xl text-white">
+              First-Principles Mathematical Foundations
+            </motion.h2>
+            <motion.p variants={fadeUpVars} className="font-mono-data text-xs tracking-[0.2em] text-[#64748B] uppercase">
+              Deterministic thermodynamic & epistemic reasoning equations
+            </motion.p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Equation 1 */}
+            <motion.div variants={fadeUpVars} className="p-8 rounded-3xl bg-[#0C0E12]/90 border border-white/10 space-y-4">
+              <div className="flex justify-between items-center text-[10px] font-mono-data uppercase tracking-wider text-[#E11D48]">
+                <span>01 Diurnal Baseline Curve</span>
+                <span>Signal Model</span>
+              </div>
+              <div className="p-4 rounded-xl bg-black/60 border border-white/5 font-mono-data text-sm text-rose-300 text-center">
+                A(t) = BaseRate &middot; [0.15 + 0.85 &middot; sin<sup>2</sup>(&pi;(h-4)/24)] &middot; f<sub>day</sub>(d)
+              </div>
+              <p className="font-body-prose text-xs text-[#94A3B8] leading-relaxed">
+                Establishes the expected call volume per sector at hour <em>h</em> and weekday <em>d</em> to ground expected reality before detecting silent zones.
+              </p>
+            </motion.div>
+
+            {/* Equation 2 */}
+            <motion.div variants={fadeUpVars} className="p-8 rounded-3xl bg-[#0C0E12]/90 border border-white/10 space-y-4">
+              <div className="flex justify-between items-center text-[10px] font-mono-data uppercase tracking-wider text-[#D97706]">
+                <span>02 Negative Evidence Gap</span>
+                <span>Z-Score Metric</span>
+              </div>
+              <div className="p-4 rounded-xl bg-black/60 border border-white/5 font-mono-data text-sm text-amber-300 text-center">
+                Z = (Observed - ExpectedMean) / max(0.1, &sigma;<sub>expected</sub>)
+              </div>
+              <p className="font-body-prose text-xs text-[#94A3B8] leading-relaxed">
+                Flags critical communication blackouts (<em>Z &le; -2.0</em> or <em>Observed=0</em>) when an active population unexpectedly goes silent.
+              </p>
+            </motion.div>
+
+            {/* Equation 3 */}
+            <motion.div variants={fadeUpVars} className="p-8 rounded-3xl bg-[#0C0E12]/90 border border-white/10 space-y-4">
+              <div className="flex justify-between items-center text-[10px] font-mono-data uppercase tracking-wider text-[#059669]">
+                <span>03 Bayesian Belief Updating</span>
+                <span>Log-Sum-Exp Softmax</span>
+              </div>
+              <div className="p-4 rounded-xl bg-black/60 border border-white/5 font-mono-data text-sm text-emerald-300 text-center">
+                log P(H<sub>i</sub> | E) = log P(H<sub>i</sub>) + &sum; w<sub>eff,j</sub> &middot; &Lambda;(H<sub>i</sub>, e<sub>j</sub>)
+              </div>
+              <p className="font-body-prose text-xs text-[#94A3B8] leading-relaxed">
+                Dynamically updates posterior beliefs across 5 physical hypotheses (Safe, Comms Down, Isolated, Evacuated, Disaster).
+              </p>
+            </motion.div>
+
+            {/* Equation 4 */}
+            <motion.div variants={fadeUpVars} className="p-8 rounded-3xl bg-[#0C0E12]/90 border border-white/10 space-y-4">
+              <div className="flex justify-between items-center text-[10px] font-mono-data uppercase tracking-wider text-[#2563EB]">
+                <span>04 Shannon Information Gain</span>
+                <span>Active Verification</span>
+              </div>
+              <div className="p-4 rounded-xl bg-black/60 border border-white/5 font-mono-data text-sm text-blue-300 text-center">
+                &Delta;&Eta;(a) = &Eta;(P) - E[&Eta;(P | O<sub>a</sub>)] &nbsp;&bull;&nbsp; &Eta;(P) = -&sum; P(H<sub>i</sub>) &middot; log<sub>2</sub>P(H<sub>i</sub>)
+              </div>
+              <p className="font-body-prose text-xs text-[#94A3B8] leading-relaxed">
+                Ranks candidate drone, radar, and patrol reconnaissance actions to maximize uncertainty entropy reduction per sortie dollar.
+              </p>
             </motion.div>
           </div>
         </motion.div>
