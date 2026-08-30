@@ -87,7 +87,7 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
             {/* Quick Demo Presets */}
             <div>
               <span className="font-mono-data text-[10px] text-[#EDEDE8]/50 uppercase font-bold block mb-2">
-                PRELOAD TEST SIGNALS:
+                PRELOAD TEST SIGNALS (ENGLISH & NEPALI):
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -95,7 +95,7 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
                   onClick={() => setPreset("police", "Police patrol in Sindhupalchok confirms Melamchi river bridge completely washed away, 2 dead.", "27.9500", "85.7000")}
                   className="bg-[#EDEDE8]/5 hover:bg-[#EDEDE8]/15 text-[#EDEDE8] text-xs font-mono-data px-2.5 py-1 border border-[#EDEDE8]/20 transition-colors cursor-pointer"
                 >
-                  [POLICE: SINDHUPALCHOK BRIDGE COLLAPSE]
+                  [POLICE: SINDHUPALCHOK BRIDGE]
                 </button>
                 <button
                   type="button"
@@ -106,10 +106,31 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPreset("social_media", "Black smoke rising over Thamel Kathmandu! Huge fire spreading after tremor!", undefined, undefined)}
-                  className="bg-[#EDEDE8]/5 hover:bg-[#EDEDE8]/15 text-[#EDEDE8] text-xs font-mono-data px-2.5 py-1 border border-[#EDEDE8]/20 transition-colors cursor-pointer"
+                  onClick={() => setPreset("police", "गोरखा बारपाकमा ढुङ्गाको घर भत्किएर ३ जनाको मृत्यु र ५ जना घाइते।", "28.0000", "84.6333")}
+                  className="bg-[#FFB800]/10 hover:bg-[#FFB800]/20 text-[#FFB800] text-xs font-mono-data px-2.5 py-1 border border-[#FFB800]/30 transition-colors cursor-pointer"
                 >
-                  [SOCIAL: THAMEL FIRE RUMOR]
+                  [🇳🇵 नेपाली: गोरखा घर भत्कियो]
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreset("citizen", "सिन्धुपाल्चोक मेलम्ची बजारमा बाढी पसेर पक्की पुल बगायो, २ जना बेपत्ता।", "27.9500", "85.7000")}
+                  className="bg-[#FFB800]/10 hover:bg-[#FFB800]/20 text-[#FFB800] text-xs font-mono-data px-2.5 py-1 border border-[#FFB800]/30 transition-colors cursor-pointer"
+                >
+                  [🇳🇵 नेपाली: मेलम्ची बाढी र पुल]
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreset("citizen", "रसुवा धुन्चेमा भीषण पहिरोले सडक अवरुद्ध, मोबाइल टावर डाउन र सम्पर्कविहीन।", "28.1500", "85.3000")}
+                  className="bg-[#FFB800]/10 hover:bg-[#FFB800]/20 text-[#FFB800] text-xs font-mono-data px-2.5 py-1 border border-[#FFB800]/30 transition-colors cursor-pointer"
+                >
+                  [🇳🇵 नेपाली: रसुवा पहिरो र ब्ल्याकआउट]
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreset("police", "भक्तपुर दरबार स्क्वायर क्षेत्रमा कुनै क्षति छैन, सबै सुरक्षित, सामान्य अवस्था।", "27.6710", "85.4298")}
+                  className="bg-[#3FB950]/10 hover:bg-[#3FB950]/20 text-[#3FB950] text-xs font-mono-data px-2.5 py-1 border border-[#3FB950]/30 transition-colors cursor-pointer"
+                >
+                  [🇳🇵 नेपाली: भक्तपुर सुरक्षित]
                 </button>
               </div>
             </div>

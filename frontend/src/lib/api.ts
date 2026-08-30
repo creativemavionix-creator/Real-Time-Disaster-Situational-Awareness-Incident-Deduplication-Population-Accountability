@@ -118,6 +118,8 @@ export interface GisSectorTelemetry {
   estimated_casualties: number;
   isolation_index: number;
   last_telemetry_timestamp?: string | null;
+  satellite_corroborated?: boolean;
+  satellite_sensor?: string | null;
 }
 
 export interface GisFeatureCollection {
@@ -151,6 +153,10 @@ export interface UnifiedTruthRecord {
   confidence_score: number;
   representative_truth_text: string;
   verification_status: string;
+  satellite_corroborated?: boolean;
+  satellite_damage_points_count?: number;
+  satellite_sensor_source?: string | null;
+  satellite_evidence_summary?: string | null;
 }
 
 export interface UnifiedTruthResponse {
@@ -173,6 +179,12 @@ export interface SpatialPhysicsFactors {
   critical_bridge_severed: boolean;
   road_access_impedance: number;
   elevation_meters: number;
+  structural_fragility_index?: number;
+  masonry_ratio_pct?: number;
+  concrete_ratio_pct?: number;
+  historical_collapse_rate_pct?: number;
+  superstructure_dominant_type?: string;
+  construction_code_compliance?: string;
 }
 
 export interface BlackoutRiskAssessment {
@@ -233,6 +245,35 @@ export interface MissingPersonItem {
   matched_hospital_notes?: string | null;
   timestamp: string;
 }
+
+export interface PalikaItem {
+  local_level_id: number;
+  province_id: number;
+  province_name: string;
+  district_id: number;
+  district_name: string;
+  sector_id: string;
+  local_level_name: string;
+  households: number;
+  total_population: number;
+  male_population: number;
+  female_population: number;
+  estimated_tents_needed: number;
+  estimated_ration_packs_needed: number;
+}
+export type PalikaResponse = PalikaItem;
+
+export interface SectorPalikaBreakdown {
+  sector_id: string;
+  sector_name: string;
+  total_palikas: number;
+  total_households: number;
+  total_population: number;
+  male_population: number;
+  female_population: number;
+  palikas: PalikaItem[];
+}
+export type SectorPalikasResponse = SectorPalikaBreakdown;
 
 // -------------------------------------------------------------
 // Capability 5: Tactical Resource Dispatch
@@ -447,6 +488,12 @@ export async function submitMissingPerson(payload: {
     const err = await res.json().catch(() => ({ message: "Unknown error" }));
     throw new Error(err.message || `HTTP ${res.status}`);
   }
+  return res.json();
+}
+
+export async function fetchSectorPalikas(sectorId: string): Promise<SectorPalikaBreakdown> {
+  const res = await fetch(`${API_BASE_URL}/population/palikas/${encodeURIComponent(sectorId)}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch palikas for sector ${sectorId}`);
   return res.json();
 }
 

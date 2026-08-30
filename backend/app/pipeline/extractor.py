@@ -9,6 +9,12 @@ from app.pipeline.gazetteer import (
     resolve_location_from_text,
     resolve_location_from_coordinates,
 )
+from app.pipeline.nepali_nlp import (
+    contains_devanagari,
+    normalize_devanagari_digits,
+    NEPALI_WORD_TO_NUM,
+    NEPALI_DAMAGE_PATTERNS,
+)
 
 
 @dataclass
@@ -115,53 +121,73 @@ def extract_location(
 def extract_casualties(raw_text: Optional[str]) -> Optional[int]:
     """
     Extract casualty/injury count from text using regex heuristics.
-    Handles 'no casualties', explicit numbers, and word numbers.
+    Handles 'no casualties', explicit numbers (ASCII and Devanagari), and word numbers.
     """
     if not raw_text:
         return None
         
-    text_lower = raw_text.lower()
+    # Normalize Devanagari digits (e.g. ५ -> 5)
+    text_normalized = normalize_devanagari_digits(raw_text).lower()
     
-    # Check for explicit zero casualties
+    # Check for explicit zero casualties (English + Devanagari)
     zero_patterns = [
         r"\bno\s+(casualties|injuries|deaths|fatalities|harm)\b",
         r"\bzero\s+(casualties|injuries|deaths|fatalities)\b",
         r"\b0\s+(casualties|injuries|deaths|fatalities|dead|injured)\b",
         r"\beveryone\s+(is\s+)?safe\b",
         r"\bno\s+one\s+(was\s+)?hurt\b",
+        # Devanagari zero casualty phrases
+        r"सबै\s+सुरक्षित",
+        r"कुनै\s+(?:पनि\s+)?(?:हताहत|क्षति|घाइते|मृत्यु)\s+छैन",
+        r"०\s*(?:जना|व्यक्ति)?\s*(?:घाइते|मृत्यु|हताहत)",
+        r"कुनै\s+हताहती\s+छैन",
     ]
     for zp in zero_patterns:
-        if re.search(zp, text_lower):
+        if re.search(zp, text_normalized):
             return 0
 
     total_casualties = 0
     found_any = False
 
-    # Regex patterns for digits + keywords
-    # e.g., "5 dead", "12 injured", "3 casualties", "at least 15 trapped", "fatalities: 4"
+    # English & standard digit patterns
     digit_patterns = [
         r"(?:(?:at least|approx|around|over|nearly|up to)\s+)?(\d{1,4})\s*(?:people|persons|citizens)?\s*(?:dead|killed|fatalities|deaths|deceased)",
         r"(?:(?:at least|approx|around|over|nearly|up to)\s+)?(\d{1,4})\s*(?:people|persons|citizens)?\s*(?:injured|wounded|hurt|hospitalized)",
         r"(?:(?:at least|approx|around|over|nearly|up to)\s+)?(\d{1,4})\s*(?:people|persons|citizens)?\s*(?:trapped|buried|under rubble)",
         r"(?:(?:at least|approx|around|over|nearly|up to)\s+)?(\d{1,4})\s*(?:casualties|victims)",
         r"(?:dead|fatalities|casualties|injured|deaths):\s*(\d{1,4})",
+        # Devanagari normalized digit patterns (e.g., "५ जना घाइते", "३ जनाको मृत्यु")
+        r"(\d{1,4})\s*(?:जना|व्यक्ति|मानिस)?\s*(?:मृत्यु|मरे|हताहत|मृतक|को\s+मृत्यु)",
+        r"(\d{1,4})\s*(?:जना|व्यक्ति|मानिस)?\s*(?:घाइते|अस्पताल\s+भर्ना|चोटपटक)",
+        r"(\d{1,4})\s*(?:जना|व्यक्ति|मानिस)?\s*(?:पुरिएका|सम्पर्कविहीन|बेपत्ता|च्यापिएका)",
+        r"(?:मृत्यु|घाइते|बेपत्ता|हताहत):\s*(\d{1,4})",
     ]
     
     for pat in digit_patterns:
-        matches = re.finditer(pat, text_lower)
+        matches = re.finditer(pat, text_normalized)
         for m in matches:
             val = int(m.group(1))
             total_casualties += val
             found_any = True
             
-    # If digits didn't match, try word numbers e.g. "two dead", "five injured"
+    # English word numbers e.g. "two dead", "five injured"
     if not found_any:
         word_num_pattern = r"\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|fifty)\s+(?:people\s+)?(?:dead|killed|injured|fatalities|casualties|trapped)\b"
-        matches = re.finditer(word_num_pattern, text_lower)
+        matches = re.finditer(word_num_pattern, text_normalized)
         for m in matches:
             word = m.group(1)
             if word in WORD_TO_NUM:
                 total_casualties += WORD_TO_NUM[word]
+                found_any = True
+
+    # Nepali word numbers e.g. "पाँच जना घाइते", "तीन जनाको मृत्यु"
+    if not found_any and contains_devanagari(raw_text):
+        nepali_words_pat = r"(?:^|[^\w\u0900-\u097F])(एक|एउटा|दुई|दुइ|तीन|चार|पाँच|पाच|छ|सात|आठ|नौ|दश|एघार|बाह्र|पन्ध्र|बीस|तीस|तिस|चालीस|पचास|सय)\s*(?:जना|व्यक्ति|मानिस)?(?:\s*को)?\s*(?:मृत्यु|मरे|हताहत|मृतक|घाइते|पुरिएका|बेपत्ता|सम्पर्कविहीन)"
+        matches = re.finditer(nepali_words_pat, text_normalized)
+        for m in matches:
+            word = m.group(1)
+            if word in NEPALI_WORD_TO_NUM:
+                total_casualties += NEPALI_WORD_TO_NUM[word]
                 found_any = True
 
     return total_casualties if found_any else None
@@ -170,14 +196,21 @@ def extract_casualties(raw_text: Optional[str]) -> Optional[int]:
 def extract_damage_type(raw_text: Optional[str]) -> str:
     """
     Extract damage type from text against fixed damage category patterns.
-    Returns one of: 'structural', 'flood', 'fire', 'landslide', 'road/bridge',
-    'communication', 'safe_clear', or 'unspecified'.
+    Handles English, Romanized Nepali, and native Devanagari script.
     """
     if not raw_text:
         return "unspecified"
         
     text_lower = raw_text.lower()
     
+    # 1. Check Devanagari patterns first if Devanagari is present
+    if contains_devanagari(raw_text):
+        for category, patterns in NEPALI_DAMAGE_PATTERNS:
+            for pat in patterns:
+                if re.search(pat, text_lower):
+                    return category
+                    
+    # 2. Check English patterns
     for category, patterns in DAMAGE_PATTERNS:
         for pat in patterns:
             if re.search(pat, text_lower):

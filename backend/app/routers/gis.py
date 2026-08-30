@@ -13,6 +13,7 @@ from app.pipeline.clustering import ReportItem
 from app.pipeline.embedder import deserialize_embedding
 from app.pipeline.aggregator import aggregate_location
 from app.pipeline.blackout_risk import compute_spatial_physics, assess_sector_blackout_risk
+from app.pipeline.satellite_evidence import find_satellite_evidence
 from app.simulation.clock import get_simulated_time
 
 router = APIRouter(prefix="/gis", tags=["GIS & Situational Telemetry"])
@@ -54,6 +55,7 @@ def get_gis_telemetry(
         agg = aggregate_location(location=loc, reports=report_items, simulated_now=effective_time)
         physics = compute_spatial_physics(loc)
         blackout = assess_sector_blackout_risk(location=loc, reports=report_items, simulated_now=effective_time)
+        sat_evidence = find_satellite_evidence(lat=loc.lat, lon=loc.lon, sector_id=loc.id)
 
         # Total estimated casualties in sector
         cas_sum = sum(c.casualty_estimate or 0 for c in agg.top_incidents)
@@ -84,6 +86,8 @@ def get_gis_telemetry(
                 estimated_casualties=cas_sum,
                 isolation_index=physics.road_access_impedance,
                 last_telemetry_timestamp=agg.last_update,
+                satellite_corroborated=sat_evidence["satellite_corroborated"],
+                satellite_sensor=sat_evidence["sensor_source"],
             )
         )
 
@@ -92,3 +96,4 @@ def get_gis_telemetry(
         simulated_time=effective_time,
         sectors=sectors_telemetry,
     )
+

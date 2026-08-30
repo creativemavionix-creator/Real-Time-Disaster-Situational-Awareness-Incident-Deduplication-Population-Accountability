@@ -5,9 +5,11 @@ import {
   fetchPopulationExposure,
   fetchMissingPersons,
   submitMissingPerson,
+  fetchSectorPalikas,
   AllPopulationExposureResponse,
   PopulationExposureItem,
   MissingPersonItem,
+  SectorPalikaBreakdown,
 } from "@/lib/api";
 
 export default function PopulationPage() {
@@ -17,6 +19,11 @@ export default function PopulationPage() {
   const [sectorFilter, setSectorFilter] = useState("ALL");
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Palika drill-down modal state
+  const [selectedSectorForPalikas, setSelectedSectorForPalikas] = useState<string | null>(null);
+  const [palikaData, setPalikaData] = useState<SectorPalikaBreakdown | null>(null);
+  const [loadingPalikas, setLoadingPalikas] = useState(false);
 
   // Form state for registering missing person
   const [fullName, setFullName] = useState("");
@@ -41,6 +48,19 @@ export default function PopulationPage() {
       setMissingPersons(missRes);
     } catch (err: any) {
       setError(err.message || "Failed to load population data");
+    }
+  };
+
+  const handleOpenPalikas = async (sId: string) => {
+    setSelectedSectorForPalikas(sId);
+    setLoadingPalikas(true);
+    try {
+      const data = await fetchSectorPalikas(sId);
+      setPalikaData(data);
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch palika demographics");
+    } finally {
+      setLoadingPalikas(false);
     }
   };
 
@@ -105,7 +125,7 @@ export default function PopulationPage() {
             WHO MAY BE AFFECTED?
           </h1>
           <p className="font-body-prose text-sm text-[#EDEDE8]/70 mt-1 max-w-2xl leading-relaxed">
-            Real-time population exposure adjusting static census baselines for diurnal commuters, tourist density, and evacuations—coupled with an active Missing Persons Registry.
+            Verified NSO Nepal 2021 Census baseline with municipal Palika & household drill-down, adjusted for diurnal commuters, tourist density, and evacuations.
           </p>
         </div>
 
@@ -128,17 +148,17 @@ export default function PopulationPage() {
         <div className="surface-card p-5">
           <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">ESTIMATED EXPOSED POPULATION</span>
           <strong className="text-3xl text-[#EDEDE8] font-bold">
-            {((exposureData?.total_national_exposed_population || 0) / 1_000_000).toFixed(2)}M
+            {((exposureData?.total_national_exposed_population || 0) / 1000000).toFixed(2)}M
           </strong>
-          <span className="text-[10px] text-[#EDEDE8]/40 block mt-1">Across 8 monitored sectors</span>
+          <span className="text-[10px] text-[#3FB950] block mt-1">Real-time exposed in disaster zones</span>
         </div>
 
         <div className="surface-card p-5">
-          <span className="text-[#FFB800] block text-[10px] uppercase font-bold">TRANSIENT COMMUTER/TOURISTS</span>
+          <span className="text-[#FFB800] block text-[10px] uppercase font-bold">2021 CENSUS BASELINE</span>
           <strong className="text-3xl text-[#FFB800] font-bold">
-            +{((exposureData?.sector_exposures.reduce((acc, s) => acc + s.diurnal_commuter_flux + s.tourist_density_estimate, 0) || 0) / 1000).toFixed(0)}k
+            {((exposureData?.sector_exposures.reduce((acc, s) => acc + s.census_baseline_population, 0) || 0) / 1000000).toFixed(2)}M
           </strong>
-          <span className="text-[10px] text-[#EDEDE8]/40 block mt-1">Net non-resident flux</span>
+          <span className="text-[10px] text-[#EDEDE8]/40 block mt-1">Verified NSO Nepal Municipal Sums</span>
         </div>
 
         <div className="surface-card p-5">
@@ -166,32 +186,42 @@ export default function PopulationPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {exposureData?.sector_exposures.map((sec) => (
-            <div key={sec.sector_id} className="surface-card p-5 space-y-3 font-mono-data text-xs">
-              <div className="flex justify-between items-center border-b border-[#EDEDE8]/10 pb-2">
-                <strong className="text-sm font-bold uppercase text-[#EDEDE8]">{sec.sector_name}</strong>
-                <span className="text-[#FFB800] font-bold text-[11px]">
-                  {sec.missing_persons_reported} UNACCOUNTED
-                </span>
+            <div key={sec.sector_id} className="surface-card p-5 space-y-3 font-mono-data text-xs flex flex-col justify-between">
+              <div>
+                <div className="flex justify-between items-center border-b border-[#EDEDE8]/10 pb-2">
+                  <strong className="text-sm font-bold uppercase text-[#EDEDE8]">{sec.sector_name}</strong>
+                  <span className="text-[#FFB800] font-bold text-[11px]">
+                    {sec.missing_persons_reported} UNACCOUNTED
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 text-[11px] mt-3">
+                  <div className="flex justify-between">
+                    <span className="text-[#EDEDE8]/50">DYNAMIC EXPOSURE:</span>
+                    <strong className="text-[#EDEDE8]">{sec.real_time_exposed_population.toLocaleString()}</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#EDEDE8]/50">CENSUS BASELINE:</span>
+                    <span className="text-[#EDEDE8]/80">{sec.census_baseline_population.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#EDEDE8]/50">COMMUTER + TOURIST:</span>
+                    <span className="text-[#FFB800]">+{((sec.diurnal_commuter_flux + sec.tourist_density_estimate) / 1000).toFixed(0)}k</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[#EDEDE8]/50">EVACUATED:</span>
+                    <span className="text-[#3FB950]">-{sec.evacuated_population_estimate.toLocaleString()}</span>
+                  </div>
+                </div>
               </div>
 
-              <div className="space-y-1.5 text-[11px]">
-                <div className="flex justify-between">
-                  <span className="text-[#EDEDE8]/50">DYNAMIC EXPOSURE:</span>
-                  <strong className="text-[#EDEDE8]">{sec.real_time_exposed_population.toLocaleString()}</strong>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#EDEDE8]/50">CENSUS BASELINE:</span>
-                  <span className="text-[#EDEDE8]/80">{sec.census_baseline_population.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#EDEDE8]/50">COMMUTER + TOURIST:</span>
-                  <span className="text-[#FFB800]">+{((sec.diurnal_commuter_flux + sec.tourist_density_estimate) / 1000).toFixed(0)}k</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#EDEDE8]/50">EVACUATED:</span>
-                  <span className="text-[#3FB950]">-{sec.evacuated_population_estimate.toLocaleString()}</span>
-                </div>
-              </div>
+              <button
+                type="button"
+                onClick={() => handleOpenPalikas(sec.sector_id)}
+                className="w-full mt-3 py-1.5 px-2 bg-[#FFB800]/10 hover:bg-[#FFB800]/20 border border-[#FFB800]/40 text-[#FFB800] text-[10px] font-bold uppercase transition-colors flex items-center justify-center gap-1 cursor-pointer"
+              >
+                <span>🏛️ 2021 CENSUS PALIKAS</span>
+              </button>
             </div>
           ))}
         </div>
@@ -398,6 +428,126 @@ export default function PopulationPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* 2021 Census Palika Demographics Modal */}
+      {selectedSectorForPalikas && (
+        <div className="fixed inset-0 bg-[#0A0A0A]/85 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="surface-card max-w-4xl w-full border border-[#FFB800]/40 p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start border-b border-[#EDEDE8]/10 pb-4">
+              <div>
+                <div className="font-mono-data text-xs text-[#FFB800] uppercase font-bold tracking-widest mb-1 flex items-center gap-2">
+                  <span>🏛️ NSO NEPAL 2021 CENSUS BASELINE</span>
+                  <span className="px-2 py-0.5 bg-[#FFB800]/20 text-[#FFB800] text-[10px]">VERIFIED GROUND TRUTH</span>
+                </div>
+                <h2 className="font-display text-2xl sm:text-3xl font-bold uppercase text-[#EDEDE8]">
+                  {palikaData?.sector_name || selectedSectorForPalikas} SECTOR MUNICIPALITIES
+                </h2>
+                <p className="font-body-prose text-xs text-[#EDEDE8]/70 mt-1">
+                  Local level distribution of households, gender demographic split, and emergency shelter requirement models.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedSectorForPalikas(null);
+                  setPalikaData(null);
+                }}
+                className="text-[#EDEDE8]/50 hover:text-[#EDEDE8] font-mono-data text-sm p-1 border border-[#EDEDE8]/20 hover:border-[#EDEDE8] transition-colors cursor-pointer"
+              >
+                [ESC ✕]
+              </button>
+            </div>
+
+            {loadingPalikas ? (
+              <div className="p-12 text-center font-mono-data text-xs text-[#FFB800] animate-pulse">
+                [LOADING_2021_CENSUS_PALIKA_RECORDS...]
+              </div>
+            ) : palikaData ? (
+              <div className="space-y-6">
+                {/* Aggregate Summary KPIs */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono-data text-xs">
+                  <div className="bg-[#0A0A0A] border border-[#EDEDE8]/15 p-3">
+                    <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">TOTAL PALIKAS</span>
+                    <strong className="text-xl text-[#EDEDE8] font-bold">{palikaData.total_palikas}</strong>
+                  </div>
+                  <div className="bg-[#0A0A0A] border border-[#EDEDE8]/15 p-3">
+                    <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">TOTAL HOUSEHOLDS</span>
+                    <strong className="text-xl text-[#FFB800] font-bold">{palikaData.total_households.toLocaleString()}</strong>
+                  </div>
+                  <div className="bg-[#0A0A0A] border border-[#EDEDE8]/15 p-3">
+                    <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">MALE POPULATION</span>
+                    <strong className="text-xl text-[#EDEDE8] font-bold">{palikaData.male_population.toLocaleString()}</strong>
+                  </div>
+                  <div className="bg-[#0A0A0A] border border-[#EDEDE8]/15 p-3">
+                    <span className="text-[#EDEDE8]/50 block text-[10px] uppercase">FEMALE POPULATION</span>
+                    <strong className="text-xl text-[#EDEDE8] font-bold">{palikaData.female_population.toLocaleString()}</strong>
+                  </div>
+                </div>
+
+                {/* Gender Percentage Bar */}
+                <div className="space-y-1 font-mono-data text-xs">
+                  <div className="flex justify-between text-[10px] text-[#EDEDE8]/70">
+                    <span>MALE: {((palikaData.male_population / (palikaData.total_population || 1)) * 100).toFixed(1)}%</span>
+                    <span>FEMALE: {((palikaData.female_population / (palikaData.total_population || 1)) * 100).toFixed(1)}%</span>
+                  </div>
+                  <div className="h-2 w-full bg-[#0A0A0A] border border-[#EDEDE8]/20 flex overflow-hidden">
+                    <div
+                      style={{ width: `${(palikaData.male_population / (palikaData.total_population || 1)) * 100}%` }}
+                      className="bg-[#3FB950] h-full"
+                    />
+                    <div
+                      style={{ width: `${(palikaData.female_population / (palikaData.total_population || 1)) * 100}%` }}
+                      className="bg-[#FFB800] h-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Municipal Palikas Table */}
+                <div className="border border-[#EDEDE8]/15 overflow-x-auto">
+                  <table className="w-full text-left font-mono-data text-xs">
+                    <thead className="bg-[#EDEDE8]/5 border-b border-[#EDEDE8]/15 text-[#EDEDE8]/60 text-[10px] uppercase">
+                      <tr>
+                        <th className="p-3">CODE</th>
+                        <th className="p-3">MUNICIPALITY / PALIKA NAME</th>
+                        <th className="p-3 text-right">HOUSEHOLDS</th>
+                        <th className="p-3 text-right">POPULATION</th>
+                        <th className="p-3 text-right">MALE / FEMALE</th>
+                        <th className="p-3 text-right">SHELTER TENTS REQ.</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#EDEDE8]/10 text-[11px]">
+                      {palikaData.palikas.map((p) => (
+                        <tr key={p.local_level_id} className="hover:bg-[#EDEDE8]/5 transition-colors">
+                          <td className="p-3 font-bold text-[#FFB800]">{p.local_level_id}</td>
+                          <td className="p-3 font-bold text-[#EDEDE8]">{p.local_level_name}</td>
+                          <td className="p-3 text-right text-[#EDEDE8]/80">{p.households.toLocaleString()}</td>
+                          <td className="p-3 text-right font-bold text-[#EDEDE8]">{p.total_population.toLocaleString()}</td>
+                          <td className="p-3 text-right text-[#EDEDE8]/60">
+                            {p.male_population.toLocaleString()} / {p.female_population.toLocaleString()}
+                          </td>
+                          <td className="p-3 text-right font-bold text-[#3FB950]">
+                            {p.estimated_tents_needed.toLocaleString()} TENTS
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="bg-[#FFB800]/5 border border-[#FFB800]/20 p-3 text-[11px] font-mono-data text-[#EDEDE8]/80 flex items-start gap-2">
+                  <span className="text-[#FFB800] font-bold">ℹ️ RELIEF CALCULATION FORMULA:</span>
+                  <span>Emergency shelter requirement = 85% of total census households. Family food rations = 100% of household units.</span>
+                </div>
+              </div>
+            ) : (
+              <div className="p-8 text-center text-xs text-[#EDEDE8]/50">
+                No palika demographic records found for this sector.
+              </div>
+            )}
           </div>
         </div>
       )}

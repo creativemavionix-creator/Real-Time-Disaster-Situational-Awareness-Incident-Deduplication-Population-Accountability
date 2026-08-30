@@ -156,3 +156,28 @@ def test_seed_endpoint(client: TestClient):
     data = response.json()
     assert data["reports_seeded"] > 0
     assert "Successfully seeded" in data["message"]
+
+
+def test_get_sector_palikas(client: TestClient):
+    """Test 2021 Census palika municipal demographics retrieval."""
+    # Test valid sector
+    response = client.get("/population/palikas/sindhupalchok")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["sector_id"] == "sindhupalchok"
+    assert data["total_palikas"] >= 2
+    assert data["total_households"] > 20000
+    assert data["total_population"] > 80000
+    assert len(data["palikas"]) >= 2
+
+    # Verify first palika structure
+    p = data["palikas"][0]
+    assert "local_level_name" in p
+    assert p["households"] > 0
+    assert p["estimated_tents_needed"] > 0
+    assert p["male_population"] > 0
+
+    # Test invalid sector
+    bad_resp = client.get("/population/palikas/invalid_sector_xyz")
+    assert bad_resp.status_code == 404
+

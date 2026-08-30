@@ -9,6 +9,7 @@ from app.pipeline.gazetteer import LocationInfo, LOCATIONS, get_all_locations
 from app.pipeline.clustering import ReportItem
 from app.pipeline.aggregator import aggregate_location
 from app.models.schemas import SpatialPhysicsFactors, BlackoutRiskAssessment
+from app.pipeline.structural_fragility import get_structural_fragility
 
 
 # Central Nepal Epicenter Reference (Barpak / Gorkha)
@@ -87,7 +88,7 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 
 def compute_spatial_physics(location: LocationInfo) -> SpatialPhysicsFactors:
-    """Calculate geographic and topological hazard factors for a sector."""
+    """Calculate geographic, topological, and calibrated structural fragility hazard factors for a sector."""
     dist_km = haversine_km(location.lat, location.lon, EPICENTER_LAT, EPICENTER_LON)
     
     # Epicenter hazard: inverse exponential with distance
@@ -101,6 +102,9 @@ def compute_spatial_physics(location: LocationInfo) -> SpatialPhysicsFactors:
         "bridge_severed": False,
         "road_access_impedance": 0.5,
     })
+
+    # Ground-truth structural fragility calibration
+    fragility = get_structural_fragility(location.id)
     
     return SpatialPhysicsFactors(
         epicenter_distance_km=round(dist_km, 1),
@@ -110,6 +114,11 @@ def compute_spatial_physics(location: LocationInfo) -> SpatialPhysicsFactors:
         critical_bridge_severed=params["bridge_severed"],
         road_access_impedance=params["road_access_impedance"],
         elevation_meters=params["elevation_meters"],
+        structural_fragility_index=fragility.structural_fragility_index,
+        masonry_ratio_pct=fragility.masonry_ratio_pct,
+        concrete_ratio_pct=fragility.concrete_ratio_pct,
+        historical_collapse_rate_pct=fragility.historical_collapse_rate_pct,
+        superstructure_dominant_type=fragility.superstructure_dominant_type,
     )
 
 
@@ -119,7 +128,7 @@ def assess_sector_blackout_risk(
     simulated_now: Optional[datetime] = None,
 ) -> BlackoutRiskAssessment:
     """
-    Evaluate blackout intelligence and compute Inferred Risk Score using spatial physics.
+    Evaluate blackout intelligence and compute Inferred Risk Score using spatial physics and structural fragility.
     Prevents disconnected silent zones from being mistakenly assumed safe.
     """
     if simulated_now is None:
@@ -132,12 +141,13 @@ def assess_sector_blackout_risk(
     
     is_blackout = (agg.status == "blackout")
     
-    # Spatial Physics Inferred Risk Formulation:
-    # 40% Epicenter proximity hazard + 30% Landslide/slope susceptibility + 30% Isolation/road impedance
+    # Spatial Physics & Structural Fragility Inferred Risk Formulation:
+    # 35% Epicenter hazard + 25% Structural fragility + 20% Landslide/slope + 20% Road/isolation impedance
     base_inferred_risk = (
-        (physics.epicenter_distance_hazard * 40.0) +
-        (physics.landslide_susceptibility_index * 30.0) +
-        (physics.road_access_impedance * 30.0)
+        (physics.epicenter_distance_hazard * 35.0) +
+        (physics.structural_fragility_index * 25.0) +
+        (physics.landslide_susceptibility_index * 20.0) +
+        (physics.road_access_impedance * 20.0)
     )
     
     # Bridge severance multiplier
@@ -156,37 +166,36 @@ def assess_sector_blackout_risk(
         risk_explanation = "Sector communication active. Confirmed safe via field inspection."
         recon_priority = 5
     elif is_blackout:
-        if inferred_risk_score >= 75.0:
+        silence_str = f"{agg.silence_duration_hours:.1f}h" if agg.silence_duration_hours is not None else ">3.0h"
+        fragility_str = f"{physics.structural_fragility_index * 100:.0f}% structural fragility ({physics.masonry_ratio_pct:.0f}% mud/stone masonry)"
+        
+        if inferred_risk_score >= 70.0:
             threat_tier = "CRITICAL_INFERRED"
             risk_explanation = (
-                f"CRITICAL SILENT ZONE: Total communication blackout ({agg.silence_duration_hours or 0:.1f}h silence). "
-                f"High inferred risk ({inferred_risk_score}/100) due to epicenter proximity ({physics.epicenter_distance_km}km) "
-                f"and steep terrain slope ({physics.slope_gradient_degrees}°). High probability of uncontacted mass casualties."
+                f"Complete communication blackout ({silence_str}). High inferred destruction risk due to {fragility_str}, "
+                f"epicenter proximity ({physics.epicenter_distance_km}km), and severed road access."
             )
             recon_priority = 1
-        elif inferred_risk_score >= 50.0:
+        elif inferred_risk_score >= 45.0:
             threat_tier = "HIGH_INFERRED"
             risk_explanation = (
-                f"HIGH-RISK BLACKOUT: Sector severed from comms. Inferred risk {inferred_risk_score}/100. "
-                f"Road impedance ({physics.road_access_impedance * 100:.0f}%) suggests physical isolation."
+                f"Prolonged blackout ({silence_str}). Inferred hazard from mountain slope gradient ({physics.slope_gradient_degrees}°), "
+                f"{fragility_str}, and road access impedance."
             )
             recon_priority = 2
         else:
             threat_tier = "MODERATE"
-            risk_explanation = (
-                f"MODERATE INFERRED RISK: Comms blackout in peripheral sector. "
-                f"Distance to epicenter: {physics.epicenter_distance_km}km."
-            )
+            risk_explanation = f"Silent sector ({silence_str}) with moderate terrain isolation and lower building fragility."
             recon_priority = 3
     else:
-        # Sector has reports
+        # Communication active but damaged/unverified
         if agg.status == "verified_damaged":
-            threat_tier = "CRITICAL_INFERRED" if inferred_risk_score >= 70 else "HIGH_INFERRED"
-            risk_explanation = f"Active corroborated damage: {agg.status_reason}"
-            recon_priority = 1
+            threat_tier = "CRITICAL_INFERRED" if agg.confidence_score >= 0.8 else "HIGH_INFERRED"
+            risk_explanation = f"Active communication: Confirmed damage reported ({agg.status_reason})."
+            recon_priority = 2
         else:
-            threat_tier = "MODERATE" if inferred_risk_score >= 50 else "LOW"
-            risk_explanation = f"Unverified reports with moderate risk factors ({inferred_risk_score}/100)."
+            threat_tier = "MODERATE"
+            risk_explanation = "Active communication: Unverified reports awaiting field corroboration."
             recon_priority = 4
 
     return BlackoutRiskAssessment(
@@ -196,7 +205,7 @@ def assess_sector_blackout_risk(
         silence_duration_hours=agg.silence_duration_hours,
         spatial_physics=physics,
         inferred_risk_score=inferred_risk_score,
-        threat_tier=threat_tier,
+        threat_tier=threat_tier,  # type: ignore[arg-type]
         risk_explanation=risk_explanation,
         recommended_recon_priority=recon_priority,
     )
@@ -209,3 +218,4 @@ def assess_all_blackout_risks(
     """Assess blackout risks across all 8 central Nepal sectors."""
     all_locs = get_all_locations()
     return [assess_sector_blackout_risk(loc, reports, simulated_now) for loc in all_locs]
+

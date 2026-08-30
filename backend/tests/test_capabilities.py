@@ -17,10 +17,11 @@ def test_gis_telemetry(client: TestClient):
     assert "severity_index" in first
     assert "distance_to_epicenter_km" in first
     assert "isolation_index" in first
+    assert "satellite_corroborated" in first
 
 
 def test_deduplication_unified_truth(client: TestClient):
-    """Test Capability 2: Multi-Agency Deduplication & Unified Truth."""
+    """Test Capability 2: Multi-Agency Deduplication & Unified Truth with Satellite Cross-Validation."""
     response = client.get("/deduplication/unified-truth")
     assert response.status_code == 200
     data = response.json()
@@ -32,6 +33,30 @@ def test_deduplication_unified_truth(client: TestClient):
         assert "unified_casualty_estimate" in rec
         assert "agency_breakdown" in rec
         assert "verification_status" in rec
+        # Satellite cross-validation assertions
+        assert "satellite_corroborated" in rec
+        assert "satellite_damage_points_count" in rec
+
+
+def test_satellite_evidence_query():
+    """Test direct spatial querying of UNOSAT shapefiles and Sentinel-1 SAR evidence."""
+    from app.pipeline.satellite_evidence import find_satellite_evidence
+    
+    # 1. Sankhu / Kathmandu orbital point query
+    sankhu_res = find_satellite_evidence(lat=27.7340, lon=85.4670, sector_id="kathmandu", radius_km=5.0)
+    assert sankhu_res["satellite_corroborated"] is True
+    assert sankhu_res["satellite_damage_points_count"] >= 1
+    assert "UNOSAT" in sankhu_res["satellite_evidence_summary"] or "WorldView" in str(sankhu_res["sensor_source"])
+
+    # 2. Daraudi / Gorkha epicentral query
+    gorkha_res = find_satellite_evidence(lat=28.0050, lon=84.6280, sector_id="gorkha", radius_km=5.0)
+    assert gorkha_res["satellite_corroborated"] is True
+    assert gorkha_res["satellite_damage_points_count"] >= 1
+
+    # 3. Sentinel-1 SAR wide-area footprint query
+    sar_res = find_satellite_evidence(lat=27.80, lon=85.10, sector_id="nuwakot")
+    assert sar_res["satellite_corroborated"] is True
+
 
 
 def test_blackout_risk_intelligence(client: TestClient):
@@ -47,6 +72,13 @@ def test_blackout_risk_intelligence(client: TestClient):
         assert "spatial_physics" in a
         assert "epicenter_distance_km" in a["spatial_physics"]
         assert "slope_gradient_degrees" in a["spatial_physics"]
+        # Ground-truth structural fragility calibration
+        assert "structural_fragility_index" in a["spatial_physics"]
+        assert 0.0 <= a["spatial_physics"]["structural_fragility_index"] <= 1.0
+        assert "masonry_ratio_pct" in a["spatial_physics"]
+        assert "concrete_ratio_pct" in a["spatial_physics"]
+        assert a["spatial_physics"]["masonry_ratio_pct"] + a["spatial_physics"]["concrete_ratio_pct"] <= 100.1
+
 
 
 def test_population_exposure_and_missing_persons(client: TestClient):

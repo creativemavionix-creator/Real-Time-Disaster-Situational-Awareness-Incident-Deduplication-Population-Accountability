@@ -11,7 +11,7 @@ import { useViewMode } from "@/context/ViewModeContext";
 
 export default function DispatchPage() {
   const [data, setData] = useState<DispatchDashboardResponse | null>(null);
-  const [selectedRec, setSelectedRec] = useState<TacticalDispatchRecommendation | null>(null);
+  const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
   const [selectedUnitId, setSelectedUnitId] = useState<number | null>(null);
   const [justification, setJustification] = useState("");
   const [isDeploying, setIsDeploying] = useState(false);
@@ -24,9 +24,12 @@ export default function DispatchPage() {
     try {
       const res = await fetchDispatchDashboard();
       setData(res);
-      if (!selectedRec && res.recommendations.length > 0) {
-        setSelectedRec(res.recommendations[0]);
-      }
+      setSelectedSectorId((prev) => {
+        if (prev && res.recommendations.some((r) => r.target_sector_id === prev)) {
+          return prev;
+        }
+        return res.recommendations[0]?.target_sector_id || null;
+      });
     } catch (err: any) {
       setError(err.message || "Failed to load tactical dispatch data");
     }
@@ -37,6 +40,11 @@ export default function DispatchPage() {
     const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const selectedRec =
+    data?.recommendations.find((r) => r.target_sector_id === selectedSectorId) ||
+    data?.recommendations[0] ||
+    null;
 
   const handleDispatch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +132,7 @@ export default function DispatchPage() {
               return (
                 <div
                   key={rec.target_sector_id}
-                  onClick={() => setSelectedRec(rec)}
+                  onClick={() => setSelectedSectorId(rec.target_sector_id)}
                   className={`surface-card p-5 cursor-pointer transition-all ${
                     isSelected
                       ? "surface-card-active shadow-md"

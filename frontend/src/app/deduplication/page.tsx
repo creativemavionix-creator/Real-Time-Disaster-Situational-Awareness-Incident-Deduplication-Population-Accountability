@@ -10,7 +10,7 @@ import { useViewMode } from "@/context/ViewModeContext";
 
 export default function DeduplicationPage() {
   const [data, setData] = useState<UnifiedTruthResponse | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<UnifiedTruthRecord | null>(null);
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [filterMode, setFilterMode] = useState<"ALL" | "DISPUTED" | "CORROBORATED">("ALL");
   const [showTechnicalEvidence, setShowTechnicalEvidence] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,9 +20,13 @@ export default function DeduplicationPage() {
     try {
       const res = await fetchUnifiedTruth();
       setData(res);
-      if (!selectedRecord && res.unified_records.length > 0) {
-        setSelectedRecord(res.unified_records[0]);
-      }
+      setSelectedKey((prev) => {
+        if (prev && res.unified_records.some((r) => `${r.sector_id}-${r.cluster_id}` === prev)) {
+          return prev;
+        }
+        const first = res.unified_records[0];
+        return first ? `${first.sector_id}-${first.cluster_id}` : null;
+      });
     } catch (err: any) {
       setError(err.message || "Failed to load deduplicated unified truth");
     }
@@ -39,6 +43,13 @@ export default function DeduplicationPage() {
     if (filterMode === "CORROBORATED") return r.verification_status === "CORROBORATED_TRUTH";
     return true;
   });
+
+  const selectedRecord =
+    filteredRecords.find((r) => `${r.sector_id}-${r.cluster_id}` === selectedKey) ||
+    data?.unified_records.find((r) => `${r.sector_id}-${r.cluster_id}` === selectedKey) ||
+    filteredRecords[0] ||
+    data?.unified_records[0] ||
+    null;
 
   return (
     <div className="p-6 sm:p-10 lg:p-14 space-y-8 max-w-7xl mx-auto w-full">
@@ -114,7 +125,7 @@ export default function DeduplicationPage() {
               return (
                 <div
                   key={`${record.sector_id}-${record.cluster_id}-${index}`}
-                  onClick={() => setSelectedRecord(record)}
+                  onClick={() => setSelectedKey(`${record.sector_id}-${record.cluster_id}`)}
                   className={`surface-card p-5 cursor-pointer transition-all ${
                     isSelected
                       ? "surface-card-active shadow-md"
@@ -131,6 +142,11 @@ export default function DeduplicationPage() {
                       <span className="px-2 py-0.5 bg-[#EDEDE8]/5 border border-[#EDEDE8]/20 font-mono-data text-[10px] text-[#EDEDE8] uppercase">
                         {record.consensus_damage_type}
                       </span>
+                      {record.satellite_corroborated && (
+                        <span className="px-2 py-0.5 bg-[#3FB950]/15 border border-[#3FB950] font-mono-data text-[10px] text-[#3FB950] font-bold uppercase flex items-center gap-1">
+                          <span>🛰️ UNOSAT SATELLITE</span>
+                        </span>
+                      )}
                     </div>
 
                     <span
@@ -196,6 +212,26 @@ export default function DeduplicationPage() {
                 </blockquote>
               </div>
 
+              {/* Remote Sensing Satellite Evidence Dossier */}
+              {selectedRecord.satellite_corroborated && (
+                <div className="p-4 bg-[#0A0A0A] border border-[#3FB950]/40 space-y-2 font-mono-data text-xs">
+                  <div className="flex items-center justify-between text-[#3FB950] font-bold uppercase text-[11px]">
+                    <span className="flex items-center gap-1.5">
+                      <span>🛰️ ORBITAL SATELLITE CROSS-VALIDATION</span>
+                    </span>
+                    <span className="px-2 py-0.5 bg-[#3FB950]/20 text-[#3FB950] text-[10px]">
+                      {selectedRecord.satellite_damage_points_count || 1} DAMAGE TARGETS
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-[#EDEDE8]/60">
+                    SENSOR: <strong className="text-[#EDEDE8]">{selectedRecord.satellite_sensor_source || "UNOSAT UNITAR / Sentinel-1"}</strong>
+                  </div>
+                  <p className="font-body-prose text-xs text-[#EDEDE8]/90 italic bg-[#EDEDE8]/2 p-2.5 border-l border-[#3FB950]">
+                    {selectedRecord.satellite_evidence_summary || "UNOSAT orbital mapping confirmed physical building collapse."}
+                  </p>
+                </div>
+              )}
+
               {/* Conflict Analysis Callout */}
               {selectedRecord.has_conflicts ? (
                 <div className="p-4 bg-[#E5484D]/10 border border-[#E5484D] space-y-2 font-mono-data text-xs">
@@ -207,15 +243,13 @@ export default function DeduplicationPage() {
                   </p>
                   <div className="text-[11px] text-[#EDEDE8]/60 pt-2 border-t border-[#E5484D]/30 flex justify-between">
                     <span>DISPUTE RANGE: [{selectedRecord.casualty_dispute_range[0]} - {selectedRecord.casualty_dispute_range[1]}]</span>
-                    <span>RESOLVED CASUALTIES: <strong className="text-[#EDEDE8]">{selectedRecord.unified_casualty_estimate}</strong></span>
+                    <span className="text-[#3FB950] font-bold">HOSPITAL LOG TRUSTED</span>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 bg-[#3FB950]/10 border border-[#3FB950] font-mono-data text-xs text-[#3FB950] space-y-1">
-                  <div className="font-bold">✓ MULTI-AGENCY CONSENSUS ESTABLISHED</div>
-                  <p className="font-body-prose text-xs text-[#EDEDE8]/80">
-                    Reports from first responders, police, and hospitals corroborate this incident with no major disputes.
-                  </p>
+                <div className="p-3 bg-[#3FB950]/10 border border-[#3FB950]/30 font-mono-data text-xs text-[#3FB950] flex items-center justify-between">
+                  <span>✓ ALL MULTI-AGENCY STREAMS IN FULL CONSENSUS</span>
+                  <span>NO DISPUTE</span>
                 </div>
               )}
 
