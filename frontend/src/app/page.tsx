@@ -8,6 +8,9 @@ import {
   fetchPopulationExposure,
   fetchMissingPersons,
   fetchSectorPalikas,
+  fetchUnifiedTruth,
+  fetchBlackoutRisks,
+  fetchDispatchDashboard,
   advanceSimulation,
   resetSimulation,
   seedDatabase,
@@ -17,18 +20,16 @@ import {
   AllPopulationExposureResponse,
   MissingPersonItem,
   SectorPalikaBreakdown,
+  UnifiedTruthRecord,
+  BlackoutRiskAssessment,
+  TacticalDispatchRecommendation,
 } from "@/lib/api";
-import { useViewMode } from "@/context/ViewModeContext";
-import { CinematicIntro } from "@/components/CinematicIntro";
-import { EditorialMapStory } from "@/components/EditorialMapStory";
-import { DeduplicationStory } from "@/components/DeduplicationStory";
-import { BlackoutRiskStory } from "@/components/BlackoutRiskStory";
-import { PopulationStory } from "@/components/PopulationStory";
-import { TacticalDispatchStory } from "@/components/TacticalDispatchStory";
-import { StatusGrid } from "@/components/StatusGrid";
+import { ExecutiveBriefing } from "@/components/ExecutiveBriefing";
+import InteractiveVectorMap from "@/components/InteractiveVectorMap";
+import { ActiveSectorDossier } from "@/components/ActiveSectorDossier";
+import { IntegratedIntelligenceHub } from "@/components/IntegratedIntelligenceHub";
 import { SimulationControls } from "@/components/SimulationControls";
 import { ReportInjectionForm } from "@/components/ReportInjectionForm";
-import { SectorDetailPanel } from "@/components/SectorDetailPanel";
 import { SystemArchitecture } from "@/components/SystemArchitecture";
 
 export default function HomePage() {
@@ -37,9 +38,11 @@ export default function HomePage() {
   const [simulationState, setSimulationState] = useState<SimulationState | null>(null);
   const [exposureData, setExposureData] = useState<AllPopulationExposureResponse | null>(null);
   const [missingPersons, setMissingPersons] = useState<MissingPersonItem[]>([]);
-  
-  const [selectedSectorId, setSelectedSectorId] = useState<string | null>("gorkha");
-  const [inspectedLocation, setInspectedLocation] = useState<LocationStatusItem | null>(null);
+  const [truthRecords, setTruthRecords] = useState<UnifiedTruthRecord[]>([]);
+  const [blackoutAssessments, setBlackoutAssessments] = useState<BlackoutRiskAssessment[]>([]);
+  const [dispatchRecommendations, setDispatchRecommendations] = useState<TacticalDispatchRecommendation[]>([]);
+
+  const [selectedSectorId, setSelectedSectorId] = useState<string>("gorkha");
   const [selectedSectorForPalikas, setSelectedSectorForPalikas] = useState<string | null>(null);
   const [palikaData, setPalikaData] = useState<SectorPalikaBreakdown | null>(null);
   const [loadingPalikas, setLoadingPalikas] = useState(false);
@@ -48,16 +51,17 @@ export default function HomePage() {
   const [autoPoll, setAutoPoll] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { isAnalysis } = useViewMode();
-
   const loadData = async () => {
     try {
-      const [locsRes, sim, gis, exp, miss] = await Promise.all([
+      const [locsRes, sim, gis, exp, miss, truth, blackout, dispatch] = await Promise.all([
         fetchAllLocationsStatus(),
         fetchSimulationState(),
         fetchGisTelemetry(),
         fetchPopulationExposure(),
         fetchMissingPersons(),
+        fetchUnifiedTruth(),
+        fetchBlackoutRisks(),
+        fetchDispatchDashboard(),
       ]);
 
       setLocations(locsRes.locations);
@@ -65,12 +69,9 @@ export default function HomePage() {
       setGisSectors(gis.sectors);
       setExposureData(exp);
       setMissingPersons(miss);
-
-      // Keep inspected location updated if open
-      if (inspectedLocation) {
-        const updated = locsRes.locations.find((l) => l.location_id === inspectedLocation.location_id);
-        if (updated) setInspectedLocation(updated);
-      }
+      setTruthRecords(truth.unified_records);
+      setBlackoutAssessments(blackout.assessments);
+      setDispatchRecommendations(dispatch.recommendations);
     } catch (err: any) {
       setError(err.message || "Failed to load live situation telemetry");
     }
@@ -81,7 +82,7 @@ export default function HomePage() {
     if (!autoPoll) return;
     const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
-  }, [autoPoll, inspectedLocation]);
+  }, [autoPoll]);
 
   const handleAdvanceHours = async (hours: number) => {
     setIsLoading(true);
@@ -119,11 +120,6 @@ export default function HomePage() {
     }
   };
 
-  const handleOpenDossier = (sectorId: string) => {
-    const loc = locations.find((l) => l.location_id.toLowerCase() === sectorId.toLowerCase());
-    if (loc) setInspectedLocation(loc);
-  };
-
   const handleOpenPalikas = async (sId: string) => {
     setSelectedSectorForPalikas(sId);
     setLoadingPalikas(true);
@@ -137,12 +133,31 @@ export default function HomePage() {
     }
   };
 
-  const scrollToMatrix = () => {
-    const el = document.getElementById("situation-matrix");
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+  // Active sector telemetry objects
+  const activeSector = gisSectors.find(
+    (s) => s.sector_id.toLowerCase() === selectedSectorId.toLowerCase()
+  ) || gisSectors[0] || {
+    sector_id: "gorkha",
+    sector_name: "Gorkha",
+    status: "verified_damaged" as const,
+    confidence_score: 0.94,
+    severity_index: 9.2,
+    threat_tier: "CRITICAL",
+    latitude: 28.0,
+    longitude: 84.63,
+    elevation_meters: 1900,
+    distance_to_epicenter_km: 0.0,
+    active_incidents_count: 8,
+    estimated_casualties: 149,
+    isolation_index: 0.85,
+    satellite_corroborated: true,
+    satellite_sensor: "Sentinel-1 SAR",
   };
 
-  // Summary counts for simulation timeline bar
+  const activeLocation = locations.find(
+    (l) => l.location_id.toLowerCase() === selectedSectorId.toLowerCase()
+  );
+
   const summaryCounts = locations.reduce((acc: any, curr) => {
     acc[curr.status] = (acc[curr.status] || 0) + 1;
     return acc;
@@ -153,17 +168,24 @@ export default function HomePage() {
     (summaryCounts.blackout || 0) +
     (summaryCounts.unverified || 0);
 
+  const worstSector = locations.find(
+    (l) => l.status === "verified_damaged" || l.status === "blackout"
+  ) || locations[0];
+
   return (
     <div className="flex flex-col min-h-screen">
-      {/* SECTION 1: THE INFORMATION FOG (Cinematic Editorial Opening) */}
-      <CinematicIntro
-        elapsedHours={simulationState?.elapsed_hours || 12.0}
-        totalReports={simulationState?.reports_visible_at_current_time || 84}
+      {/* 1. EXECUTIVE CRISIS BRIEFING */}
+      <ExecutiveBriefing
+        simulationState={simulationState}
         activeCriticalCount={activeCriticalCount || 6}
-        onEnterMatrix={scrollToMatrix}
+        totalExposedMillion={
+          (exposureData?.total_national_exposed_population || 2920000) / 1000000
+        }
+        unaccountedCount={missingPersons.length || 148}
+        worstSectorName={worstSector?.location_name || "Gorkha (Epicenter)"}
       />
 
-      {/* STICKY SIMULATION CONTROLS BAR */}
+      {/* STICKY SIMULATION REPLAY CONTROLS */}
       <SimulationControls
         simulationState={simulationState}
         summaryCounts={summaryCounts}
@@ -184,57 +206,93 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* SECTION 2 & 3: THE SITUATION & WHERE IS THE RISK? (Map as Main Character) */}
-      <EditorialMapStory
-        sectors={gisSectors}
-        locations={locations}
-        selectedSectorId={selectedSectorId}
-        onSelectSector={(sId) => setSelectedSectorId(sId)}
-        onOpenDossier={handleOpenDossier}
+      {/* 2. SPATIAL COMMAND ARENA: MAP + ACTIVE SECTOR ACTION DOSSIER */}
+      <section className="py-10 sm:py-16 border-b border-[#E5E4DC] dark:border-[#232733] px-6 sm:px-12 lg:px-16">
+        <div className="max-w-7xl mx-auto space-y-8">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div className="space-y-1">
+              <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
+                GEOSPATIAL CRISIS RADAR
+              </div>
+              <h2 className="font-display-calm font-extrabold text-2xl sm:text-4xl text-[#111318] dark:text-[#F4F4F0] tracking-tight">
+                Live Disaster Command Matrix
+              </h2>
+            </div>
+
+            <div className="font-mono-data text-xs text-[#5C6270]">
+              SELECT A SECTOR TO FOCUS CARTOGRAPHY & REVEAL DIRECTIVES
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Column (7): Vector Cartography + Quick Selector */}
+            <div className="lg:col-span-7 space-y-4">
+              <InteractiveVectorMap
+                sectors={gisSectors}
+                selectedSectorId={selectedSectorId}
+                onSelectSector={(sId) => setSelectedSectorId(sId)}
+              />
+
+              {/* Horizontal 8-Sector Selector Carousel */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none font-mono-data text-xs">
+                {gisSectors.map((sec, idx) => {
+                  const isSelected = sec.sector_id.toLowerCase() === selectedSectorId.toLowerCase();
+                  return (
+                    <button
+                      key={sec.sector_id}
+                      onClick={() => setSelectedSectorId(sec.sector_id)}
+                      type="button"
+                      className={`px-3.5 py-2 rounded-xl font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 ${
+                        isSelected
+                          ? "bg-[#111318] dark:bg-[#F4F4F0] text-[#FFFFFF] dark:text-[#0C0E12] shadow-xs scale-102"
+                          : "surface-calm text-[#5C6270] hover:text-[#111318] dark:hover:text-[#F4F4F0]"
+                      }`}
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full ${
+                          sec.status === "verified_damaged" || sec.status === "blackout"
+                            ? "bg-[#E11D48]"
+                            : sec.status === "verified_safe"
+                            ? "bg-[#059669]"
+                            : "bg-[#D97706]"
+                        }`}
+                      />
+                      <span>{sec.sector_name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Column (5): Active Sector Operational Action Dossier */}
+            <div className="lg:col-span-5">
+              <ActiveSectorDossier
+                sector={activeSector}
+                location={activeLocation}
+                onOpenPalikas={handleOpenPalikas}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. INTEGRATED 4-PILLAR INTELLIGENCE HUB */}
+      <IntegratedIntelligenceHub
+        truthRecords={truthRecords}
+        blackoutAssessments={blackoutAssessments}
+        missingPersons={missingPersons}
+        dispatchRecommendations={dispatchRecommendations}
+        onSelectSector={(sId) => {
+          setSelectedSectorId(sId);
+          window.scrollTo({ top: 300, behavior: "smooth" });
+        }}
       />
 
-      {/* SECTION 4: WHAT DO WE ACTUALLY KNOW? (Unified Truth & Deduplication) */}
-      <DeduplicationStory />
-
-      {/* SECTION 5: WHAT CAN WE NOT SEE? (Silent Blackout Intelligence) */}
-      <BlackoutRiskStory />
-
-      {/* SECTION 6: WHO IS AFFECTED? (Population Exposure & Accountability) */}
-      <PopulationStory
-        totalExposedMillion={
-          (exposureData?.total_national_exposed_population || 2920000) / 1000000
-        }
-        totalUnaccountedCount={missingPersons.length || 148}
-        totalEvacuatedThousand={
-          (exposureData?.sector_exposures.reduce(
-            (acc, s) => acc + s.evacuated_population_estimate,
-            0
-          ) || 38000) / 1000
-        }
-      />
-
-      {/* SECTION 7: WHAT SHOULD HAPPEN NEXT? (Tactical Resource Dispatch) */}
-      <TacticalDispatchStory />
-
-      {/* SECTION 8: OPERATIONAL COMMAND MATRIX & TEST SIGNAL CONSOLE */}
-      <StatusGrid
-        locations={locations}
-        onSelectLocation={(locId) => handleOpenDossier(locId)}
-      />
-
-      {/* LIVE FIELD TEST SIGNAL INJECTION */}
+      {/* 4. FIELD TEST SIGNAL INJECTION */}
       <ReportInjectionForm onReportInjected={loadData} />
 
-      {/* PROGRESSIVE SYSTEM ARCHITECTURE & FORMULA SPECIFICATIONS */}
+      {/* 5. SYSTEM ARCHITECTURE & ALGORITHMIC SPECS */}
       <SystemArchitecture />
-
-      {/* SLIDE-IN SECTOR EVIDENCE DOSSIER PANEL */}
-      <SectorDetailPanel
-        location={inspectedLocation}
-        onClose={() => setInspectedLocation(null)}
-        isAnalysis={isAnalysis}
-        onOpenPalikas={handleOpenPalikas}
-      />
 
       {/* 2021 CENSUS PALIKA DEMOGRAPHICS MODAL */}
       {selectedSectorForPalikas && (
