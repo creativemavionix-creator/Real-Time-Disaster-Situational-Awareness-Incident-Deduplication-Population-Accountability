@@ -8,6 +8,7 @@ interface InteractiveVectorMapProps {
   sectors: GisSectorTelemetry[];
   selectedSectorId: string | null;
   onSelectSector: (sectorId: string) => void;
+  activeLayer?: "isolation" | "severity" | "epicenter";
 }
 
 const SECTOR_COORDS: Record<string, [number, number]> = {

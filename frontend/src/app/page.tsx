@@ -10,7 +10,7 @@ import {
   SimulationState,
   AllPopulationExposureResponse,
 } from "@/lib/api";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function OverviewPage() {
@@ -48,15 +48,15 @@ export default function OverviewPage() {
   const totalExposed = (exposureData?.total_national_exposed_population || 0) / 1000000;
   const missing = exposureData?.total_missing_persons || 0;
 
-  const containerVars = {
+  const containerVars: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.2, delayChildren: 0.1 }
+      transition: { staggerChildren: 0.1, delayChildren: 0.2 }
     }
   };
 
-  const itemVars = {
+  const itemVars: Variants = {
     hidden: { opacity: 0, y: 30, filter: "blur(10px)" },
     show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring", stiffness: 100, damping: 20 } }
   };

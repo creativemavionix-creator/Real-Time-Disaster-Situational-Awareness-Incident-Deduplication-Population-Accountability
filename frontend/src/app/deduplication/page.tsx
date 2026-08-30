@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { fetchUnifiedTruth, UnifiedTruthResponse, UnifiedTruthRecord } from "@/lib/api";
-import { motion } from "framer-motion";
+import { motion, Variants } from "framer-motion";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function DeduplicationPage() {
@@ -40,7 +40,7 @@ export default function DeduplicationPage() {
     truthData?.unified_records[0] ||
     null;
 
-  const containerVars = {
+  const containerVars: Variants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
@@ -48,7 +48,7 @@ export default function DeduplicationPage() {
     }
   };
 
-  const itemVars = {
+  const itemVars: Variants = {
     hidden: { opacity: 0, y: 20, filter: "blur(10px)" },
     show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { type: "spring", stiffness: 100, damping: 20 } }
   };
