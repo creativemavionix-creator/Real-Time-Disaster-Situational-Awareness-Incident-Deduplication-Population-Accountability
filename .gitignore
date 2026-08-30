@@ -25,7 +25,8 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
+/dataset
+prepare_dataset.py
 # Testing & Coverage
 .pytest_cache/
 .coverage

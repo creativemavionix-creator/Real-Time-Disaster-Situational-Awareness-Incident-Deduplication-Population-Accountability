@@ -1,0 +1,38 @@
+# Git
+.git
+.gitignore
+.github
+
+# Virtual Environments & Python Cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing & Linting
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# Frontend (deployed independently to Vercel)
+frontend/
+node_modules/
+.next/
+
+# IDE & OS Files
+.vscode/
+.idea/
+.gemini/
+.DS_Store
+Thumbs.db
+scratch/
+
+# Local database file (fresh SQLite DB initialized on container startup)
+disaster_fog.db
