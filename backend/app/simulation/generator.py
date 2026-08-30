@@ -9,7 +9,7 @@ from app.config import settings
 from app.models.db import ReportDB
 from app.pipeline.gazetteer import LOCATIONS, LocationInfo
 from app.pipeline.extractor import extract_all
-from app.pipeline.embedder import embed_text, serialize_embedding
+from app.pipeline.embedder import embed_text, embed_batch, serialize_embedding
 
 
 def generate_synthetic_reports(start_time: Optional[datetime] = None) -> list[dict]:
@@ -302,15 +302,18 @@ def seed_database(db: Session, force: bool = False) -> int:
         
     synthetic_data = generate_synthetic_reports()
     
+    # Batch compute all embeddings in 1 fast vector pass with low memory footprint
+    raw_texts = [item["raw_text"] for item in synthetic_data]
+    embeddings = embed_batch(raw_texts)
+    
     db_items: list[ReportDB] = []
-    for item in synthetic_data:
+    for idx, item in enumerate(synthetic_data):
         raw_text = item["raw_text"]
         lat = item.get("reported_lat")
         lon = item.get("reported_lon")
         
         extraction = extract_all(raw_text, lat, lon)
-        emb = embed_text(raw_text)
-        emb_json = serialize_embedding(emb)
+        emb_json = serialize_embedding(embeddings[idx])
         
         rep = ReportDB(
             source_type=item["source_type"],

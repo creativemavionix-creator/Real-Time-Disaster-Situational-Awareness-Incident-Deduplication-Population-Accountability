@@ -10,7 +10,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PORT=8000 \
     HF_HOME=/app/.cache/huggingface \
-    SENTENCE_TRANSFORMERS_HOME=/app/.cache/torch/sentence_transformers
+    SENTENCE_TRANSFORMERS_HOME=/app/.cache/torch/sentence_transformers \
+    OMP_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    OPENBLAS_NUM_THREADS=1 \
+    TOKENIZERS_PARALLELISM=false
 
 # Set working directory
 WORKDIR /app

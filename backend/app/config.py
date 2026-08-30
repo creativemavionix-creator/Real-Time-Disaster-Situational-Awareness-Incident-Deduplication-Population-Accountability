@@ -34,6 +34,19 @@ class Settings(BaseSettings):
     # Default Simulation Clock Time
     SIMULATION_START_TIME: datetime = datetime(2026, 8, 30, 6, 0, 0, tzinfo=timezone.utc)
     SIMULATION_DURATION_HOURS: float = 24.0
+    
+    # CORS Origins (Includes Vercel Production, Previews, and Localhost)
+    CORS_ORIGINS: list[str] = [
+        "https://prism-rho-three.vercel.app",
+        "https://prism-git-main-creativemavionix-5025s-projects.vercel.app",
+        "https://prism-kdrfkakg6-creativemavionix-5025s-projects.vercel.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "*",
+    ]
+    CORS_ORIGIN_REGEX: str = r"^https:\/\/.*\.vercel\.app$"
 
 
 settings = Settings()

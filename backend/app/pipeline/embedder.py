@@ -1,9 +1,14 @@
-"""Text embedding module using SentenceTransformers with in-memory caching and fallback."""
-
+import os
 import logging
 import json
 from typing import Optional
 import numpy as np
+
+# Constrain PyTorch thread pools to prevent memory ballooning on 512MB instances
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 logger = logging.getLogger(__name__)
 
@@ -12,15 +17,23 @@ _EMBEDDING_CACHE: dict[str, list[float]] = {}
 
 
 def get_model():
-    """Lazy load SentenceTransformer model singleton."""
+    """Lazy load SentenceTransformer model singleton with memory optimization."""
     global _MODEL
     if _MODEL is None:
         try:
+            import torch
+            torch.set_num_threads(1)
+            try:
+                torch.set_num_interop_threads(1)
+            except Exception:
+                pass
+                
             from sentence_transformers import SentenceTransformer
             from app.config import settings
             logger.info(f"Loading embedding model: {settings.EMBEDDING_MODEL_NAME}")
-            _MODEL = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
-            logger.info("Embedding model loaded successfully.")
+            _MODEL = SentenceTransformer(settings.EMBEDDING_MODEL_NAME, device="cpu")
+            _MODEL.eval()
+            logger.info("Embedding model loaded successfully (CPU mode, 1 thread).")
         except Exception as e:
             logger.warning(f"Could not load SentenceTransformer ({e}). Falling back to statistical embedding.")
             _MODEL = False
@@ -66,10 +79,12 @@ def embed_text(text: Optional[str]) -> list[float]:
     model = get_model()
     if model and model is not False:
         try:
-            vec = model.encode(cleaned_text, normalize_embeddings=True)
-            result = vec.tolist()
-            _EMBEDDING_CACHE[cleaned_text] = result
-            return result
+            import torch
+            with torch.inference_mode():
+                vec = model.encode(cleaned_text, normalize_embeddings=True, show_progress_bar=False)
+                result = vec.tolist()
+                _EMBEDDING_CACHE[cleaned_text] = result
+                return result
         except Exception as e:
             logger.error(f"Error encoding with SentenceTransformer: {e}")
             
@@ -80,8 +95,56 @@ def embed_text(text: Optional[str]) -> list[float]:
 
 
 def embed_batch(texts: list[str]) -> list[list[float]]:
-    """Generate embeddings for a list of texts in batch."""
-    return [embed_text(t) for t in texts]
+    """Generate embeddings for a list of texts efficiently in batch."""
+    if not texts:
+        return []
+    
+    # Check cache first
+    uncached_indices = []
+    uncached_texts = []
+    results: list[Optional[list[float]]] = [None] * len(texts)
+    
+    for i, t in enumerate(texts):
+        cleaned = t.strip() if t else ""
+        if not cleaned:
+            results[i] = [0.0] * 384
+        elif cleaned in _EMBEDDING_CACHE:
+            results[i] = _EMBEDDING_CACHE[cleaned]
+        else:
+            uncached_indices.append(i)
+            uncached_texts.append(cleaned)
+            
+    if not uncached_texts:
+        return [r for r in results if r is not None]
+        
+    model = get_model()
+    if model and model is not False:
+        try:
+            import torch
+            with torch.inference_mode():
+                vecs = model.encode(
+                    uncached_texts,
+                    batch_size=16,
+                    normalize_embeddings=True,
+                    show_progress_bar=False,
+                )
+                for idx, orig_idx in enumerate(uncached_indices):
+                    vec_list = vecs[idx].tolist()
+                    _EMBEDDING_CACHE[uncached_texts[idx]] = vec_list
+                    results[orig_idx] = vec_list
+        except Exception as e:
+            logger.warning(f"Batch encoding fallback: {e}")
+            for idx, orig_idx in enumerate(uncached_indices):
+                vec_list = _fallback_embed(uncached_texts[idx], dim=384)
+                _EMBEDDING_CACHE[uncached_texts[idx]] = vec_list
+                results[orig_idx] = vec_list
+    else:
+        for idx, orig_idx in enumerate(uncached_indices):
+            vec_list = _fallback_embed(uncached_texts[idx], dim=384)
+            _EMBEDDING_CACHE[uncached_texts[idx]] = vec_list
+            results[orig_idx] = vec_list
+            
+    return [r if r is not None else [0.0] * 384 for r in results]
 
 
 def serialize_embedding(vec: list[float]) -> str:
