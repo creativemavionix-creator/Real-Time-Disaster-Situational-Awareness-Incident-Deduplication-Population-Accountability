@@ -44,7 +44,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${newsreader.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} ${inter.variable} h-full antialiased`}
+      className={`${newsreader.variable} ${plusJakarta.variable} ${jetbrainsMono.variable} ${inter.variable} dark h-full antialiased`}
     >
       <body
         suppressHydrationWarning
