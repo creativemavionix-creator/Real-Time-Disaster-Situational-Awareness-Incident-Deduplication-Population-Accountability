@@ -1,0 +1,9 @@
+node_modules
+.next
+.git
+.gitignore
+.vercel
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db

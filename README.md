@@ -25,10 +25,13 @@ To run the complete platform, start both the backend and frontend in **two separ
 
 ### 1️⃣ Terminal 1: Start the FastAPI AI Backend
 ```bash
-# 1. Install dependencies
+# 1. Navigate to backend
+cd backend
+
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# 2. Launch FastAPI server on port 8000
+# 3. Launch FastAPI server on port 8000
 python -m uvicorn app.main:app --reload --port 8000
 ```
 - **API Root**: [http://localhost:8000](http://localhost:8000)
@@ -52,9 +55,18 @@ npm run dev -- --port 3000
 
 ---
 
+### 🐳 Alternative: Run Everything with Docker Compose
+```bash
+# Build and launch both backend and frontend containers
+docker compose up --build
+```
+
+---
+
 ### 3️⃣ Running Automated Tests
 ```bash
-python -m pytest -v
+cd backend
+pytest -v
 ```
 *(All 32 unit and API integration tests pass).*
 
@@ -280,38 +292,53 @@ tests/test_scoring.py::test_corroboration_bonus PASSED                   [100%]
 
 ```
 .
-├── app/                                # FastAPI Backend Application
-│   ├── config.py                       # Project configuration & scoring weights
-│   ├── database.py                     # SQLite engine & session management
-│   ├── main.py                         # FastAPI lifespan, CORS, error handlers, router mounting
-│   ├── models/
-│   │   ├── db.py                       # SQLAlchemy ORM models (Reports, Clock, MissingPerson, ResourceUnit, DispatchMission)
-│   │   └── schemas.py                  # Pydantic v2 schemas for all 6 capabilities
-│   ├── pipeline/
-│   │   ├── gazetteer.py                # 8 Nepal locations, aliases, Haversine fallback
-│   │   ├── extractor.py                # Regex extraction (places, casualties, damage tags)
-│   │   ├── embedder.py                 # SentenceTransformer embedding with caching
-│   │   ├── clustering.py               # Cosine similarity clustering (≥ 0.75)
-│   │   ├── scoring.py                  # Explainable reliability scoring & exponential decay
-│   │   ├── aggregator.py               # Per-location status machine & blackout detection
-│   │   ├── blackout_risk.py            # Spatial physics inferred risk engine for silent zones
-│   │   ├── population_exposure.py      # Dynamic population exposure & missing persons matcher
-│   │   ├── dispatch_engine.py          # Tactical resource dispatch recommendation ranking
-│   │   └── sitrep_generator.py         # Automated UN OCHA Situation Report compiler
-│   ├── routers/
-│   │   ├── locations.py                # /locations, /status, /{id}/status, /{id}/incidents
-│   │   ├── reports.py                  # POST /reports (live ingest) & GET /reports
-│   │   ├── simulation.py               # /simulation/state, advance, reset, seed
-│   │   ├── gis.py                      # /gis/telemetry
-│   │   ├── deduplication.py            # /deduplication/unified-truth
-│   │   ├── blackout_intel.py           # /blackout-intel/risk-assessment
-│   │   ├── population.py               # /population/exposure, /missing-persons
-│   │   ├── dispatch.py                 # /dispatch/dashboard, recommendations, assign
-│   │   └── sitrep.py                   # /sitrep/current
-│   └── simulation/
-│       ├── clock.py                    # 24-hour replay clock manager
-│       └── generator.py                # 280+ realistic synthetic disaster dataset generator
+├── backend/                            # FastAPI AI Backend Service
+│   ├── Dockerfile                      # Production Docker container definition
+│   ├── .dockerignore                   # Docker build exclusions
+│   ├── requirements.txt                # Python dependencies (FastAPI, PyTorch, SentenceTransformers)
+│   ├── prepare_dataset.py              # Automated dataset retrieval script
+│   ├── app/                            # Core Application Package
+│   │   ├── config.py                   # Project configuration & scoring weights
+│   │   ├── database.py                 # SQLite engine & session management
+│   │   ├── main.py                     # FastAPI lifespan, CORS, error handlers, router mounting
+│   │   ├── models/
+│   │   │   ├── db.py                   # SQLAlchemy ORM models (Reports, Clock, MissingPerson, ResourceUnit, DispatchMission)
+│   │   │   └── schemas.py              # Pydantic v2 schemas for all 6 capabilities
+│   │   ├── pipeline/
+│   │   │   ├── gazetteer.py            # 8 Nepal locations, aliases, Haversine fallback
+│   │   │   ├── extractor.py            # Regex extraction (places, casualties, damage tags)
+│   │   │   ├── embedder.py             # SentenceTransformer embedding with caching
+│   │   │   ├── clustering.py           # Cosine similarity clustering (≥ 0.75)
+│   │   │   ├── scoring.py              # Explainable reliability scoring & exponential decay
+│   │   │   ├── aggregator.py           # Per-location status machine & blackout detection
+│   │   │   ├── blackout_risk.py        # Spatial physics inferred risk engine for silent zones
+│   │   │   ├── population_exposure.py  # Dynamic population exposure & missing persons matcher
+│   │   │   ├── dispatch_engine.py      # Tactical resource dispatch recommendation ranking
+│   │   │   └── sitrep_generator.py     # Automated UN OCHA Situation Report compiler
+│   │   ├── routers/
+│   │   │   ├── locations.py            # /locations, /status, /{id}/status, /{id}/incidents
+│   │   │   ├── reports.py              # POST /reports (live ingest) & GET /reports
+│   │   │   ├── simulation.py           # /simulation/state, advance, reset, seed
+│   │   │   ├── gis.py                  # /gis/telemetry
+│   │   │   ├── deduplication.py        # /deduplication/unified-truth
+│   │   │   ├── blackout_intel.py       # /blackout-intel/risk-assessment
+│   │   │   ├── population.py           # /population/exposure, /missing-persons
+│   │   │   ├── dispatch.py             # /dispatch/dashboard, recommendations, assign
+│   │   │   └── sitrep.py               # /sitrep/current
+│   │   └── simulation/
+│   │       ├── clock.py                # 24-hour replay clock manager
+│   │       └── generator.py            # 280+ realistic synthetic disaster dataset generator
+│   └── tests/                          # Pytest Automated Test Suite
+│       ├── conftest.py                 # Shared test fixtures (TestClient, DB setup)
+│       ├── test_extractor.py           # Regex extraction tests
+│       ├── test_clustering.py          # Dense vector clustering tests
+│       ├── test_scoring.py             # Source weights & staleness decay tests
+│       ├── test_aggregator.py          # Status state machine & silence window tests
+│       ├── test_api.py                 # Core API integration tests
+│       └── test_capabilities.py        # Integration tests for all 6 new capabilities
 ├── frontend/                           # Next.js 16 Brutalist Multi-Page App
+│   ├── Dockerfile                      # Standalone frontend Dockerfile
+│   ├── .dockerignore                   # Frontend Docker exclusions
 │   ├── src/
 │   │   ├── app/
 │   │   │   ├── globals.css             # Brutalist theme tokens, zero-radius, CSS variables
@@ -335,15 +362,8 @@ tests/test_scoring.py::test_corroboration_bonus PASSED                   [100%]
 │   │       └── api.ts                  # Type-safe API client for all backend capabilities
 │   ├── package.json
 │   └── tsconfig.json
-├── tests/                              # Pytest Automated Test Suite
-│   ├── conftest.py                     # Shared test fixtures (TestClient, DB setup)
-│   ├── test_extractor.py               # Regex extraction tests
-│   ├── test_clustering.py              # Dense vector clustering tests
-│   ├── test_scoring.py                 # Source weights & staleness decay tests
-│   ├── test_aggregator.py              # Status state machine & silence window tests
-│   ├── test_api.py                     # Core API integration tests
-│   └── test_capabilities.py            # Integration tests for all 6 new capabilities
-├── requirements.txt                    # Python dependencies
+├── docker-compose.yml                  # Root multi-container orchestration
+├── render.yaml                         # Render Infrastructure-as-Code blueprint
 ├── .gitignore                          # Monorepo gitignore rules
 └── README.md                           # Master Documentation
 ```
