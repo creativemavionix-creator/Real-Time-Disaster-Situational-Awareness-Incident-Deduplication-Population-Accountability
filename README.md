@@ -3,7 +3,7 @@
 [![Docker Compose](https://img.shields.io/badge/docker--compose-v2.20+-blue?logo=docker&logoColor=white)](./docker-compose.yml)
 [![FastAPI Backend](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)](./backend)
 [![Next.js Frontend](https://img.shields.io/badge/Next.js-16.3%20(Turbopack)-black?logo=next.js&logoColor=white)](./frontend)
-[![Pytest](https://img.shields.io/badge/pytest-88%20passed-emerald?logo=pytest&logoColor=white)](./backend/tests)
+[![Pytest](https://img.shields.io/badge/pytest-88%20passed%20(100%25)-emerald?logo=pytest&logoColor=white)](./backend/tests)
 [![Python](https://img.shields.io/badge/python-3.11.9-3776AB?logo=python&logoColor=white)](./backend)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0-3178C6?logo=typescript&logoColor=white)](./frontend)
 [![Uber H3](https://img.shields.io/badge/Uber%20H3-Res%208%20Hexagons-09090B?logo=uber&logoColor=white)](https://h3geo.org)
@@ -11,31 +11,34 @@
 
 > **Product Thesis:** *Silence is not safety. Absence of evidence is evidence of absence only when observation is guaranteed.*
 
-PRATYAKSH-Ω is an enterprise-grade disaster reality reconstruction, negative evidence intelligence, multi-modal sensor fusion, Bayesian belief updating, active verification, and emergency decision-support platform designed for disaster management authorities, military emergency operations centers (EOCs), humanitarian response agencies, and geospatial intelligence analysts.
+PRATYAKSH-Ω is an enterprise-grade disaster reality reconstruction, negative evidence intelligence, multi-modal sensor fusion, Bayesian belief updating, active verification, and emergency decision-support platform designed for disaster management authorities, military emergency operations centers (EOCs), humanitarian response agencies, and geospatial intelligence analysts operating in severe post-disaster information fog.
 
 ---
 
 ## Table of Contents
 1. [Executive Overview & Scientific Vision](#1-executive-overview--scientific-vision)
 2. [End-to-End System Architecture & Two-Tier Spatial Data Model](#2-end-to-end-system-architecture--two-tier-spatial-data-model)
-3. [Comprehensive Dataset Specification & Ingestion Pipeline](#3-comprehensive-dataset-specification--ingestion-pipeline)
-4. [Theoretical Mathematics & Scientific Reasoning Engine](#4-theoretical-mathematics--scientific-reasoning-engine)
-5. [The 17 Core Capabilities & Operational Modules](#5-the-17-core-capabilities--operational-modules)
-6. [Observational Satellite Validation & Ground-Truth Calibration](#6-observational-satellite-validation--ground-truth-calibration)
-7. [Human Governance, Safety Confirmation Guardrails & Audit Ledger](#7-human-governance-safety-confirmation-guardrails--audit-ledger)
-8. [Frontend User Experience & The 10 Core Application Screens](#8-frontend-user-experience--the-10-core-application-screens)
-9. [Backend Architecture & Complete API Specification](#9-backend-architecture--complete-api-specification)
-10. [Installation, Verification & Operational Guide](#10-installation-verification--operational-guide)
-11. [Security, Resource Bounds & Computational Integrity](#11-security-resource-bounds--computational-integrity)
-12. [Known Limitations & Technical Roadmap](#12-known-limitations--technical-roadmap)
+3. [The 8 Strategic Himalayan Study Sectors](#3-the-8-strategic-himalayan-study-sectors)
+4. [Comprehensive Dataset Specification & Ingestion Pipeline (RESQ-SIGHT)](#4-comprehensive-dataset-specification--ingestion-pipeline-resq-sight)
+5. [Theoretical Mathematics & Scientific Reasoning Engine](#5-theoretical-mathematics--scientific-reasoning-engine)
+6. [The 17 Core Capabilities & Operational Modules](#6-the-17-core-capabilities--operational-modules)
+7. [The 5 Canonical Hypotheses & Counterfactual Engine](#7-the-5-canonical-hypotheses--counterfactual-engine)
+8. [Observational Satellite Validation & Ground-Truth Calibration](#8-observational-satellite-validation--ground-truth-calibration)
+9. [Human Governance, Safety Confirmation Guardrails & Audit Ledger](#9-human-governance-safety-confirmation-guardrails--audit-ledger)
+10. [Frontend User Experience & The 10 Core Application Screens](#10-frontend-user-experience--the-10-core-application-screens)
+11. [Backend Architecture, Database Schemas & Complete API Specification](#11-backend-architecture-database-schemas--complete-api-specification)
+12. [Installation, Verification & Operational Guide](#12-installation-verification--operational-guide)
+13. [Security, Resource Bounds & Computational Integrity](#13-security-resource-bounds--computational-integrity)
+14. [Known Limitations & Technical Roadmap](#14-known-limitations--technical-roadmap)
+15. [License & Academic Citation](#15-license--academic-citation)
 
 ---
 
 ## 1. Executive Overview & Scientific Vision
 
-### The Problem
-During catastrophic seismic, hydrometeorological, and structural disasters in complex Himalayan topography, Emergency Operations Centers (EOCs) are paralyzed by the **Himalayan Information Fog**:
-- **The Silent Zone Fallacy (Epistemological Failure)**: Conventional disaster dashboards mistake a total absence of emergency calls for safety. In reality, zero incoming reports from a mountain ridge near the epicenter typically indicates **severed telecommunications towers, landslide-blocked access roads, collapsed bridges, and complete physical isolation**.
+### The Problem: The Himalayan Information Fog
+During catastrophic seismic, hydrometeorological, and structural disasters in complex Himalayan topography, Emergency Operations Centers (EOCs) are paralyzed by the **Information Fog**:
+- **The Silent Zone Fallacy (Epistemological Failure)**: Conventional disaster software and dashboards mistake a total absence of emergency calls for safety. In reality, zero incoming reports from a mountain ridge near the epicenter typically indicates **severed telecommunications towers, landslide-blocked access roads, collapsed bridges, and complete physical isolation**.
 - **Massive Telemetry Noise & Contradiction**: Hundreds of citizen SMS, emergency dispatch calls, and social media posts report the same incident with conflicting casualty numbers, exaggerated damage scopes, and corrupted coordinate strings.
 - **Urban Connectivity Bias**: Informal reporting streams naturally skew toward connected, urban populations with high 4G smartphone penetration, causing automated systems to concentrate resources where connectivity is highest rather than where physical destruction is most severe.
 - **Unchecked AI Hallucination in Life-Safety Roles**: Black-box generative models can erroneously declare unmonitored sectors "safe" without verified ground-truth corroboration, leading to lethal misallocations of search-and-rescue (SAR) assets.
@@ -133,9 +136,31 @@ PRATYAKSH-Ω deploys an explicit **Two-Tier Spatial Architecture** balancing nat
 
 ---
 
-## 3. Comprehensive Dataset Specification & Ingestion Pipeline
+## 3. The 8 Strategic Himalayan Study Sectors
 
-PRATYAKSH-Ω is calibrated and evaluated against 11 authentic scientific remote sensing, disaster response, and demographic datasets in the **`RESQ_SIGHT_DATA/`** research store:
+PRATYAKSH-Ω models 8 strategic districts across Central Nepal, each paired with empirical 2021 Census demographics, structural vulnerability indices, designated Accountable Sector Leads, and operational communications channels:
+
+```text
+                                  STRATEGIC HIMALAYAN SECTORS DIRECTORY
+┌────────────────┬──────────┬──────────┬──────────────┬──────────────┬────────────────────────┬──────────────────────┐
+│ Sector Name    │ Lat      │ Lon      │ Exposed Pop  │ Fragility(V) │ Accountable Commander  │ Radio Callsign / Ch  │
+├────────────────┼──────────┼──────────┼──────────────┼──────────────┼────────────────────────┼──────────────────────┤
+│ Gorkha         │ 28.0050  │ 84.6280  │ 271,061      │ 0.88 (High)  │ DSP Bikram Basnet (APF)│ VHF Ch-04 / SAT-01   │
+│ Sindhupalchok  │ 27.9500  │ 85.7000  │ 287,798      │ 0.94 (Crit)  │ Maj. Anita Adhikari(NA)│ VHF Ch-06 / HF-CORR-2│
+│ Kathmandu      │ 27.7172  │ 85.3240  │ 2,041,587    │ 0.55 (Med)   │ SSP Rajan Shrestha(NP) │ Tetra Trunk / Hot 100│
+│ Bhaktapur      │ 27.6710  │ 85.4298  │ 432,132      │ 0.72 (High)  │ DSP Prakash KC (NP)    │ VHF Ch-02 / NEOC-08  │
+│ Rasuwa         │ 28.1500  │ 85.3000  │ 43,300       │ 0.91 (Crit)  │ Capt. Deepak Rana(APF) │ SAT-RAS-09 / VHF-11  │
+│ Nuwakot        │ 27.8000  │ 85.1000  │ 263,391      │ 0.79 (High)  │ DSP Suman Pokharel(NP) │ VHF Ch-03 / Landline │
+│ Dolakha        │ 27.6700  │ 86.0300  │ 186,557      │ 0.85 (High)  │ Insp. Kamala Gurung(NP)│ VHF Ch-07 / SAT-04   │
+│ Sindhuli       │ 27.2500  │ 85.9000  │ 296,201      │ 0.65 (Med)   │ DSP Arjun Thapa (APF)  │ BP Hwy Repeater Ch-05│
+└────────────────┴──────────┴──────────┴──────────────┴──────────────┴────────────────────────┴──────────────────────┘
+```
+
+---
+
+## 4. Comprehensive Dataset Specification & Ingestion Pipeline (RESQ-SIGHT)
+
+The system integrates 11 authentic scientific remote sensing, disaster response, and demographic datasets in the **`RESQ_SIGHT_DATA/`** research store:
 
 ```text
                                   MULTI-SOURCE DATASET ECOSYSTEM
@@ -156,24 +181,53 @@ PRATYAKSH-Ω is calibrated and evaluated against 11 authentic scientific remote 
 └─────────────────────────┴──────────────────────────┴───────────────────────────────────────────┘
 ```
 
-### High-Resolution Himalayan Study Sectors (Tier 1)
-Full physics-informed negative evidence modeling, Bayesian updating, and active verification are operational across 8 strategic Himalayan sectors:
-1. **Gorkha District (Barpak Epicenter)**: Remote mountainous terrain, steep gorges, high unreinforced masonry fragility ($V = 0.88$), $271,061$ exposed population.
-2. **Sindhupalchok District (Chautara / Melamchi)**: High-altitude river basin with extreme landslide vulnerability ($V = 0.94$), $287,798$ exposed population.
-3. **Kathmandu Metropolitan Valley**: Dense urban masonry and concrete core, high daytime population concentration ($2,041,587$), high traffic and commercial telemetry.
-4. **Bhaktapur District (Durbar Heritage Core)**: Historic unreinforced brick and timber masonry, narrow alleys, high collapse risk ($V = 0.72$), $432,132$ exposed population.
-5. **Rasuwa District (Dhunche / Langtang Pass)**: Extreme alpine ridgelines, total road severance vulnerability ($V = 0.91$), $43,300$ mountain population.
-6. **Nuwakot District (Bidur Access Corridor)**: Mid-hills highway gateway, bridge collapse choke points ($V = 0.79$), $263,391$ exposed population.
-7. **Dolakha District (Charikot Seismic Fault)**: Eastern fault corridor, high aftershock structural fatigue ($V = 0.85$), $186,557$ exposed population.
-8. **Sindhuli District (BP Highway Transit Lifeline)**: Critical southern evacuation route, highway landslide vulnerability ($V = 0.65$), $296,201$ exposed population.
+### Detailed Dataset Breakdown
+
+#### 1. Gorkha Earthquake NRA Structural Damage Assessment (260,601 Buildings)
+- **Directory**: `RESQ_SIGHT_DATA/01_GROUND_TRUTH/GORKHA_EARTHQUAKE/`
+- **Format**: `.csv` tabular survey with 260,601 verified building damage assessments conducted by the National Reconstruction Authority (NRA).
+- **Physical Role**: Calibrates empirical fragility matrices across unreinforced mud masonry, stone masonry, timber frames, and reinforced concrete (RCC). Provides empirical collapse probability curves $P(\text{Collapse} \mid M_w = 7.8)$.
+
+#### 2. UNOSAT UNITAR Spaceborne Damage Vectors (Sankhu & Daraudi)
+- **Directory**: `RESQ_SIGHT_DATA/02_UNOSAT/SANKHU/` & `DARAUDI/`
+- **Format**: ESRI Shapefiles (`.shp`, `.shx`, `.dbf`, `.prj`) and GeoJSON points with damage grading attribute `Damage_Gra` (Grade 1: Negligible $\to$ Grade 5: Total Destruction).
+- **Physical Role**: Corroborates ground reports with independent 0.5m optical damage point vectors from WorldView-2 and Pleiades-1A satellite passes.
+
+#### 3. HumAID Humanitarian Crisis Corpus
+- **Directory**: `RESQ_SIGHT_DATA/03_CRISIS_NLP/HUMAID/`
+- **Format**: 77,000+ annotated disaster tweets across 11 global catastrophes categorized into 10 humanitarian classes (`rescue_volunteering_effort`, `infrastructure_and_utility_damage`, `injured_or_dead_people`, `missing_trapped_people`, `requests_or_urgent_needs`).
+- **Physical Role**: Pretrains multi-class classification and severity scoring.
+
+#### 4. Ebiquity Nepali Named Entity Recognition (60,960 Tokens)
+- **Directory**: `RESQ_SIGHT_DATA/04_NEPALI_NLP/EBIQUITY_NER/v2_BIO/`
+- **Format**: BIO-tagged token sequences (`B-LOC`, `I-LOC`, `B-ORG`, `I-ORG`, `B-PER`, `I-PER`).
+- **Physical Role**: Ingests authentic Devanagari script text to extract Nepali municipality names, local landmarks (e.g., "दरबार क्षेत्र", "मेलम्ची पुल"), and casualty counts in Devanagari numerals (`०..९`).
+
+#### 5. HDX UN OCHA Nepal Common Operational Datasets (COD)
+- **Directory**: `RESQ_SIGHT_DATA/05_GEOSPATIAL/HDX_NEPAL_COD/`
+- **Format**: Official Admin Level 0 (Country), Level 1 (Provinces), Level 2 (Districts), and Level 3 (Municipalities/Palikas).
+- **Physical Role**: Establishes definitive spatial administrative boundaries and spatial join polygons.
+
+#### 6. OpenStreetMap (OSM) Nepal Infrastructure Extract (412 MB)
+- **Directory**: `RESQ_SIGHT_DATA/05_GEOSPATIAL/OSM_NEPAL/nepal-latest.osm.pbf`
+- **Format**: Vector Protocolbuffer Binary format containing all highway centerlines, bridges, hospitals, police stations, and helipads across Nepal.
+- **Physical Role**: Delineates critical infrastructure lifelines and street canyon choke points.
+
+#### 7. Nepal Census 2021 Population Exposure Matrix
+- **Directory**: `RESQ_SIGHT_DATA/06_EXPOSURE/NEPAL_CENSUS_2021/`
+- **Format**: Tabular demographic census disaggregated across all 753 Local Levels (Palikas).
+- **Physical Role**: Drives baseline day/night population exposure calculations and demographic vulnerability weights.
+
+#### 8. Copernicus Sentinel-1 C-Band SAR & Sentinel-2 Optical Imagery
+- **Directory**: `RESQ_SIGHT_DATA/07_SATELLITE/`
+- **Format**: Sentinel-1 SAR interferometric coherence rasters and Sentinel-2 Bottom-Of-Atmosphere (BOA) surface reflectance tiles (T45RRL).
+- **Physical Role**: Provides all-weather radar penetration through monsoon cloud cover to detect surface coherence degradation over severed bridges and landslide dams.
 
 ---
 
-## 4. Theoretical Mathematics & Scientific Reasoning Engine
+## 5. Theoretical Mathematics & Scientific Reasoning Engine
 
-At every sector and simulation timestep, PRATYAKSH-Ω enforces mathematical consistency across its reasoning engine:
-
-### 4.1 Diurnal Expected Reality Baseline Curve
+### 5.1 Diurnal Expected Reality Baseline Curve
 The expected activity volume $A(t)$ for any given hour $h \in [0, 23]$ and day $d \in [0, 6]$ is modeled as:
 
 $$A(t) = \text{BaseRate}_{\text{sector}} \times f_{\text{diurnal}}(h) \times f_{\text{day}}(d)$$
@@ -182,7 +236,7 @@ $$f_{\text{diurnal}}(h) = 0.15 + 0.85 \times \sin^2\left( \frac{\pi \cdot ((h - 
 
 $$f_{\text{day}}(d) = \begin{cases} 0.85 & \text{if } d = 5 \text{ (Saturday weekend in Nepal)} \\ 1.10 & \text{if } d = 4 \text{ (Friday surge)} \\ 1.00 & \text{otherwise} \end{cases}$$
 
-### 4.2 Negative Evidence Anomaly & $Z$-Score Metric
+### 5.2 Negative Evidence Anomaly & $Z$-Score Metric
 The unexpected signal throughput gap $\Delta$ and standardized deviation $Z$ are calculated as:
 
 $$\Delta = \text{ObservedValue} - \text{ExpectedMean}$$
@@ -194,12 +248,12 @@ $$Z = \frac{\Delta}{\max(0.1, \text{ExpectedStdDev})}$$
 - If $Z \ge +3.0 \implies \mathbf{ELEVATED\_SURGE}$
 - Otherwise $\implies \mathbf{NORMAL}$
 
-### 4.3 Evidence Decay & Correlation Penalty
+### 5.3 Evidence Freshness Decay & Correlation Penalty
 To prevent double-counting of echoed social media reposts or repeated radio bursts, evidence weights are penalized by repeated source count $N_{\text{repeat}}$:
 
 $$w_{\text{eff}} = \text{Reliability} \times e^{-\lambda (t - t_0)} \times \left(\frac{1}{1 + 0.35 \times N_{\text{repeat}}}\right)$$
 
-### 4.4 Bayesian Belief Updating (5 Canonical Hypotheses)
+### 5.4 Bayesian Belief Updating (Log-Sum-Exp Numerically Stabilized)
 Given prior physical beliefs $P(H_i)$ and incoming multi-modal evidence items $E = \{e_1, e_2, \dots, e_n\}$:
 
 $$\log P(H_i \mid E) = \log P(H_i) + \sum_{j=1}^n w_{\text{eff}, j} \cdot \Lambda(H_i, e_j)$$
@@ -208,29 +262,29 @@ Using the numerically stabilized Log-Sum-Exp softmax transformation:
 
 $$P(H_i \mid E) = \frac{e^{\log P(H_i \mid E) - \max_k \log P(H_k \mid E)}}{\sum_{m=1}^5 e^{\log P(H_m \mid E) - \max_k \log P(H_k \mid E)}} \quad \text{such that} \quad \sum_{i=1}^5 P(H_i \mid E) \equiv 1.000$$
 
-### 4.5 Shannon Uncertainty Entropy
+### 5.5 Shannon Uncertainty Entropy
 Quantifies the overall epistemic ambiguity of the sector state:
 
 $$\mathcal{H}(P) = -\sum_{i=1}^5 P(H_i \mid E) \cdot \log_2 P(H_i \mid E)$$
 
-- **Uniform Uncertainty**: $\mathcal{H}_{\max} = \log_2(5) \approx 2.322 \text{ bits}$
+- **Uniform Uncertainty (Total Information Fog)**: $\mathcal{H}_{\max} = \log_2(5) \approx 2.322 \text{ bits}$
 - **Absolute Ground Truth**: $\mathcal{H}_{\min} = 0.000 \text{ bits}$
 
-### 4.6 Next Best Observation & Information Gain Ranking
+### 5.6 Next Best Observation & Information Gain Ranking
 Each candidate reconnaissance action $a$ is ranked using a multi-attribute utility function maximizing Information Gain ($\Delta \mathcal{H}$) while balancing operational safety, budget, and time:
 
 $$\text{Score}(a) = 0.50 \cdot \Delta \mathcal{H}(a) + 0.25 \cdot (1 - \text{Risk}(a)) + 0.15 \cdot \left(1 - \frac{\text{Cost}(a)}{\text{Cost}_{\max}}\right) + 0.10 \cdot \left(1 - \frac{\text{ETA}(a)}{\text{ETA}_{\max}}\right)$$
 
 $$\Delta \mathcal{H}(a) = \mathcal{H}(P) - \mathbb{E}[\mathcal{H}(P \mid O_a)]$$
 
-### 4.7 Hybrid Entity Resolution (Missing Persons Reconciliation)
+### 5.7 Hybrid Entity Resolution (Missing Persons Reconciliation)
 Reconciles missing person inquiries against hospital triage and shelter intake manifests:
 
 $$\text{MatchScore} = 0.55 \cdot \text{JaroWinkler}(\text{Name}_1, \text{Name}_2) + 0.25 \cdot \text{CosineSim}(V_{\text{attrs}1}, V_{\text{attrs}2}) + 0.20 \cdot \text{AgeSimilarity}$$
 
 ---
 
-## 5. The 17 Core Capabilities & Operational Modules
+## 6. The 17 Core Capabilities & Operational Modules
 
 ```text
                             OPERATIONAL CAPABILITIES MATRIX
@@ -259,9 +313,32 @@ $$\text{MatchScore} = 0.55 \cdot \text{JaroWinkler}(\text{Name}_1, \text{Name}_2
 
 ---
 
-## 6. Observational Satellite Validation & Ground-Truth Calibration
+## 7. The 5 Canonical Hypotheses & Counterfactual Engine
 
-PRATYAKSH-Ω benchmarks simulated physical damage fields against real orbital remote sensing:
+PRATYAKSH-Ω models 5 mutually exclusive and collectively exhaustive physical hypotheses for every sector:
+
+```text
+                               THE 5 CANONICAL HYPOTHESES
+┌────┬──────────────────────────────────────────────┬───────────────────────────────┬────────────────────────────────┐
+│ Code│ Hypothesis Name                              │ Core Physical State           │ Key Diagnostic Indicator       │
+├────┼──────────────────────────────────────────────┼───────────────────────────────┼────────────────────────────────┤
+│ H1 │ Area Safe / Normal Activity                  │ Structures intact, power on   │ Low call rate, normal baseline │
+│ H2 │ Telecommunications & Power Grid Failure      │ Comms severed, physical intact│ Sudden total signal drop       │
+│ H3 │ Critical Access Isolation / Road Severance   │ Bridges down, landslides cut  │ Upstream calls, zero road flow │
+│ H4 │ Population Pre-Emptively Evacuated           │ People relocated to shelters  │ Low local calls, shelter surge │
+│ H5 │ Severe Physical Disaster & Structural Collapse│ Massive structural collapse   │ Initial screams, then silence  │
+└────┴──────────────────────────────────────────────┴───────────────────────────────┴────────────────────────────────┘
+```
+
+### Counterfactual Assertion Engine
+For each hypothesis $H_i$, the system generates observable physical assertions and tests them against the live multi-modal evidence store:
+- *If $H_2$ (Comms Down)* $\longrightarrow$ Adjacent cell tower pings should also drop to zero; satellite optical passes should reveal standing building roofs.
+- *If $H_3$ (Access Isolated)* $\longrightarrow$ High-altitude UAV imagery should show landslide debris covering arterial roads (e.g., BP Highway, Pasang Lhamu Highway).
+- *If $H_5$ (Severe Disaster)* $\longrightarrow$ Sentinel-1 SAR interferometry must exhibit high phase decorrelation; hospital triage centers should report surging mass casualty intake.
+
+---
+
+## 8. Observational Satellite Validation & Ground-Truth Calibration
 
 ```text
                             SATELLITE GROUND-TRUTH CALIBRATION
@@ -295,7 +372,7 @@ Every data item and metric emitted by the platform carries an immutable provenan
 
 ---
 
-## 7. Human Governance, Safety Confirmation Guardrails & Audit Ledger
+## 9. Human Governance, Safety Confirmation Guardrails & Audit Ledger
 
 ```text
                                   5-TIER ROLE GOVERNANCE MODEL
@@ -311,15 +388,13 @@ Every data item and metric emitted by the platform carries an immutable provenan
 ```
 
 ### The Human-in-the-Loop Safety Guardrail
-- **Safety Policy**: Automated algorithms are prohibited from declaring a disaster sector "safe".
+- **Safety Policy**: Automated algorithms are strictly prohibited from declaring a disaster sector "safe".
 - **Operation**: When incoming reports indicate "safe_clear", the system marks the sector as `unverified` and raises a high-priority `human_safe_confirmation_required` flag in the UI.
 - **Confirmation**: An authorized Sector Commander or Officer must inspect the evidence dossier and execute an authenticated override with operational justification before the sector is classified as `verified_safe`.
 
 ---
 
-## 8. Frontend User Experience & The 10 Core Application Screens
-
-The Next.js 16 frontend provides 10 specialized command and decision-support views:
+## 10. Frontend User Experience & The 10 Core Application Screens
 
 ```text
                                FRONTEND SITEMAP & FLOW (10 SCREENS)
@@ -367,7 +442,7 @@ The Next.js 16 frontend provides 10 specialized command and decision-support vie
 
 ---
 
-## 9. Backend Architecture & Complete API Specification
+## 11. Backend Architecture, Database Schemas & Complete API Specification
 
 ### Directory Layout
 ```text
@@ -455,7 +530,7 @@ backend/
 
 ---
 
-## 10. Installation, Verification & Operational Guide
+## 12. Installation, Verification & Operational Guide
 
 ### Option A: Local Development Launch
 
@@ -497,7 +572,7 @@ npm run dev
 
 ---
 
-## 11. Security, Resource Bounds & Computational Integrity
+## 13. Security, Resource Bounds & Computational Integrity
 
 - **Human-in-the-Loop Confirmation Policy**: AI algorithms are strictly prevented from auto-declaring an area "safe". Safe signals are flagged for mandatory human commander review.
 - **Security Response Headers**: Injected on all responses via `SecurityHeadersMiddleware`: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `X-XSS-Protection: 1; mode=block`, `Referrer-Policy: strict-origin-when-cross-origin`.
@@ -508,7 +583,7 @@ npm run dev
 
 ---
 
-## 12. Known Limitations & Technical Roadmap
+## 14. Known Limitations & Technical Roadmap
 
 ### Himalayan Topography vs Real-Time Sensor Telemetry
 - **Current Operational Reality**:
@@ -523,7 +598,7 @@ npm run dev
 
 ---
 
-## License & Academic Citation
+## 15. License & Academic Citation
 PRATYAKSH-Ω is released under the **MIT License**.
 
 When citing PRATYAKSH-Ω in scientific publications or emergency operations research:
