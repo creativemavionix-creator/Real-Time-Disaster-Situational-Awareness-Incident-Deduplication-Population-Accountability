@@ -85,13 +85,16 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Enable CORS for all origins (Next.js frontend running on port 3000)
+# Enable CORS for Vercel production domains, preview branches, and local development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=settings.CORS_ORIGIN_REGEX,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,
 )
 
 

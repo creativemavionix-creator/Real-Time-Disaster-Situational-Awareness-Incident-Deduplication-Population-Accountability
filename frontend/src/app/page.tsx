@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import {
+  API_BASE_URL,
   AllLocationsStatusResponse,
   LocationStatusItem,
   SimulationState,
@@ -40,7 +41,7 @@ export default function Home() {
       setSimulationState(simRes);
       setBackendError(null);
     } catch (err: any) {
-      setBackendError(err.message || "Cannot connect to backend on http://localhost:8000");
+      setBackendError(err.message || `Cannot connect to backend at ${API_BASE_URL}`);
     }
   }, []);
 
@@ -173,7 +174,7 @@ export default function Home() {
         </div>
         <div className="flex gap-4 text-xs">
           <a
-            href="http://localhost:8000/docs"
+            href={`${API_BASE_URL}/docs`}
             target="_blank"
             rel="noreferrer"
             className="hover:text-[#FFB800] underline"
@@ -181,7 +182,7 @@ export default function Home() {
             [API SWAGGER]
           </a>
           <a
-            href="http://localhost:8000/redoc"
+            href={`${API_BASE_URL}/redoc`}
             target="_blank"
             rel="noreferrer"
             className="hover:text-[#FFB800] underline"

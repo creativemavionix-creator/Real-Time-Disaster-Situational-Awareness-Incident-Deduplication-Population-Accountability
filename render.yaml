@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: disaster-fog-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        value: sqlite:///./disaster_fog.db
+      - key: EMBEDDING_MODEL_NAME
+        value: all-MiniLM-L6-v2

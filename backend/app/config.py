@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./disaster_fog.db"
     
     # Embedding & Clustering
+    USE_TRANSFORMER_EMBEDDINGS: bool = False  # Set to True if >1GB RAM is available
     EMBEDDING_MODEL_NAME: str = "all-MiniLM-L6-v2"
     SIMILARITY_THRESHOLD: float = 0.75  # Cosine similarity threshold for clustering
     COSINE_DISTANCE_THRESHOLD: float = 0.25  # 1.0 - 0.75
@@ -34,6 +35,19 @@ class Settings(BaseSettings):
     # Default Simulation Clock Time
     SIMULATION_START_TIME: datetime = datetime(2026, 8, 30, 6, 0, 0, tzinfo=timezone.utc)
     SIMULATION_DURATION_HOURS: float = 24.0
+    
+    # CORS Origins (Includes Vercel Production, Previews, and Localhost)
+    CORS_ORIGINS: list[str] = [
+        "https://prism-rho-three.vercel.app",
+        "https://prism-git-main-creativemavionix-5025s-projects.vercel.app",
+        "https://prism-kdrfkakg6-creativemavionix-5025s-projects.vercel.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "*",
+    ]
+    CORS_ORIGIN_REGEX: str = r"^https:\/\/.*\.vercel\.app$"
 
 
 settings = Settings()

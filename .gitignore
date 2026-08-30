@@ -16,8 +16,8 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+/lib/
+/lib64/
 parts/
 sdist/
 var/
@@ -25,22 +25,21 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
+backend/dataset/
+!frontend/src/lib/
+!frontend/src/lib/**
 # Testing & Coverage
 .pytest_cache/
+backend/.pytest_cache/
 .coverage
-.coverage.*
 htmlcov/
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
 
 # SQLite Database
 *.db
 *.sqlite3
 *.db-journal
 disaster_fog.db
+backend/disaster_fog.db
 
 # Scratch Scripts & Demos
 scratch/
