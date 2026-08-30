@@ -3,7 +3,15 @@
  * Base backend URL: http://localhost:8000
  */
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+function getSanitizedApiUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!envUrl || envUrl.includes("<YOUR-") || envUrl.includes("<your-")) {
+    return "https://prism-r2lh.onrender.com";
+  }
+  return envUrl.trim().replace(/\/+$/, "");
+}
+
+export const API_BASE_URL = getSanitizedApiUrl();
 
 // -------------------------------------------------------------
 // Core Schemas
