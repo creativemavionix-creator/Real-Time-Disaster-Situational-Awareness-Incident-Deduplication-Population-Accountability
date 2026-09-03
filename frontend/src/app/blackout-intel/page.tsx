@@ -17,8 +17,13 @@ import {
   Zap,
   Activity,
   Layers,
+  Search,
+  Filter,
+  Send,
+  CheckCircle2,
 } from "lucide-react";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { TacticalAudio } from "@/lib/TacticalAudio";
 
 const containerVars: Variants = {
   hidden: { opacity: 0 },
@@ -41,6 +46,9 @@ export default function BlackoutIntelPage() {
   const [data, setData] = useState<AllBlackoutRisksResponse | null>(null);
   const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"risk" | "distance" | "priority">("risk");
+  const [dispatchedSectors, setDispatchedSectors] = useState<string[]>([]);
 
   const loadData = async () => {
     try {
@@ -62,6 +70,33 @@ export default function BlackoutIntelPage() {
     const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleDispatchSortie = (sectorId: string) => {
+    if (!dispatchedSectors.includes(sectorId)) {
+      setDispatchedSectors((prev) => [...prev, sectorId]);
+      TacticalAudio.playPing();
+    }
+  };
+
+  const filteredAndSortedAssessments = (data?.assessments || [])
+    .filter((a) => {
+      if (!searchQuery.trim()) return true;
+      const q = searchQuery.toLowerCase();
+      return (
+        a.sector_name.toLowerCase().includes(q) ||
+        a.sector_id.toLowerCase().includes(q) ||
+        a.threat_tier.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) => {
+      if (sortBy === "risk") {
+        return b.inferred_risk_score - a.inferred_risk_score;
+      } else if (sortBy === "distance") {
+        return a.spatial_physics.epicenter_distance_km - b.spatial_physics.epicenter_distance_km;
+      } else {
+        return a.recommended_recon_priority - b.recommended_recon_priority;
+      }
+    });
 
   const selectedSector: BlackoutRiskAssessment | null =
     data?.assessments.find((a) => a.sector_id === selectedSectorId) ||
@@ -100,6 +135,76 @@ export default function BlackoutIntelPage() {
         </div>
       )}
 
+      {/* Instant Search & Risk Sorting Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-3 rounded-2xl bg-[#0C0E12] border border-white/10 font-mono-data text-xs">
+        <div className="flex items-center gap-2.5 flex-1 min-w-[240px]">
+          <Search className="w-4 h-4 text-[#64748B] ml-1" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search district e.g. Gorkha, Dhunche, Sindhupalchok..."
+            className="w-full bg-transparent border-none text-white text-xs placeholder:text-[#64748B] focus:outline-none"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="text-[#64748B] hover:text-white px-2 py-0.5 rounded cursor-pointer"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-[#64748B] uppercase tracking-wider flex items-center gap-1">
+            <Filter className="w-3 h-3" />
+            SORT:
+          </span>
+          <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
+            <button
+              onClick={() => {
+                setSortBy("risk");
+                TacticalAudio.playClick();
+              }}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                sortBy === "risk"
+                  ? "bg-[#E11D48] text-white font-bold"
+                  : "text-[#94A3B8] hover:text-white"
+              }`}
+            >
+              Inferred Risk
+            </button>
+            <button
+              onClick={() => {
+                setSortBy("distance");
+                TacticalAudio.playClick();
+              }}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                sortBy === "distance"
+                  ? "bg-white/20 text-white font-bold"
+                  : "text-[#94A3B8] hover:text-white"
+              }`}
+            >
+              Distance
+            </button>
+            <button
+              onClick={() => {
+                setSortBy("priority");
+                TacticalAudio.playClick();
+              }}
+              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                sortBy === "priority"
+                  ? "bg-white/20 text-white font-bold"
+                  : "text-[#94A3B8] hover:text-white"
+              }`}
+            >
+              Priority
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Main Grid: Priority Queue Left (7) + Physics Dossier Right (5) */}
       <motion.div
         variants={containerVars}
@@ -110,20 +215,32 @@ export default function BlackoutIntelPage() {
         {/* Left Column: Ranked Priority Cards */}
         <div className="lg:col-span-7 space-y-4">
           <div className="font-mono-data text-[10px] text-[#64748B] font-bold uppercase tracking-[0.2em] flex items-center justify-between">
-            <span>RECONNAISSANCE PRIORITY QUEUE // {data?.assessments.length || 0} SECTORS</span>
-            <span className="text-[#94A3B8]">RANKED BY INFERRED RISK</span>
+            <span>
+              RECONNAISSANCE PRIORITY QUEUE // {filteredAndSortedAssessments.length} SECTORS
+            </span>
+            <span className="text-[#94A3B8]">
+              {sortBy === "risk"
+                ? "SORTED BY INFERRED RISK"
+                : sortBy === "distance"
+                ? "SORTED BY EPICENTER PROXIMITY"
+                : "SORTED BY RECON PRIORITY"}
+            </span>
           </div>
 
           <div className="space-y-3">
-            {data?.assessments.map((sector) => {
+            {filteredAndSortedAssessments.map((sector) => {
               const isSelected = selectedSector?.sector_id === sector.sector_id;
               const isHighRisk = sector.inferred_risk_score > 60 || sector.recommended_recon_priority === 1;
+              const isDispatched = dispatchedSectors.includes(sector.sector_id);
 
               return (
                 <motion.div
                   variants={itemVars}
                   key={sector.sector_id}
-                  onClick={() => setSelectedSectorId(sector.sector_id)}
+                  onClick={() => {
+                    setSelectedSectorId(sector.sector_id);
+                    TacticalAudio.playClick();
+                  }}
                   className={`p-5 rounded-2xl border cursor-pointer transition-all ${
                     isSelected
                       ? "bg-white/[0.06] border-[#3B82F6] shadow-[0_0_30px_rgba(59,130,246,0.15)] ring-1 ring-[#3B82F6]"
@@ -134,11 +251,13 @@ export default function BlackoutIntelPage() {
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-3 mb-3">
                     <div className="flex items-center gap-3">
-                      <span className={`w-6 h-6 rounded-lg flex items-center justify-center font-mono-data text-xs font-bold ${
-                        sector.recommended_recon_priority === 1
-                          ? "bg-[#E11D48] text-white shadow-sm shadow-[#E11D48]/50"
-                          : "bg-white/10 text-[#94A3B8]"
-                      }`}>
+                      <span
+                        className={`w-6 h-6 rounded-lg flex items-center justify-center font-mono-data text-xs font-bold ${
+                          sector.recommended_recon_priority === 1
+                            ? "bg-[#E11D48] text-white shadow-sm shadow-[#E11D48]/50"
+                            : "bg-white/10 text-[#94A3B8]"
+                        }`}
+                      >
                         P{sector.recommended_recon_priority}
                       </span>
                       <span className="font-display-calm font-medium text-lg text-white">
@@ -147,7 +266,12 @@ export default function BlackoutIntelPage() {
                     </div>
 
                     <div className="flex items-center gap-2 font-mono-data text-xs">
-                      {sector.is_in_blackout ? (
+                      {isDispatched ? (
+                        <span className="chip-safe">
+                          <CheckCircle2 className="w-3 h-3 text-[#34D399]" />
+                          <span>UAV AIRBORNE</span>
+                        </span>
+                      ) : sector.is_in_blackout ? (
                         <span className="chip-critical">
                           <Radio className="w-3 h-3 animate-pulse" />
                           <span>BLACKOUT</span>
@@ -189,17 +313,25 @@ export default function BlackoutIntelPage() {
           </div>
         </div>
 
-        {/* Right Column: Spatial Physics Telemetry */}
-        <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl bg-[#0C0E12]/90 border border-white/10 space-y-6 sticky top-24 shadow-2xl">
+        {/* Right Column: Spatial Physics Telemetry & Mountain Profile */}
+        <div className="lg:col-span-5 p-6 sm:p-8 rounded-3xl bg-[#0C0E12]/95 border border-white/10 space-y-6 sticky top-24 shadow-2xl">
           {selectedSector ? (
             <div className="space-y-6 font-mono-data text-xs">
-              <div className="border-b border-white/10 pb-4">
-                <div className="text-[10px] text-[#64748B] uppercase tracking-[0.2em] mb-1">
-                  SECTOR SPATIAL PHYSICS DOSSIER
+              <div className="border-b border-white/10 pb-4 flex justify-between items-start">
+                <div>
+                  <div className="text-[10px] text-[#64748B] uppercase tracking-[0.2em] mb-1">
+                    SECTOR SPATIAL PHYSICS DOSSIER
+                  </div>
+                  <h2 className="font-display-calm font-medium text-2xl sm:text-3xl text-white">
+                    {selectedSector.sector_name}
+                  </h2>
                 </div>
-                <h2 className="font-display-calm font-medium text-2xl sm:text-3xl text-white">
-                  {selectedSector.sector_name}
-                </h2>
+                {dispatchedSectors.includes(selectedSector.sector_id) && (
+                  <span className="chip-safe text-[10px]">
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>SORTIE TASKED</span>
+                  </span>
+                )}
               </div>
 
               {/* Inferred Hazard Score Badge */}
@@ -215,16 +347,92 @@ export default function BlackoutIntelPage() {
                 </div>
                 <div className="text-right space-y-1 text-[#94A3B8]">
                   <div>
-                    Silence: <strong className="text-[#FB7185]">{selectedSector.silence_duration_hours ? `${selectedSector.silence_duration_hours.toFixed(1)}h` : "ACTIVE"}</strong>
+                    Silence:{" "}
+                    <strong className="text-[#FB7185]">
+                      {selectedSector.silence_duration_hours
+                        ? `${selectedSector.silence_duration_hours.toFixed(1)}h`
+                        : "ACTIVE"}
+                    </strong>
                   </div>
                   <div>
-                    Slide Index: <strong className="text-white">{(selectedSector.spatial_physics.landslide_susceptibility_index * 100).toFixed(0)}%</strong>
+                    Slide Index:{" "}
+                    <strong className="text-white">
+                      {(selectedSector.spatial_physics.landslide_susceptibility_index * 100).toFixed(0)}%
+                    </strong>
                   </div>
                 </div>
               </div>
 
+              {/* Interactive Mountain Elevation RF Signal Shadow Profile */}
+              <div className="p-4 rounded-2xl bg-black/60 border border-white/10 space-y-2">
+                <div className="flex justify-between items-center text-[10px] text-[#64748B] uppercase">
+                  <span>MOUNTAIN RF SHADOW PROFILE</span>
+                  <span className="text-rose-400 font-bold">LINE-OF-SIGHT BLOCKED</span>
+                </div>
+
+                {/* SVG Terrain Cross-Section */}
+                <div className="relative w-full h-28 bg-[#090B0E] rounded-xl overflow-hidden border border-white/5 flex items-center justify-center">
+                  <svg viewBox="0 0 320 100" className="w-full h-full">
+                    {/* Sky Gradient */}
+                    <defs>
+                      <linearGradient id="rfShadowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#E11D48" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="#E11D48" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+
+                    {/* Mountain Ridge Profile (Kathmandu -> Shivapuri Peak -> Barpak Gorge) */}
+                    <path
+                      d="M 0,75 Q 60,70 100,55 Q 160,20 180,25 Q 220,50 260,85 L 320,85 L 320,100 L 0,100 Z"
+                      fill="#171B24"
+                      stroke="rgba(255,255,255,0.15)"
+                      strokeWidth="1"
+                    />
+
+                    {/* RF Microwave Ray from Kathmandu Tower */}
+                    <line
+                      x1="30"
+                      y1="68"
+                      x2="175"
+                      y2="24"
+                      stroke="#3B82F6"
+                      strokeWidth="1.5"
+                      strokeDasharray="4, 3"
+                    />
+
+                    {/* RF Shadow Blocked Cone */}
+                    <polygon
+                      points="175,24 320,55 320,85 260,85 175,24"
+                      fill="url(#rfShadowGrad)"
+                    />
+
+                    {/* Kathmandu Transmit Tower */}
+                    <circle cx="30" cy="68" r="3" fill="#60A5FA" />
+                    <text x="15" y="60" fill="#94A3B8" fontSize="7" fontFamily="monospace">
+                      KTM (1,400m)
+                    </text>
+
+                    {/* Peak Obstacle */}
+                    <circle cx="175" cy="24" r="2" fill="#F59E0B" />
+                    <text x="145" y="18" fill="#F59E0B" fontSize="7" fontFamily="monospace">
+                      Ridge (3,400m)
+                    </text>
+
+                    {/* Barpak Target in Shadow */}
+                    <circle cx="270" cy="85" r="3" fill="#E11D48" />
+                    <text x="245" y="96" fill="#FB7185" fontSize="7" fontFamily="monospace">
+                      Barpak (Shadow)
+                    </text>
+                  </svg>
+                </div>
+                <div className="text-[10px] text-[#64748B] flex justify-between">
+                  <span>Microwave line-of-sight severed by 3,400m ridge</span>
+                  <span className="text-[#FB7185] font-bold">100% DEAD ZONE</span>
+                </div>
+              </div>
+
               {/* Recommended Tactical Recon Sortie */}
-              <div className="p-4 rounded-xl bg-blue-500/10 border-l-4 border-[#3B82F6] text-xs space-y-1">
+              <div className="p-4 rounded-xl bg-blue-500/10 border-l-4 border-[#3B82F6] text-xs space-y-2">
                 <span className="font-mono-data text-[10px] font-bold text-[#60A5FA] uppercase flex items-center gap-1.5">
                   <Compass className="w-3.5 h-3.5" />
                   TACTICAL RECON SORTIE DIRECTIVE:
@@ -234,6 +442,29 @@ export default function BlackoutIntelPage() {
                     ? "Immediate Aerial Helicopter SAR & Airborne Cellular Restorer deployment required. Ground arterial route blocked."
                     : "Scheduled UAV photographic pass and secondary ground scout patrol."}
                 </p>
+
+                {/* Instant Drone Recon Button */}
+                <button
+                  type="button"
+                  onClick={() => handleDispatchSortie(selectedSector.sector_id)}
+                  className={`w-full mt-2 py-2 px-3 rounded-lg font-mono-data text-xs flex items-center justify-center gap-2 cursor-pointer transition-all border ${
+                    dispatchedSectors.includes(selectedSector.sector_id)
+                      ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-300 font-bold"
+                      : "bg-[#E11D48] border-[#E11D48] text-white hover:bg-[#BE123C] font-bold shadow-md shadow-[#E11D48]/30"
+                  }`}
+                >
+                  {dispatchedSectors.includes(selectedSector.sector_id) ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Recon Sortie Scheduled (ETA: 18 Min)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Authorize Autonomous UAV Recon</span>
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* Spatial Factors Breakdown Grid */}
@@ -290,7 +521,8 @@ export default function BlackoutIntelPage() {
               <div className="pt-2 flex items-center justify-between gap-3 border-t border-white/10">
                 <Link
                   href={`/gis-map`}
-                  className="btn-action-primary text-xs py-2.5 px-4 rounded-xl flex items-center gap-2 flex-1 justify-center"
+                  onClick={() => TacticalAudio.playPing()}
+                  className="btn-action-primary text-xs py-2.5 px-4 rounded-xl flex items-center gap-2 flex-1 justify-center cursor-pointer"
                 >
                   <Radar className="w-3.5 h-3.5" />
                   <span>Inspect On Map</span>
@@ -298,10 +530,11 @@ export default function BlackoutIntelPage() {
 
                 <Link
                   href={`/hypotheses`}
-                  className="btn-action-secondary text-xs py-2.5 px-4 rounded-xl flex items-center gap-2 flex-1 justify-center"
+                  onClick={() => TacticalAudio.playClick()}
+                  className="btn-action-secondary text-xs py-2.5 px-4 rounded-xl flex items-center gap-2 flex-1 justify-center cursor-pointer"
                 >
                   <Activity className="w-3.5 h-3.5 text-[#60A5FA]" />
-                  <span>Bayesian Hypothesis</span>
+                  <span>Bayesian Ledger</span>
                 </Link>
               </div>
             </div>

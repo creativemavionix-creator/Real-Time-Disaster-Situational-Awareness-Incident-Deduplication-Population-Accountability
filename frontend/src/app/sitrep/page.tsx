@@ -69,18 +69,18 @@ ${sitrep.priority_operational_directives.map(d => `- [${d.action_code}] (${d.urg
   };
 
   return (
-    <div className="flex-1 w-full bg-[#090B0E] p-4 sm:p-8 lg:p-12 space-y-8 max-w-5xl mx-auto text-[#F3F4F6]">
+    <div className="flex-1 w-full p-4 sm:p-8 lg:p-12 space-y-8 max-w-5xl mx-auto" style={{ backgroundColor: "var(--bg-void)", color: "var(--fg-primary)" }}>
       {/* Page Actions & Header */}
-      <div className="border-b border-white/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 print:hidden">
+      <div className="pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 print:hidden" style={{ borderBottom: "1px solid var(--border-subtle)" }}>
         <div className="space-y-1">
-          <div className="font-mono-data text-[10px] text-[#60A5FA] font-bold uppercase tracking-[0.25em] flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#3B82F6] animate-pulse" />
-            04 // FORMAL DISASTER REPORTING
+          <div className="type-eyebrow flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: "var(--accent)" }} />
+            <span>04 // Formal Disaster Reporting</span>
           </div>
-          <h1 className="font-display-calm font-medium text-3xl sm:text-4xl text-white tracking-tight">
+          <h1 className="font-display-calm font-medium tracking-tight" style={{ fontSize: "clamp(1.75rem, 3.5vw, 2.5rem)", color: "var(--fg-primary)" }}>
             Situation Report (SITREP)
           </h1>
-          <p className="font-body-prose text-xs sm:text-sm text-[#94A3B8] max-w-2xl leading-relaxed">
+          <p className="type-body-sm" style={{ maxWidth: "55ch" }}>
             Automated UN OCHA / NDMA standardized Situation Report synthesizing fused multi-agency intelligence, casualty tolls, and commander operational directives.
           </p>
         </div>
@@ -107,7 +107,7 @@ ${sitrep.priority_operational_directives.map(d => `- [${d.action_code}] (${d.urg
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs font-mono-data text-[#FB7185] flex items-center gap-2">
+        <div className="chip-critical p-4 rounded-xl flex items-center gap-2 font-mono-data" style={{ fontSize: "var(--text-xs)" }}>
           <AlertTriangle className="w-4 h-4" />
           <span>[SITREP_ERROR]: {error}</span>
         </div>
@@ -115,109 +115,98 @@ ${sitrep.priority_operational_directives.map(d => `- [${d.action_code}] (${d.urg
 
       {/* Official SITREP Document Canvas */}
       {sitrep && (
-        <div className="p-6 sm:p-10 rounded-3xl bg-[#0C0E12]/95 border border-white/10 space-y-8 shadow-2xl print:bg-white print:text-black print:border-none print:p-0 print:shadow-none">
+        <div className="space-y-8 print:bg-white print:text-black print:border-none print:p-0 print:shadow-none" style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-2xl)", padding: "clamp(1.5rem, 3vw, 2.5rem)", boxShadow: "0 24px 48px -16px rgba(0,0,0,0.6)" }}>
           {/* Document Header */}
-          <div className="border-b border-white/10 pb-6 space-y-3 font-mono-data">
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-bold uppercase">
-              <span className="text-[#60A5FA] flex items-center gap-1.5">
+          <div className="pb-6 space-y-3 font-mono-data" style={{ borderBottom: "1px solid var(--border-faint)" }}>
+            <div className="flex flex-wrap items-center justify-between gap-2 font-bold uppercase" style={{ fontSize: "var(--text-xs)" }}>
+              <span className="flex items-center gap-1.5" style={{ color: "var(--status-intel-text)" }}>
                 <UserCheck className="w-3.5 h-3.5" />
                 AUTHORIZED BY: {sitrep.authorized_by}
               </span>
-              <span className="px-2.5 py-1 rounded bg-white/5 border border-white/10 text-[#94A3B8]">
+              <span className="chip-neutral">
                 CODE: {sitrep.sitrep_id}
               </span>
             </div>
 
-            <h2 className="font-display-calm font-medium text-2xl sm:text-3xl text-white print:text-black">
+            <h2 className="font-display-calm font-semibold" style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", color: "var(--fg-primary)", letterSpacing: "var(--ls-snug)" }}>
               {sitrep.disaster_event_name}
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-[#94A3B8] pt-2">
-              <div>PERIOD: <strong className="text-white print:text-black">{sitrep.operational_period}</strong></div>
-              <div>TIMELINE: <strong className="text-[#60A5FA]">T+{sitrep.elapsed_hours.toFixed(1)}h</strong></div>
-              <div>PUBLISHED: <strong className="text-white print:text-black">{new Date(sitrep.simulated_time).toUTCString()}</strong></div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2" style={{ fontSize: "var(--text-xs)", color: "var(--fg-secondary)" }}>
+              <div>PERIOD: <strong style={{ color: "var(--fg-primary)" }}>{sitrep.operational_period}</strong></div>
+              <div>TIMELINE: <strong style={{ color: "var(--status-intel-text)" }}>T+{sitrep.elapsed_hours.toFixed(1)}h</strong></div>
+              <div>PUBLISHED: <strong style={{ color: "var(--fg-primary)" }}>{new Date(sitrep.simulated_time).toUTCString()}</strong></div>
             </div>
           </div>
 
           {/* Section 1: Executive Summary */}
-          <div className="space-y-2.5">
-            <h3 className="font-mono-data text-xs text-[#60A5FA] font-bold uppercase tracking-wider flex items-center gap-2">
+          <div className="space-y-3">
+            <h3 className="font-mono-data font-bold uppercase flex items-center gap-2" style={{ fontSize: "var(--text-xs)", color: "var(--status-intel-text)", letterSpacing: "var(--ls-wider)" }}>
               <FileText className="w-3.5 h-3.5" />
-              1. EXECUTIVE OPERATIONAL BRIEFING
+              1. Executive Operational Briefing
             </h3>
-            <p className="font-body-prose text-xs sm:text-sm text-[#F3F4F6] print:text-black leading-relaxed bg-white/[0.02] p-5 rounded-2xl border-l-4 border-[#3B82F6] border border-white/5">
+            <p className="type-body-sm print:text-black" style={{ fontSize: "var(--text-sm)", lineHeight: "var(--lh-body)", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-faint)", borderRadius: "var(--radius-lg)", padding: "1.25rem" }}>
               {sitrep.executive_summary}
             </p>
           </div>
 
           {/* Section 2: Reconciled Casualty Ledger */}
           <div className="space-y-3">
-            <h3 className="font-mono-data text-xs text-[#60A5FA] font-bold uppercase tracking-wider">
-              2. RECONCILED CASUALTY & LIFE-SAFETY LEDGER
+            <h3 className="font-mono-data font-bold uppercase" style={{ fontSize: "var(--text-xs)", color: "var(--status-intel-text)", letterSpacing: "var(--ls-wider)" }}>
+              2. Reconciled Casualty &amp; Life-Safety Ledger
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono-data text-xs">
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center space-y-1">
-                <span className="text-[#64748B] block text-[10px] uppercase font-bold">FATALITIES</span>
-                <div className="text-3xl text-[#FB7185] font-bold">
-                  <AnimatedCounter value={sitrep.casualty_toll.confirmed_fatalities} />
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono-data">
+              {[
+                { label: "Fatalities", value: sitrep.casualty_toll.confirmed_fatalities, color: "var(--status-critical-text)" },
+                { label: "Trapped / SAR", value: sitrep.casualty_toll.trapped_unaccounted, color: "var(--status-warning-text)" },
+                { label: "Hospitalized", value: sitrep.casualty_toll.confirmed_injured, color: "var(--status-ok-text)" },
+                { label: "Missing", value: sitrep.casualty_toll.missing_persons_active, color: "var(--status-critical-text)" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="text-center space-y-1" style={{ padding: "1rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-faint)", borderRadius: "var(--radius-lg)" }}>
+                  <span className="block uppercase font-bold" style={{ fontSize: "var(--text-2xs)", color: "var(--fg-tertiary)", letterSpacing: "var(--ls-wider)" }}>{label}</span>
+                  <div className="font-display-calm font-bold" style={{ fontSize: "var(--text-3xl)", color, lineHeight: 1 }}>
+                    <AnimatedCounter value={value} />
+                  </div>
                 </div>
-              </div>
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center space-y-1">
-                <span className="text-[#64748B] block text-[10px] uppercase font-bold">TRAPPED / SAR</span>
-                <div className="text-3xl text-[#FBBF24] font-bold">
-                  <AnimatedCounter value={sitrep.casualty_toll.trapped_unaccounted} />
-                </div>
-              </div>
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center space-y-1">
-                <span className="text-[#64748B] block text-[10px] uppercase font-bold">HOSPITALIZED</span>
-                <div className="text-3xl text-[#34D399] font-bold">
-                  <AnimatedCounter value={sitrep.casualty_toll.confirmed_injured} />
-                </div>
-              </div>
-              <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 text-center space-y-1">
-                <span className="text-[#64748B] block text-[10px] uppercase font-bold">MISSING</span>
-                <div className="text-3xl text-[#FB7185] font-bold">
-                  <AnimatedCounter value={sitrep.casualty_toll.missing_persons_active} />
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Section 3: Blackout Intelligence Briefing */}
-          <div className="space-y-2.5">
-            <h3 className="font-mono-data text-xs text-[#60A5FA] font-bold uppercase tracking-wider flex items-center gap-2">
-              <Radio className="w-3.5 h-3.5 text-[#E11D48]" />
-              3. SILENT BLACKOUT & ISOLATED SECTOR BRIEFING
+          <div className="space-y-3">
+            <h3 className="font-mono-data font-bold uppercase flex items-center gap-2" style={{ fontSize: "var(--text-xs)", color: "var(--status-intel-text)", letterSpacing: "var(--ls-wider)" }}>
+              <Radio className="w-3.5 h-3.5" style={{ color: "var(--accent)" }} />
+              3. Silent Blackout &amp; Isolated Sector Briefing
             </h3>
-            <p className="font-body-prose text-xs sm:text-sm text-[#94A3B8] print:text-black leading-relaxed p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+            <p className="type-body-sm print:text-black" style={{ padding: "1rem", background: "rgba(255,255,255,0.02)", border: "1px solid var(--border-faint)", borderRadius: "var(--radius-lg)" }}>
               {sitrep.blackout_intelligence_briefing}
             </p>
           </div>
 
           {/* Section 4: Critical Sector Summary */}
-          <div className="space-y-3 font-mono-data text-xs">
-            <h3 className="text-xs text-[#60A5FA] font-bold uppercase tracking-wider">
-              4. CRITICAL INTERVENTION SECTORS
+          <div className="space-y-3">
+            <h3 className="font-mono-data font-bold uppercase" style={{ fontSize: "var(--text-xs)", color: "var(--status-intel-text)", letterSpacing: "var(--ls-wider)" }}>
+              4. Critical Intervention Sectors
             </h3>
-            <div className="rounded-2xl border border-white/10 overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-white/[0.03] border-b border-white/10 text-[#64748B] text-[10px] uppercase tracking-wider">
-                    <th className="p-3.5">SECTOR</th>
-                    <th className="p-3.5">STATUS</th>
-                    <th className="p-3.5">CONFIDENCE</th>
-                    <th className="p-3.5">JUSTIFICATION & THREAT SUMMARY</th>
+            <div className="overflow-x-auto" style={{ border: "1px solid var(--border-default)", borderRadius: "var(--radius-lg)" }}>
+              <table className="w-full text-left border-collapse font-mono-data" style={{ fontSize: "var(--text-xs)" }}>
+                <thead style={{ background: "rgba(0,0,0,0.3)", borderBottom: "1px solid var(--border-faint)" }}>
+                  <tr style={{ color: "var(--fg-tertiary)", textTransform: "uppercase", letterSpacing: "var(--ls-wider)", fontSize: "var(--text-2xs)" }}>
+                    <th className="font-normal" style={{ padding: "0.75rem 1rem" }}>Sector</th>
+                    <th className="font-normal" style={{ padding: "0.75rem 1rem" }}>Status</th>
+                    <th className="font-normal" style={{ padding: "0.75rem 1rem" }}>Confidence</th>
+                    <th className="font-normal" style={{ padding: "0.75rem 1rem" }}>Justification &amp; Threat Summary</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody>
                   {sitrep.critical_sectors_summary.map((c, idx) => (
-                    <tr key={`${c.sector_id}-${idx}`} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="p-3.5 font-bold uppercase text-white print:text-black">{c.sector_name}</td>
-                      <td className="p-3.5">
-                        <span className="chip-critical text-[10px]">{c.status.replace("_", " ")}</span>
+                    <tr key={`${c.sector_id}-${idx}`} className="hover:bg-white/[0.02] transition-colors" style={{ borderTop: "1px solid var(--border-faint)" }}>
+                      <td className="font-bold uppercase" style={{ padding: "0.875rem 1rem", color: "var(--fg-primary)" }}>{c.sector_name}</td>
+                      <td style={{ padding: "0.875rem 1rem" }}>
+                        <span className="chip-critical">{c.status.replace("_", " ")}</span>
                       </td>
-                      <td className="p-3.5 font-bold text-[#34D399]">{(c.confidence * 100).toFixed(0)}%</td>
-                      <td className="p-3.5 text-[#94A3B8] print:text-black text-xs font-body-prose">{c.status_reason}</td>
+                      <td className="font-bold" style={{ padding: "0.875rem 1rem", color: "var(--status-ok-text)" }}>{(c.confidence * 100).toFixed(0)}%</td>
+                      <td className="font-body-prose" style={{ padding: "0.875rem 1rem", color: "var(--fg-secondary)", fontSize: "var(--text-xs)" }}>{c.status_reason}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -226,23 +215,25 @@ ${sitrep.priority_operational_directives.map(d => `- [${d.action_code}] (${d.urg
           </div>
 
           {/* Section 5: Priority Operational Directives */}
-          <div className="space-y-3 font-mono-data text-xs">
-            <h3 className="text-xs text-[#60A5FA] font-bold uppercase tracking-wider flex items-center gap-2">
-              <ShieldAlert className="w-3.5 h-3.5 text-[#E11D48]" />
-              5. COMMANDER PRIORITY OPERATIONAL DIRECTIVES
+          <div className="space-y-3">
+            <h3 className="font-mono-data font-bold uppercase flex items-center gap-2" style={{ fontSize: "var(--text-xs)", color: "var(--status-intel-text)", letterSpacing: "var(--ls-wider)" }}>
+              <ShieldAlert className="w-3.5 h-3.5" style={{ color: "var(--accent)" }} />
+              5. Commander Priority Operational Directives
             </h3>
-            <div className="rounded-2xl border border-white/10 divide-y divide-white/5">
+            <div style={{ border: "1px solid var(--border-default)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
               {sitrep.priority_operational_directives.map((action, idx) => (
-                <div key={`${action.action_code}-${idx}`} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors">
+                <div
+                  key={`${action.action_code}-${idx}`}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.02] transition-colors"
+                  style={{ padding: "1rem", borderTop: idx === 0 ? "none" : "1px solid var(--border-faint)" }}
+                >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-[#60A5FA]">[{action.action_code}]</span>
-                      <strong className="text-sm text-white print:text-black uppercase">Target: {action.target_sector}</strong>
-                      <span className="chip-critical text-[10px]">{action.urgency}</span>
+                      <span className="font-mono-data font-bold" style={{ color: "var(--status-intel-text)", fontSize: "var(--text-xs)" }}>[{action.action_code}]</span>
+                      <strong className="font-display-calm uppercase" style={{ fontSize: "var(--text-sm)", color: "var(--fg-primary)" }}>Target: {action.target_sector}</strong>
+                      <span className="chip-warning">{action.urgency}</span>
                     </div>
-                    <p className="font-body-prose text-xs text-[#94A3B8] print:text-black">
-                      {action.description}
-                    </p>
+                    <p className="type-body-sm">{action.description}</p>
                   </div>
                 </div>
               ))}

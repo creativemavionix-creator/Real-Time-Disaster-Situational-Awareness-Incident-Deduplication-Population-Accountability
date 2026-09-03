@@ -89,14 +89,15 @@ export default function DispatchPage() {
   };
 
   return (
-    <div className="flex-1 w-full bg-[#090B0E] p-6 sm:p-10 lg:p-14 space-y-8 relative overflow-hidden">
+    <div className="flex-1 w-full p-6 sm:p-10 lg:p-14 space-y-8 relative overflow-hidden" style={{ backgroundColor: "var(--bg-void)" }}>
       
       {/* Decorative background glow */}
       <motion.div 
         initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 0.15, scale: 1 }}
+        animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 2, ease: "easeOut" }}
-        className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-[#E11D48]/10 rounded-full blur-[120px] pointer-events-none z-0"
+        className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[120px] pointer-events-none z-0"
+        style={{ background: "var(--accent-subtle)" }}
       />
 
       <motion.div 
@@ -108,19 +109,17 @@ export default function DispatchPage() {
         {/* Page Header */}
         <motion.div variants={itemVars} className="border-b border-white/10 pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="space-y-2">
-            <div className="font-mono-data text-[10px] text-[#60A5FA] font-bold uppercase tracking-[0.2em] flex items-center gap-2">
-              03 // TACTICAL DISPATCH & RESOURCE ALLOCATION
-            </div>
-            <h1 className="font-display-calm font-medium text-4xl sm:text-5xl text-[#F3F4F6] tracking-tight">
+            <div className="type-eyebrow">03 // Tactical Dispatch &amp; Resource Allocation</div>
+            <h1 className="font-display-calm font-semibold tracking-tight" style={{ fontSize: "clamp(2rem, 4vw, var(--text-4xl))", color: "var(--fg-primary)", letterSpacing: "var(--ls-snug)" }}>
               Tactical Resource Dispatch
             </h1>
-            <p className="font-body-prose text-sm text-[#94A3B8] max-w-2xl leading-relaxed">
+            <p className="type-body-sm" style={{ maxWidth: "55ch" }}>
               Priority-ranked tactical dispatch queue allocating scarce Urban SAR Battalions, Air Ambulances, and Field Hospitals where risk is highest.
             </p>
           </div>
 
-          <div className="font-mono-data text-[10px] text-[#64748B] tracking-[0.2em] uppercase text-left md:text-right">
-            ACTIVE MISSIONS: <strong className="text-[#60A5FA] font-bold text-xl block mt-1"><AnimatedCounter value={data?.active_missions_count || 0} /></strong>
+          <div className="font-mono-data uppercase text-left md:text-right" style={{ fontSize: "var(--text-2xs)", letterSpacing: "var(--ls-wider)", color: "var(--fg-tertiary)" }}>
+            Active Missions: <strong className="block mt-1 font-display-calm" style={{ fontSize: "var(--text-xl)", color: "var(--status-intel-text)" }}><AnimatedCounter value={data?.active_missions_count || 0} /></strong>
           </div>
         </motion.div>
 
@@ -133,11 +132,14 @@ export default function DispatchPage() {
         {feedbackMsg && (
           <motion.div
             variants={itemVars}
-            className={`p-4 rounded-xl border font-mono-data text-[11px] tracking-wider uppercase ${
-              feedbackMsg.type === "success"
-                ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                : "bg-rose-950/40 border-rose-800 text-[#E11D48]"
-            }`}
+            className="p-4 rounded-xl font-mono-data uppercase"
+            style={{
+              fontSize: "var(--text-xs)",
+              letterSpacing: "var(--ls-wider)",
+              background: feedbackMsg.type === "success" ? "var(--status-ok-bg)" : "var(--status-critical-bg)",
+              border: feedbackMsg.type === "success" ? "1px solid var(--status-ok-border)" : "1px solid var(--status-critical-border)",
+              color: feedbackMsg.type === "success" ? "var(--status-ok-text)" : "var(--status-critical-text)",
+            }}
           >
             {feedbackMsg.text}
           </motion.div>
@@ -161,35 +163,39 @@ export default function DispatchPage() {
                     variants={itemVars}
                     key={rec.target_sector_id}
                     onClick={() => setSelectedSectorId(rec.target_sector_id)}
-                    className={`bg-[#0C0E12]/80 backdrop-blur-xl border rounded-2xl p-6 cursor-pointer transition-all hover:bg-[#10131A] ${
-                      isSelected
-                        ? "border-[#2563EB] shadow-[0_0_30px_rgba(37,99,235,0.15)] scale-[1.01]"
-                        : isTopPriority
-                        ? "border-[#E11D48]/40"
-                        : "border-white/5"
-                    }`}
+                    className="backdrop-blur-xl rounded-xl p-6 cursor-pointer transition-all"
+                    style={{
+                      background: "var(--bg-surface)",
+                      border: isSelected ? "1px solid var(--status-intel)" : isTopPriority ? "1px solid var(--accent-border)" : "1px solid var(--border-subtle)",
+                      boxShadow: isSelected ? "0 0 24px rgba(56,189,248,0.12)" : "none",
+                      transform: isSelected ? "scale(1.01)" : "scale(1)",
+                    }}
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 pb-4 mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4" style={{ borderBottom: "1px solid var(--border-faint)" }}>
                       <div className="flex items-center gap-3">
                         <span
-                          className={`px-3 py-1.5 rounded-lg font-mono-data text-[10px] tracking-[0.2em] font-bold ${
-                            rIdx === 0
-                              ? "bg-[#E11D48] text-white shadow-[0_0_15px_rgba(225,29,72,0.5)]"
-                              : rIdx === 1
-                              ? "bg-[#D97706] text-white"
-                              : "bg-white/5 text-[#94A3B8]"
-                          }`}
+                          className="font-mono-data font-bold"
+                          style={{
+                            padding: "0.25rem 0.625rem",
+                            borderRadius: "var(--radius-sm)",
+                            fontSize: "var(--text-2xs)",
+                            letterSpacing: "var(--ls-wider)",
+                            background: rIdx === 0 ? "var(--accent)" : rIdx === 1 ? "var(--status-warning-bg)" : "rgba(255,255,255,0.05)",
+                            color: rIdx === 0 ? "#fff" : rIdx === 1 ? "var(--status-warning-text)" : "var(--fg-secondary)",
+                            border: rIdx === 0 ? "none" : rIdx === 1 ? "1px solid var(--status-warning-border)" : "1px solid var(--border-subtle)",
+                            boxShadow: rIdx === 0 ? "0 0 12px var(--accent-glow)" : "none",
+                          }}
                         >
                           RANK #{rIdx + 1}
                         </span>
-                        <h3 className="font-display-calm font-medium text-2xl text-[#F3F4F6]">
+                        <h3 className="font-display-calm font-semibold" style={{ fontSize: "var(--text-xl)", color: "var(--fg-primary)" }}>
                           {rec.target_sector_name}
                         </h3>
                       </div>
 
-                      <div className="font-mono-data text-[10px] tracking-[0.2em] text-[#64748B] uppercase flex flex-col items-end gap-1">
+                      <div className="font-mono-data uppercase flex flex-col items-end gap-1" style={{ fontSize: "var(--text-2xs)", letterSpacing: "var(--ls-wider)", color: "var(--fg-tertiary)" }}>
                         Priority Score
-                        <strong className="text-xl text-[#60A5FA] font-medium"><AnimatedCounter value={rec.priority_score} isDecimal={true} /></strong>
+                        <strong className="font-display-calm" style={{ fontSize: "var(--text-xl)", color: "var(--status-intel-text)" }}><AnimatedCounter value={rec.priority_score} isDecimal={true} /></strong>
                       </div>
                     </div>
 

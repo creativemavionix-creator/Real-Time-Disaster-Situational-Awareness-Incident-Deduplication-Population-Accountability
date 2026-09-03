@@ -30,6 +30,7 @@ import DisasterScenarioControlBar from "@/components/DisasterScenarioControlBar"
 import { FloatingCommandBar } from "@/components/FloatingCommandBar";
 import { SectorDetailPanel } from "@/components/SectorDetailPanel";
 import { useViewMode } from "@/context/ViewModeContext";
+import { TacticalAudio } from "@/lib/TacticalAudio";
 
 export default function GisMapPage() {
   const [locations, setLocations] = useState<LocationStatusItem[]>([]);
@@ -205,6 +206,60 @@ export default function GisMapPage() {
     (l) => l.status === "verified_damaged" || l.status === "blackout"
   ) || locations[0];
 
+  // Tactical Keyboard Shortcuts Engine
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      if (e.key === "1") {
+        e.preventDefault();
+        handleSelectDisaster("earthquake");
+        TacticalAudio.playPing();
+      } else if (e.key === "2") {
+        e.preventDefault();
+        handleSelectDisaster("flash_flood");
+        TacticalAudio.playPing();
+      } else if (e.key === "3") {
+        e.preventDefault();
+        handleSelectDisaster("cyclone");
+        TacticalAudio.playPing();
+      } else if (e.key === "4") {
+        e.preventDefault();
+        handleSelectDisaster("landslide");
+        TacticalAudio.playPing();
+      } else if (e.key === "5") {
+        e.preventDefault();
+        handleSelectDisaster("urban_fire");
+        TacticalAudio.playPing();
+      } else if (e.key === " " || e.code === "Space") {
+        e.preventDefault();
+        handleAdvanceHours(1.0);
+        TacticalAudio.playClick();
+      } else if (e.key === "d" || e.key === "D") {
+        e.preventDefault();
+        setIsDrawerOpen((prev) => !prev);
+        TacticalAudio.playClick();
+      } else if (e.key === "l" || e.key === "L") {
+        e.preventDefault();
+        setMapLayers((prev) => ({ ...prev, showH3Grid: !prev.showH3Grid }));
+        TacticalAudio.playClick();
+      } else if (e.key === "Escape") {
+        setIsDrawerOpen(false);
+        setSelectedSectorForPalikas(null);
+        setInspectedLocation(null);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSelectDisaster, handleAdvanceHours]);
+
   return (
     <div className="flex-1 w-full h-full relative overflow-hidden bg-[#090B0E] flex flex-col">
       {/* 0. Top Interactive Disaster Scenario & Timeline Control Bar */}
@@ -294,6 +349,49 @@ export default function GisMapPage() {
         isAnalysis={isAnalysis}
         onOpenPalikas={handleOpenPalikas}
       />
+
+      {/* Floating Tactical Sector Selector & Status Filter Bar (Bottom Center) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-2 max-w-5xl w-full px-4 pointer-events-none">
+        <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-[#0C0E12]/90 backdrop-blur-xl border border-white/15 shadow-2xl">
+          <div className="hidden sm:flex items-center gap-2 px-3 font-mono-data text-[10px] text-[#64748B] border-r border-white/10 uppercase tracking-wider">
+            <span>SECTORS ({locations.length})</span>
+          </div>
+
+          {locations.map((loc) => {
+            const isSelected = loc.location_id.toLowerCase() === selectedSectorId.toLowerCase();
+            const isCrit = loc.status === "blackout" || loc.status === "verified_damaged";
+            return (
+              <button
+                key={loc.location_id}
+                onClick={() => {
+                  handleSelectSector(loc.location_id);
+                  TacticalAudio.playClick();
+                }}
+                className={`px-3 py-1.5 rounded-xl font-mono-data text-xs flex items-center gap-2 transition-all cursor-pointer border ${
+                  isSelected
+                    ? "bg-white/15 border-white/30 text-white font-bold shadow-lg"
+                    : isCrit
+                    ? "bg-rose-500/10 border-rose-500/20 text-[#FB7185] hover:bg-rose-500/20"
+                    : "bg-white/[0.03] border-white/5 text-[#94A3B8] hover:text-white hover:bg-white/10"
+                }`}
+              >
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    loc.status === "blackout"
+                      ? "bg-[#E11D48] animate-ping"
+                      : loc.status === "verified_damaged"
+                      ? "bg-rose-500"
+                      : loc.status === "unverified"
+                      ? "bg-amber-500"
+                      : "bg-emerald-500"
+                  }`}
+                />
+                <span className="truncate max-w-[90px]">{loc.location_name}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Modal: Census Data */}
       {selectedSectorForPalikas && (

@@ -14,14 +14,17 @@ interface ViewModeContextType {
 const ViewModeContext = createContext<ViewModeContextType | undefined>(undefined);
 
 export function ViewModeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setModeState] = useState<ViewMode>("command");
-
-  useEffect(() => {
-    const saved = localStorage.getItem("disaster_fog_view_mode");
-    if (saved === "command" || saved === "analysis") {
-      setModeState(saved);
+  const [mode, setModeState] = useState<ViewMode>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem("disaster_fog_view_mode");
+        if (saved === "command" || saved === "analysis") {
+          return saved;
+        }
+      } catch {}
     }
-  }, []);
+    return "command";
+  });
 
   const setMode = (newMode: ViewMode) => {
     setModeState(newMode);
