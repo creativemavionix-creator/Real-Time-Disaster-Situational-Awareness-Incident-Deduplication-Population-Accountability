@@ -7,7 +7,8 @@ calculating:
 """
 
 import math
-from typing import Any
+from datetime import datetime, timezone, timedelta
+from typing import Any, Optional
 from app.pipeline.gazetteer import get_all_locations
 
 
@@ -30,7 +31,10 @@ def generate_hexagon_coordinates(center_lat: float, center_lon: float, radius_km
     return coords
 
 
-def generate_central_nepal_h3_hexagons(simulated_hours: float = 12.0) -> list[dict[str, Any]]:
+def generate_central_nepal_h3_hexagons(
+    db: Optional[Any] = None,
+    simulated_time: Optional[datetime] = None,
+) -> list[dict[str, Any]]:
     """Generate dynamic H3 hexagonal grid cells across the 8 Central Nepal sectors."""
     locations = get_all_locations()
     hexagons = []
@@ -42,55 +46,88 @@ def generate_central_nepal_h3_hexagons(simulated_hours: float = 12.0) -> list[di
         {"d_lat": -0.07, "d_lon": -0.06, "sub_id": "sw", "label": "South-West River Basin"},
     ]
 
+    # Query live report counts per sector if database and simulation time are provided
+    live_counts: dict[str, int] = {}
+    if db is not None and simulated_time is not None:
+        try:
+            from app.models.db import ReportDB
+            window_start = simulated_time - timedelta(hours=1)
+            recent_reps = (
+                db.query(ReportDB.resolved_location_id)
+                .filter(ReportDB.timestamp <= simulated_time, ReportDB.timestamp >= window_start)
+                .all()
+            )
+            for r in recent_reps:
+                if r[0]:
+                    s_id = r[0].lower()
+                    live_counts[s_id] = live_counts.get(s_id, 0) + 1
+        except Exception:
+            pass
+
     for loc in locations:
+        s_id = loc.id.lower()
+        has_live = s_id in live_counts
+        sector_live_total = live_counts.get(s_id, 0)
+
         for off in offsets:
             c_lat = loc.lat + off["d_lat"]
             c_lon = loc.lon + off["d_lon"]
             h3_index = f"8861045{loc.id[:3].upper()}{off['sub_id'].upper()}"
 
-            # Calculate baseline population for this hexagonal cell
+            # Base population & hazard distribution
             if loc.id == "kathmandu":
                 base_pop = 280000 if off["sub_id"] == "core" else 120000
-                report_freq = 42 if off["sub_id"] == "core" else 18
+                default_freq = 42 if off["sub_id"] == "core" else 18
                 adjacent_hazard = 0.82
             elif loc.id == "bhaktapur":
                 base_pop = 95000 if off["sub_id"] == "core" else 45000
-                report_freq = 28 if off["sub_id"] == "core" else 12
+                default_freq = 28 if off["sub_id"] == "core" else 12
                 adjacent_hazard = 0.78
             elif loc.id == "gorkha":
                 base_pop = 35000 if off["sub_id"] == "core" else 18000
-                report_freq = 0 if off["sub_id"] == "ne" else 4  # NE is silent blackout!
+                default_freq = 0 if off["sub_id"] == "ne" else 4  # NE is silent blackout ridge
                 adjacent_hazard = 0.95
             elif loc.id == "sindhupalchok":
                 base_pop = 42000 if off["sub_id"] == "core" else 22000
-                report_freq = 19 if off["sub_id"] == "core" else 6
+                default_freq = 19 if off["sub_id"] == "core" else 6
                 adjacent_hazard = 0.92
             elif loc.id == "rasuwa":
                 base_pop = 12000 if off["sub_id"] == "core" else 8000
-                report_freq = 0 if off["sub_id"] == "ne" else 1  # Blackout ridge
+                default_freq = 0 if off["sub_id"] == "ne" else 1  # Blackout pass
                 adjacent_hazard = 0.88
             elif loc.id == "dolakha":
                 base_pop = 25000 if off["sub_id"] == "core" else 14000
-                report_freq = 3 if off["sub_id"] == "core" else 0  # Blackout
+                default_freq = 3 if off["sub_id"] == "core" else 0  # Blackout ridge
                 adjacent_hazard = 0.85
             elif loc.id == "nuwakot":
                 base_pop = 38000 if off["sub_id"] == "core" else 19000
-                report_freq = 11 if off["sub_id"] == "core" else 3
+                default_freq = 11 if off["sub_id"] == "core" else 3
                 adjacent_hazard = 0.75
             else:  # sindhuli
                 base_pop = 45000 if off["sub_id"] == "core" else 20000
-                report_freq = 8 if off["sub_id"] == "core" else 4
+                default_freq = 8 if off["sub_id"] == "core" else 4
                 adjacent_hazard = 0.35
 
+            # Dynamic report frequency based on live telemetry
+            if has_live:
+                if off["sub_id"] == "core":
+                    report_freq = max(0, int(sector_live_total * 0.65))
+                elif off["sub_id"] == "sw":
+                    report_freq = max(0, int(sector_live_total * 0.35))
+                else:  # ne ridge is prone to mountain telecom isolation
+                    report_freq = 0 if adjacent_hazard >= 0.85 else max(0, int(sector_live_total * 0.15))
+            else:
+                report_freq = default_freq
+
             # Silent Sector Exposure Metric (E_cell) formula from PRATYAKSH-Ω spec:
-            # E_cell = P_cell * T_blackout * H_terrain * (1 - D_reports)
+            # E_cell = (P_cell / max(1, D_reports)) * Adjacent_Hazard_Index
             e_cell = round((base_pop / max(1, report_freq)) * adjacent_hazard, 1)
 
-            # Determine cell status & color
-            is_blackout = (report_freq == 0 and base_pop > 10000 and adjacent_hazard >= 0.70)
+            # Determine cell status & glowing indicator
+            is_blackout = (report_freq == 0 and base_pop >= 8000 and adjacent_hazard >= 0.70)
             if is_blackout:
                 status = "blackout"
-                status_color = "#4B5563"  # Flashing Grey/Black
+                status_color = "#E11D48"  # High-visibility glowing crimson
                 threat_tier = "CRITICAL_BLACKOUT"
             elif adjacent_hazard >= 0.75 or report_freq >= 15:
                 status = "critical"
@@ -98,14 +135,13 @@ def generate_central_nepal_h3_hexagons(simulated_hours: float = 12.0) -> list[di
                 threat_tier = "CRITICAL_SEVERITY"
             elif adjacent_hazard >= 0.50 or report_freq >= 5:
                 status = "moderate"
-                status_color = "#D97706"  # Yellow / Amber
+                status_color = "#D97706"  # Amber
                 threat_tier = "MODERATE_RISK"
             else:
                 status = "safe"
                 status_color = "#059669"  # Green
                 threat_tier = "MONITORED_SAFE"
 
-            # Hexagon polygon geometry
             coords = generate_hexagon_coordinates(c_lat, c_lon, radius_km=5.5)
 
             hexagons.append({
