@@ -2,9 +2,10 @@
 
 import React, { useState } from "react";
 import { submitReport, ReportItem } from "@/lib/api";
+import { Radio, Send, CheckCircle2, AlertTriangle, ChevronDown, ChevronUp } from "lucide-react";
 
 interface ReportInjectionFormProps {
-  onReportInjected: () => void;
+  onReportInjected?: () => void;
 }
 
 export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormProps) {
@@ -12,8 +13,8 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
   const [sourceType, setSourceType] = useState<"citizen" | "police" | "hospital" | "social_media">("citizen");
   const [rawText, setRawText] = useState("");
   const [useCoords, setUseCoords] = useState(false);
-  const [lat, setLat] = useState("27.7172");
-  const [lon, setLon] = useState("85.3240");
+  const [lat, setLat] = useState("");
+  const [lon, setLon] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<ReportItem | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -27,16 +28,16 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
     setResult(null);
 
     try {
-      const rep = await submitReport({
+      const res = await submitReport({
         source_type: sourceType,
         raw_text: rawText.trim(),
-        reported_lat: useCoords ? parseFloat(lat) : null,
-        reported_lon: useCoords ? parseFloat(lon) : null,
+        reported_lat: useCoords && lat ? parseFloat(lat) : undefined,
+        reported_lon: useCoords && lon ? parseFloat(lon) : undefined,
       });
 
-      setResult(rep);
+      setResult(res);
       setRawText("");
-      onReportInjected();
+      if (onReportInjected) onReportInjected();
     } catch (err: any) {
       setError(err.message || "Failed to inject report");
     } finally {
@@ -44,8 +45,8 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
     }
   };
 
-  const setPreset = (src: "citizen" | "police" | "hospital" | "social_media", text: string, pLat?: string, pLon?: string) => {
-    setSourceType(src);
+  const setPreset = (type: "citizen" | "police" | "hospital", text: string, pLat?: string, pLon?: string) => {
+    setSourceType(type);
     setRawText(text);
     if (pLat && pLon) {
       setUseCoords(true);
@@ -57,18 +58,19 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
   };
 
   return (
-    <section className="py-12 sm:py-16 px-6 sm:px-12 lg:px-16 max-w-7xl mx-auto w-full">
+    <section className="py-8 sm:py-12 px-4 sm:px-8 max-w-7xl mx-auto w-full">
       <div className="surface-calm p-6 sm:p-8 space-y-6">
         {/* Collapsible Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="font-mono-data text-xs text-[#2563EB] dark:text-[#60A5FA] font-bold uppercase tracking-wider">
+            <div className="font-mono-data text-[10px] text-[#60A5FA] font-bold uppercase tracking-[0.2em] flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3B82F6] animate-pulse" />
               FIELD TEST CONSOLE // LIVE SIGNAL INJECTION
             </div>
-            <h3 className="font-display-calm font-extrabold text-2xl text-[#111318] dark:text-[#F4F4F0] tracking-tight">
+            <h3 className="font-display-calm font-medium text-2xl text-white tracking-tight">
               Inject Simulated Disaster Signal
             </h3>
-            <p className="font-body-prose text-xs sm:text-sm text-[#5C6270] dark:text-[#9CA3AF]">
+            <p className="font-body-prose text-xs text-[#94A3B8]">
               Simulate incoming police radio, citizen SMS, hospital intake, or Devanagari reports to test semantic deduplication and real-time matrix updates.
             </p>
           </div>
@@ -76,38 +78,39 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="btn-action-secondary text-xs py-2 px-4 cursor-pointer self-start sm:self-auto"
+            className="btn-action-secondary text-xs py-2 px-4 cursor-pointer self-start sm:self-auto flex items-center gap-2 rounded-xl"
           >
-            {isOpen ? "HIDE CONSOLE ▲" : "OPEN CONSOLE ▼"}
+            <span>{isOpen ? "Hide Console" : "Open Console"}</span>
+            {isOpen ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
         </div>
 
         {isOpen && (
-          <div className="pt-6 border-t border-[#E5E4DC] dark:border-[#232733] space-y-6">
+          <div className="pt-6 border-t border-white/10 space-y-6">
             {/* Quick Demo Presets */}
             <div className="space-y-2.5">
-              <span className="font-mono-data text-[11px] text-[#5C6270] uppercase font-bold block">
-                PRELOAD TEST SIGNALS (ENGLISH & NEPALI):
+              <span className="font-mono-data text-[10px] text-[#64748B] uppercase font-bold tracking-wider block">
+                PRELOAD TEST SIGNALS (ENGLISH &amp; NEPALI):
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={() => setPreset("police", "Police patrol in Sindhupalchok confirms Melamchi river bridge completely washed away, 2 dead.", "27.9500", "85.7000")}
-                  className="px-3 py-1.5 rounded-lg surface-calm text-xs font-mono-data text-[#5C6270] hover:text-[#111318] dark:hover:text-[#F4F4F0] cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-white/[0.02] border border-white/10 text-xs font-mono-data text-[#94A3B8] hover:text-white hover:bg-white/5 cursor-pointer"
                 >
                   [POLICE: SINDHUPALCHOK BRIDGE]
                 </button>
                 <button
                   type="button"
                   onClick={() => setPreset("hospital", "Patan Hospital ER received 14 trauma patients from collapsed commercial block in Kathmandu.", "27.6710", "85.3240")}
-                  className="px-3 py-1.5 rounded-lg surface-calm text-xs font-mono-data text-[#5C6270] hover:text-[#111318] dark:hover:text-[#F4F4F0] cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-white/[0.02] border border-white/10 text-xs font-mono-data text-[#94A3B8] hover:text-white hover:bg-white/5 cursor-pointer"
                 >
                   [HOSPITAL: PATAN ER INTAKE]
                 </button>
                 <button
                   type="button"
                   onClick={() => setPreset("citizen", "गोरखा बारपाकमा धेरै घर भत्किएका छन्, १० जना पुरिएका छन्, तत्काल उद्धार टोली चाहियो।", "28.0000", "84.6333")}
-                  className="px-3 py-1.5 rounded-lg surface-calm text-xs font-mono-data text-[#D97706] hover:underline cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs font-mono-data text-[#FBBF24] hover:bg-amber-500/20 cursor-pointer"
                 >
                   [NEPALI: GORKHA BARPAK RESCUE]
                 </button>
@@ -118,11 +121,11 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
             <form onSubmit={handleSubmit} className="space-y-4 font-mono-data text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#5C6270] font-bold mb-1.5">SOURCE TYPE *</label>
+                  <label className="block text-[#94A3B8] text-[10px] uppercase font-bold mb-1.5 tracking-wider">SOURCE TYPE *</label>
                   <select
                     value={sourceType}
                     onChange={(e) => setSourceType(e.target.value as any)}
-                    className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] p-2.5 rounded-lg text-[#111318] dark:text-[#F4F4F0] focus:border-[#2563EB] focus:outline-none"
+                    className="w-full bg-black/40 border border-white/10 p-2.5 rounded-xl text-white focus:border-[#3B82F6] focus:outline-none"
                   >
                     <option value="citizen">Citizen Report (Trust Weight: 0.70)</option>
                     <option value="police">Police Log / First Responder (Trust Weight: 0.90)</option>
@@ -132,12 +135,12 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
                 </div>
 
                 <div className="flex items-center gap-4 pt-6">
-                  <label className="flex items-center gap-2 cursor-pointer text-[#111318] dark:text-[#F4F4F0]">
+                  <label className="flex items-center gap-2 cursor-pointer text-white">
                     <input
                       type="checkbox"
                       checked={useCoords}
                       onChange={(e) => setUseCoords(e.target.checked)}
-                      className="rounded text-[#2563EB] focus:ring-[#2563EB]"
+                      className="rounded text-[#3B82F6] focus:ring-[#3B82F6]"
                     />
                     <span>Attach Exact GPS Coordinates</span>
                   </label>
@@ -147,35 +150,35 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
               {useCoords && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[#5C6270] mb-1">LATITUDE (°N)</label>
+                    <label className="block text-[#64748B] text-[10px] uppercase mb-1">LATITUDE (°N)</label>
                     <input
                       type="text"
                       value={lat}
                       onChange={(e) => setLat(e.target.value)}
-                      className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] p-2 rounded-lg text-[#111318] dark:text-[#F4F4F0]"
+                      className="w-full bg-black/40 border border-white/10 p-2 rounded-xl text-white focus:border-[#3B82F6] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[#5C6270] mb-1">LONGITUDE (°E)</label>
+                    <label className="block text-[#64748B] text-[10px] uppercase mb-1">LONGITUDE (°E)</label>
                     <input
                       type="text"
                       value={lon}
                       onChange={(e) => setLon(e.target.value)}
-                      className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] p-2 rounded-lg text-[#111318] dark:text-[#F4F4F0]"
+                      className="w-full bg-black/40 border border-white/10 p-2 rounded-xl text-white focus:border-[#3B82F6] focus:outline-none"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="block text-[#5C6270] font-bold mb-1.5">RAW REPORT MESSAGE *</label>
+                <label className="block text-[#94A3B8] text-[10px] uppercase font-bold mb-1.5 tracking-wider">RAW REPORT MESSAGE *</label>
                 <textarea
                   rows={3}
                   required
                   value={rawText}
                   onChange={(e) => setRawText(e.target.value)}
                   placeholder="Describe damage, trapped persons, road blockages, or casualty counts..."
-                  className="w-full bg-[#FAF9F5] dark:bg-[#0C0E12] border border-[#E5E4DC] dark:border-[#232733] p-3 rounded-lg text-[#111318] dark:text-[#F4F4F0] font-body-prose text-xs focus:border-[#2563EB] focus:outline-none"
+                  className="w-full bg-black/40 border border-white/10 p-3 rounded-xl text-white font-body-prose text-xs focus:border-[#3B82F6] focus:outline-none"
                 />
               </div>
 
@@ -183,23 +186,23 @@ export function ReportInjectionForm({ onReportInjected }: ReportInjectionFormPro
                 <button
                   type="submit"
                   disabled={isSubmitting || !rawText.trim()}
-                  className="btn-action-primary text-xs py-2.5 px-6 disabled:opacity-50 cursor-pointer"
+                  className="btn-action-primary text-xs py-2.5 px-6 rounded-xl disabled:opacity-50 cursor-pointer"
                 >
-                  {isSubmitting ? "PROCESSING SIGNAL..." : "INJECT SIGNAL [↵]"}
+                  {isSubmitting ? "Processing Signal..." : "Inject Signal [↵]"}
                 </button>
               </div>
             </form>
 
             {/* Results Feedback */}
             {result && (
-              <div className="p-4 rounded-xl bg-[#059669]/10 border border-[#059669]/30 text-xs font-mono-data text-[#059669] dark:text-[#34D399] space-y-1">
-                <div className="font-bold">✓ SIGNAL INGESTED & FUSED (ID #{result.id})</div>
+              <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono-data text-[#34D399] space-y-1">
+                <div className="font-bold">✓ SIGNAL INGESTED &amp; FUSED (ID #{result.id})</div>
                 <div>Extracted Location: <strong>{result.resolved_location_name || result.resolved_location_id || "Central Nepal"}</strong> | Extracted Damage: <strong>{result.extracted_damage_type || "structural"}</strong></div>
               </div>
             )}
 
             {error && (
-              <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-xs font-mono-data text-[#E11D48]">
+              <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs font-mono-data text-[#FB7185]">
                 [INJECTION_ERROR]: {error}
               </div>
             )}
