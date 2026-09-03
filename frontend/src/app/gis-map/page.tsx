@@ -13,10 +13,12 @@ import {
   AllPopulationExposureResponse,
   SectorPalikaBreakdown,
   advanceSimulation,
+  H3HexagonItem,
 } from "@/lib/api";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import InteractiveVectorMap from "@/components/InteractiveVectorMap";
-import { ActiveSectorDossier } from "@/components/ActiveSectorDossier";
+import MapLayerControl, { MapLayerVisibility } from "@/components/MapLayerControl";
+import SectorOperationsDrawer from "@/components/SectorOperationsDrawer";
 import { FloatingCommandBar } from "@/components/FloatingCommandBar";
 import { SectorDetailPanel } from "@/components/SectorDetailPanel";
 import { useViewMode } from "@/context/ViewModeContext";
@@ -28,8 +30,21 @@ export default function GisMapPage() {
   const [exposureData, setExposureData] = useState<AllPopulationExposureResponse | null>(null);
 
   const [selectedSectorId, setSelectedSectorId] = useState<string>("gorkha");
+  const [selectedHexagon, setSelectedHexagon] = useState<H3HexagonItem | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(true);
   const [inspectedLocation, setInspectedLocation] = useState<LocationStatusItem | null>(null);
-  
+
+  // Tactical Layer Controls
+  const [mapLayers, setMapLayers] = useState<MapLayerVisibility>({
+    showH3Grid: true,
+    showHazardOverlays: true,
+    showPropagationPath: true,
+    showSilentHalos: true,
+    showCorridors: true,
+    showSatelliteLayer: true,
+    baseMapStyle: "opentopo",
+  });
+
   // Palikas Modal State
   const [selectedSectorForPalikas, setSelectedSectorForPalikas] = useState<string | null>(null);
   const [palikaData, setPalikaData] = useState<SectorPalikaBreakdown | null>(null);
@@ -93,6 +108,11 @@ export default function GisMapPage() {
     }
   };
 
+  const handleSelectSector = (sId: string) => {
+    setSelectedSectorId(sId);
+    setIsDrawerOpen(true);
+  };
+
   const activeSector = gisSectors.find(
     (s) => s.sector_id.toLowerCase() === selectedSectorId.toLowerCase()
   ) || gisSectors[0];
@@ -117,19 +137,34 @@ export default function GisMapPage() {
 
   return (
     <div className="flex-1 w-full h-full relative overflow-hidden bg-[#090B0E] flex flex-col">
-      {/* Absolute Background Map */}
+      {/* 1. Full-Screen Interactive Operations Map */}
       <InteractiveVectorMap
         sectors={gisSectors}
         selectedSectorId={selectedSectorId}
-        onSelectSector={(sId) => setSelectedSectorId(sId)}
+        onSelectSector={handleSelectSector}
+        onSelectHexagon={(hex) => {
+          setSelectedHexagon(hex);
+          setSelectedSectorId(hex.sector_id);
+          setIsDrawerOpen(true);
+        }}
+        layerVisibility={mapLayers}
+        simTime={simulationState?.current_simulated_time}
       />
 
-      {/* Floating Top Bar (Command / Metrics) */}
+      {/* 2. Floating Layer Controls (Top Left) */}
+      <div className="absolute top-6 left-6 z-40">
+        <MapLayerControl
+          layers={mapLayers}
+          onChangeLayers={(newLayers) => setMapLayers(newLayers)}
+        />
+      </div>
+
+      {/* 3. Floating Top Command Bar (Clock, Metrics & Time Step) */}
       <motion.div 
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
-        className="absolute top-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none w-full max-w-5xl px-4"
+        className="absolute top-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none w-full max-w-4xl px-4"
       >
         <FloatingCommandBar
           simulationState={simulationState}
@@ -141,24 +176,32 @@ export default function GisMapPage() {
         />
       </motion.div>
 
-      {/* Floating Sidebar (Right) */}
-      <motion.div 
-        initial={{ x: 100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.4 }}
-        className="absolute top-[120px] right-6 bottom-6 z-40 pointer-events-none"
-      >
-        {activeSector && (
-          <ActiveSectorDossier
+      {/* 4. Slide-out Sector Operations Drawer (Right) */}
+      <AnimatePresence>
+        {isDrawerOpen && activeSector && (
+          <SectorOperationsDrawer
             sector={activeSector}
             location={activeLocation}
+            selectedHexagon={selectedHexagon}
+            onClose={() => setIsDrawerOpen(false)}
+            onRefreshData={loadData}
             onOpenPalikas={handleOpenPalikas}
-            onInspectEvidence={() => setInspectedLocation(activeLocation || null)}
           />
         )}
-      </motion.div>
+      </AnimatePresence>
 
-      {/* Slide-in Evidence Dossier (Secondary Analysis Layer) */}
+      {/* 5. Trigger Button to Re-Open Drawer if Closed */}
+      {!isDrawerOpen && activeSector && (
+        <button
+          type="button"
+          onClick={() => setIsDrawerOpen(true)}
+          className="absolute top-24 right-6 z-40 px-4 py-2 rounded-xl bg-[#0C0E12]/90 backdrop-blur-xl border border-white/15 text-xs text-[#60A5FA] font-bold shadow-2xl hover:bg-[#12161F] cursor-pointer transition-all flex items-center gap-2"
+        >
+          <span>Open Sector Dossier ({activeSector.sector_name})</span>
+        </button>
+      )}
+
+      {/* Secondary Evidence Dossier Panel (if inspected) */}
       <SectorDetailPanel
         location={inspectedLocation}
         onClose={() => setInspectedLocation(null)}

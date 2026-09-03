@@ -206,6 +206,64 @@ export interface H3GridResponse {
   hexagons: H3HexagonItem[];
 }
 
+export interface HazardOverlayItem {
+  id: string;
+  name: string;
+  hazard_type: string;
+  severity: "CRITICAL" | "HIGH" | "MODERATE" | "LOW";
+  color: string;
+  fill_opacity: number;
+  border_color: string;
+  border_weight: number;
+  radius_km: number;
+  center: [number, number];
+  polygon_coordinates: [number, number][];
+  description: string;
+}
+
+export interface HazardOverlaysResponse {
+  type: string;
+  disaster_type: string;
+  simulated_time: string;
+  origin: {
+    name: string;
+    lat: number;
+    lon: number;
+    depth_km?: number;
+    magnitude?: number;
+  };
+  overlays: HazardOverlayItem[];
+}
+
+export interface PropagationNodeItem {
+  node_id: string;
+  name: string;
+  lat: number;
+  lon: number;
+  timestamp_offset_hours: number;
+  status: "IMPACTED" | "ACTIVE_WAVEFRONT" | "PROJECTED_IMPACT";
+  lifeline_impact: string;
+}
+
+export interface PropagationPathResponse {
+  type: string;
+  disaster_type: string;
+  simulated_time: string;
+  elapsed_hours: number;
+  origin: {
+    node_id: string;
+    name: string;
+    lat: number;
+    lon: number;
+    timestamp_offset_hours: number;
+    status: string;
+    lifeline_impact: string;
+  };
+  nodes: PropagationNodeItem[];
+  path_coordinates: [number, number][];
+  active_wavefront: PropagationNodeItem;
+}
+
 // -------------------------------------------------------------
 // Capability 2: Deduplication & Unified Truth
 // -------------------------------------------------------------
@@ -581,14 +639,20 @@ export async function submitReport(payload: {
 }
 
 // Capability 1: GIS & H3 Hexagonal Grid
-export async function fetchGisTelemetry(): Promise<GisFeatureCollection> {
-  const res = await fetch(`${API_BASE_URL}/gis/telemetry`, { cache: "no-store" });
+export async function fetchGisTelemetry(simTime?: string): Promise<GisFeatureCollection> {
+  const url = simTime
+    ? `${API_BASE_URL}/gis/telemetry?sim_time=${encodeURIComponent(simTime)}`
+    : `${API_BASE_URL}/gis/telemetry`;
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch GIS telemetry`);
   return res.json();
 }
 
-export async function fetchH3GridTelemetry(): Promise<H3GridResponse> {
-  const res = await fetch(`${API_BASE_URL}/gis/h3-grid`, { cache: "no-store" });
+export async function fetchH3GridTelemetry(simTime?: string): Promise<H3GridResponse> {
+  const url = simTime
+    ? `${API_BASE_URL}/gis/h3-grid?sim_time=${encodeURIComponent(simTime)}`
+    : `${API_BASE_URL}/gis/h3-grid`;
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch H3 grid`);
   return res.json();
 }
@@ -1184,6 +1248,22 @@ export async function submitOfficialReport(payload: {
 export async function fetchLocationsVerificationRanking(): Promise<LocationVerificationRankItem[]> {
   const res = await fetch(`${API_BASE_URL}/locations/verification-ranking`, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch verification rankings`);
+  return res.json();
+}
+
+export async function fetchHazardOverlays(disasterType: string = "earthquake", simTime?: string): Promise<HazardOverlaysResponse> {
+  const params = new URLSearchParams({ disaster_type: disasterType });
+  if (simTime) params.append("sim_time", simTime);
+  const res = await fetch(`${API_BASE_URL}/gis/hazard-overlays?${params.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch hazard overlays`);
+  return res.json();
+}
+
+export async function fetchPropagationPath(disasterType: string = "earthquake", simTime?: string): Promise<PropagationPathResponse> {
+  const params = new URLSearchParams({ disaster_type: disasterType });
+  if (simTime) params.append("sim_time", simTime);
+  const res = await fetch(`${API_BASE_URL}/gis/propagation-path?${params.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch disaster propagation path`);
   return res.json();
 }
 
