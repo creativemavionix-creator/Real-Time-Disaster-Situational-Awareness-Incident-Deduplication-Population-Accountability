@@ -148,6 +148,10 @@ export interface SimulationState {
   total_reports_in_db: number;
   reports_visible_at_current_time: number;
   is_running: boolean;
+  disaster_type?: string;
+  active_preset_id?: string;
+  disaster_display_name?: string;
+  disaster_headline?: string;
 }
 
 // -------------------------------------------------------------
@@ -1266,6 +1270,193 @@ export async function fetchPropagationPath(disasterType: string = "earthquake", 
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch disaster propagation path`);
   return res.json();
 }
+
+// -------------------------------------------------------------
+// Requirements 2-7: Multi-Disaster, Presets, Telemetry & Supply Types
+// -------------------------------------------------------------
+
+export type DisasterCategory = "earthquake" | "flash_flood" | "cyclone" | "landslide" | "urban_fire";
+
+export interface ScenarioPreset {
+  preset_id: string;
+  disaster_type: DisasterCategory;
+  title: string;
+  subtitle: string;
+  location_name: string;
+  description: string;
+  center_lat: number;
+  center_lon: number;
+  default_zoom: number;
+  origin_point: any;
+  initial_affected_sectors: string[];
+  suspected_silent_zones: string[];
+  critical_lifelines_at_risk: string[];
+  tags: string[];
+}
+
+export interface ScenarioPresetsResponse {
+  presets: ScenarioPreset[];
+  active_preset_id: string;
+  active_disaster_type: DisasterCategory;
+}
+
+export interface LifelineMetricComparison {
+  lifeline_type: "mobile_connectivity" | "electricity_grid" | "internet_availability" | "road_accessibility";
+  metric_label: string;
+  unit: string;
+  historical_baseline: number;
+  expected_value: number;
+  observed_value: number;
+  gap_percentage: number;
+  z_score: number;
+  status: string;
+  explanation: string;
+}
+
+export interface SectorTelemetryComparison {
+  sector_id: string;
+  sector_name: string;
+  simulated_time: string;
+  mobile: LifelineMetricComparison;
+  electricity: LifelineMetricComparison;
+  internet: LifelineMetricComparison;
+  road: LifelineMetricComparison;
+  overall_observed_reports: number;
+  expected_hourly_reports: number;
+  silent_zone_risk_score: number;
+  silent_zone_tier: "NORMAL_TELEMETRY" | "MODERATE_ANOMALY" | "ELEVATED_SILENT_RISK" | "CRITICAL_SILENT_ZONE";
+  is_silent_zone: boolean;
+  negative_evidence_reason: string;
+}
+
+export interface TelemetryComparisonCollection {
+  type: string;
+  disaster_type: string;
+  simulated_time: string;
+  total_sectors: number;
+  silent_zones_count: number;
+  sectors: SectorTelemetryComparison[];
+}
+
+export interface EmergencySupplyAllocationItem {
+  sector_id: string;
+  sector_name: string;
+  priority_tier: "CRITICAL_IMMEDIATE" | "HIGH_PRIORITY" | "STANDARD" | "ROUTINE";
+  priority_score: number;
+  affected_population: number;
+  drinking_water_liters: number;
+  food_rations_mre: number;
+  trauma_medical_kits: number;
+  emergency_comms_terminals: number;
+  emergency_tents: number;
+  recommended_delivery_mode: "AIR_DROP_HELICOPTER" | "4WD_MOUNTAIN_CONVOY" | "GROUND_HEAVY_CONVOY" | "UAV_DRONE_PAYLOAD";
+  staging_hub: string;
+  eta_hours: number;
+  rationale: string;
+}
+
+export interface EmergencySupplyOverviewResponse {
+  simulated_time: string;
+  total_water_liters_demanded: number;
+  total_food_rations_demanded: number;
+  total_trauma_kits_demanded: number;
+  total_comms_terminals_demanded: number;
+  total_tents_demanded: number;
+  critical_sectors_count: number;
+  allocations: EmergencySupplyAllocationItem[];
+}
+
+export interface ConflictEvidenceRecord {
+  conflict_id: string;
+  sector_id: string;
+  sector_name: string;
+  disputed_metric: string;
+  primary_claim: string;
+  primary_source: string;
+  primary_reliability: number;
+  competing_claim: string;
+  competing_source: string;
+  competing_reliability: number;
+  discrepancy_severity: "HIGH_DIVERGENCE" | "MODERATE_DISCREPANCY" | "MINOR_VARIATION";
+  resolution_recommendation: string;
+  timestamp: string;
+}
+
+export interface MultiSourceConflictsResponse {
+  simulated_time: string;
+  total_active_conflicts: number;
+  conflicts: ConflictEvidenceRecord[];
+  sector_summaries: any[];
+}
+
+// Preset & Multi-Disaster Client Methods
+export async function fetchScenarioPresets(): Promise<ScenarioPresetsResponse> {
+  const res = await fetch(`${API_BASE_URL}/simulation/presets`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch scenario presets`);
+  return res.json();
+}
+
+export async function loadScenarioPreset(presetId: string, reseed: boolean = true): Promise<SimulationState> {
+  const res = await fetch(`${API_BASE_URL}/simulation/preset/${encodeURIComponent(presetId)}?reseed=${reseed}`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to load scenario preset ${presetId}`);
+  return res.json();
+}
+
+export async function switchDisasterType(disasterType: string, reseed: boolean = true): Promise<SimulationState> {
+  const res = await fetch(`${API_BASE_URL}/simulation/disaster_type?disaster_type=${encodeURIComponent(disasterType)}&reseed=${reseed}`, {
+    method: "POST",
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to switch disaster type to ${disasterType}`);
+  return res.json();
+}
+
+export async function fetchTelemetryComparison(disasterType?: string, simTime?: string): Promise<TelemetryComparisonCollection> {
+  const params = new URLSearchParams();
+  if (disasterType) params.append("disaster_type", disasterType);
+  if (simTime) params.append("sim_time", simTime);
+  const res = await fetch(`${API_BASE_URL}/gis/telemetry-comparison?${params.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch telemetry comparison`);
+  return res.json();
+}
+
+export async function fetchSectorTelemetryComparison(sectorId: string, disasterType?: string, simTime?: string): Promise<SectorTelemetryComparison> {
+  const params = new URLSearchParams();
+  if (disasterType) params.append("disaster_type", disasterType);
+  if (simTime) params.append("sim_time", simTime);
+  const res = await fetch(`${API_BASE_URL}/gis/telemetry-comparison/${encodeURIComponent(sectorId)}?${params.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch sector telemetry comparison for ${sectorId}`);
+  return res.json();
+}
+
+export async function fetchEmergencySupplies(disasterType?: string, simTime?: string): Promise<EmergencySupplyOverviewResponse> {
+  const params = new URLSearchParams();
+  if (disasterType) params.append("disaster_type", disasterType);
+  if (simTime) params.append("sim_time", simTime);
+  const res = await fetch(`${API_BASE_URL}/dispatch/supplies?${params.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch emergency supply allocations`);
+  return res.json();
+}
+
+export async function fetchSectorEmergencySupply(sectorId: string, disasterType?: string, simTime?: string): Promise<EmergencySupplyAllocationItem> {
+  const params = new URLSearchParams();
+  if (disasterType) params.append("disaster_type", disasterType);
+  if (simTime) params.append("sim_time", simTime);
+  const res = await fetch(`${API_BASE_URL}/dispatch/supplies/${encodeURIComponent(sectorId)}?${params.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch emergency supply for ${sectorId}`);
+  return res.json();
+}
+
+export async function fetchIntelligenceConflicts(sectorId?: string, simTime?: string): Promise<MultiSourceConflictsResponse> {
+  const params = new URLSearchParams();
+  if (sectorId) params.append("sector_id", sectorId);
+  if (simTime) params.append("sim_time", simTime);
+  const res = await fetch(`${API_BASE_URL}/dispatch/conflicts?${params.toString()}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch intelligence conflicts`);
+  return res.json();
+}
+
 
 
 

@@ -84,6 +84,34 @@ def set_clock_time(db: Session, target_time: datetime) -> datetime:
     return target_time
 
 
+from app.simulation.disaster_types import get_disaster_profile
+from app.simulation.scenario_presets import get_scenario_preset
+
+_ACTIVE_DISASTER_TYPE: str = "earthquake"
+_ACTIVE_PRESET_ID: str = "gorkha_earthquake"
+
+
+def get_active_disaster_type() -> str:
+    """Retrieve the current active disaster category."""
+    return _ACTIVE_DISASTER_TYPE
+
+
+def get_active_preset_id() -> str:
+    """Retrieve the current active scenario preset ID."""
+    return _ACTIVE_PRESET_ID
+
+
+def set_active_disaster(disaster_type: str, preset_id: Optional[str] = None):
+    """Set active disaster category and scenario preset."""
+    global _ACTIVE_DISASTER_TYPE, _ACTIVE_PRESET_ID
+    _ACTIVE_DISASTER_TYPE = disaster_type.lower().strip()
+    if preset_id:
+        _ACTIVE_PRESET_ID = preset_id.lower().strip()
+    else:
+        preset = get_scenario_preset(_ACTIVE_DISASTER_TYPE)
+        _ACTIVE_PRESET_ID = preset.preset_id
+
+
 def get_simulation_state(db: Session) -> SimulationStateResponse:
     """Get full status and metadata of the simulation clock."""
     clock = get_or_create_clock(db)
@@ -100,11 +128,18 @@ def get_simulation_state(db: Session) -> SimulationStateResponse:
     total_reports = db.query(func.count(ReportDB.id)).scalar() or 0
     active_reports = db.query(func.count(ReportDB.id)).filter(ReportDB.timestamp <= sim_t).scalar() or 0
     
+    profile = get_disaster_profile(_ACTIVE_DISASTER_TYPE)
+
     return SimulationStateResponse(
         simulated_time=sim_t,
         is_running=clock.is_running,
         start_time=start_t,
         elapsed_hours=elapsed_hours,
         total_reports_seeded=total_reports,
-        reports_visible_at_current_time=active_reports
+        reports_visible_at_current_time=active_reports,
+        disaster_type=_ACTIVE_DISASTER_TYPE,
+        active_preset_id=_ACTIVE_PRESET_ID,
+        disaster_display_name=profile.display_name,
+        disaster_headline=profile.headline,
     )
+

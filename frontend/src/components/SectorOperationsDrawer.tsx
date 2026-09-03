@@ -18,7 +18,15 @@ import {
   fetchDispatchDashboard,
   DispatchDashboardResponse,
   H3HexagonItem,
+  SectorTelemetryComparison,
+  EmergencySupplyAllocationItem,
+  ConflictEvidenceRecord,
+  fetchSectorTelemetryComparison,
+  fetchSectorEmergencySupply,
+  fetchIntelligenceConflicts,
 } from "@/lib/api";
+import TelemetryComparisonMatrix from "@/components/TelemetryComparisonMatrix";
+import SupervisorDecisionCards from "@/components/SupervisorDecisionCards";
 import {
   X,
   Radio,
@@ -61,6 +69,9 @@ export default function SectorOperationsDrawer({
   const [baselineComparison, setBaselineComparison] = useState<SectorBaselineComparison | null>(null);
   const [rankedActions, setRankedActions] = useState<RankedObservationsResponse | null>(null);
   const [dispatchData, setDispatchData] = useState<DispatchDashboardResponse | null>(null);
+  const [telemetryComparison, setTelemetryComparison] = useState<SectorTelemetryComparison | null>(null);
+  const [supplyAllocation, setSupplyAllocation] = useState<EmergencySupplyAllocationItem | null>(null);
+  const [sectorConflicts, setSectorConflicts] = useState<ConflictEvidenceRecord[]>([]);
 
   const [isProcessingAction, setIsProcessingAction] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
@@ -74,17 +85,23 @@ export default function SectorOperationsDrawer({
     let isMounted = true;
     const loadDetails = async () => {
       try {
-        const [hyp, base, act, disp] = await Promise.all([
+        const [hyp, base, act, disp, telem, supply, conflictsResp] = await Promise.all([
           fetchSectorHypotheses(sId),
           fetchSectorBaselineComparison(sId),
           fetchRankedVerificationObservations(),
           fetchDispatchDashboard(),
+          fetchSectorTelemetryComparison(sId).catch(() => null),
+          fetchSectorEmergencySupply(sId).catch(() => null),
+          fetchIntelligenceConflicts(sId).catch(() => null),
         ]);
         if (isMounted) {
           setHypotheses(hyp);
           setBaselineComparison(base);
           setRankedActions(act);
           setDispatchData(disp);
+          if (telem) setTelemetryComparison(telem);
+          if (supply) setSupplyAllocation(supply);
+          if (conflictsResp) setSectorConflicts(conflictsResp.conflicts || []);
         }
       } catch (err) {
         console.error("Failed to load sector operations details:", err);
@@ -299,92 +316,7 @@ export default function SectorOperationsDrawer({
         {/* TAB 1: TELEMETRY & LIFELINES */}
         {activeTab === "telemetry" && (
           <div className="space-y-5">
-            {/* 4 Lifelines */}
-            <div className="space-y-2">
-              <span className="text-[10px] text-[#94A3B8] uppercase tracking-wider font-bold">
-                Physical Lifeline Integrity
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-                  <PhoneCall className={`w-5 h-5 ${sector.status === "blackout" ? "text-[#EF4444]" : "text-[#10B981]"}`} />
-                  <div>
-                    <div className="text-[10px] text-[#94A3B8]">Cellular BTS</div>
-                    <div className="text-xs font-bold text-white">
-                      {sector.status === "blackout" ? "0% SEVERED" : "OPERATIONAL"}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-                  <Zap className={`w-5 h-5 ${sector.status === "blackout" ? "text-[#F59E0B]" : "text-[#10B981]"}`} />
-                  <div>
-                    <div className="text-[10px] text-[#94A3B8]">Electrical Grid</div>
-                    <div className="text-xs font-bold text-white">
-                      {sector.status === "blackout" ? "TRIPPED" : "STABLE"}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-                  <Wifi className={`w-5 h-5 ${sector.status === "blackout" ? "text-[#EF4444]" : "text-[#10B981]"}`} />
-                  <div>
-                    <div className="text-[10px] text-[#94A3B8]">Internet Backhaul</div>
-                    <div className="text-xs font-bold text-white">
-                      {sector.status === "blackout" ? "FIBER CUT" : "ACTIVE"}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-                  <Truck className={`w-5 h-5 ${sector.isolation_index > 0.6 ? "text-[#EF4444]" : "text-[#10B981]"}`} />
-                  <div>
-                    <div className="text-[10px] text-[#94A3B8]">Road Access</div>
-                    <div className="text-xs font-bold text-white">
-                      {sector.isolation_index > 0.6 ? "BLOCKED / CHOKED" : "PASSABLE"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Expected vs Observed Telemetry */}
-            {baselineComparison && (
-              <div className="p-4 rounded-xl bg-black/40 border border-white/10 space-y-3">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-white uppercase tracking-wider">
-                    Signal Gap Analysis (Δ)
-                  </span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                    baselineComparison.is_anomalous
-                      ? "bg-red-500/20 text-red-400 border border-red-500/40"
-                      : "bg-emerald-500/20 text-emerald-400"
-                  }`}>
-                    Z-SCORE: {baselineComparison.z_score.toFixed(1)}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-center">
-                  <div className="p-3 rounded-lg bg-white/5">
-                    <div className="text-[10px] text-[#94A3B8]">Expected Hourly Signals</div>
-                    <div className="text-xl font-bold text-[#60A5FA]">
-                      {baselineComparison.expected_mean.toFixed(1)} / hr
-                    </div>
-                  </div>
-                  <div className="p-3 rounded-lg bg-white/5">
-                    <div className="text-[10px] text-[#94A3B8]">Observed Field Signals</div>
-                    <div className={`text-xl font-bold ${
-                      baselineComparison.observed_value === 0 ? "text-[#EF4444]" : "text-[#10B981]"
-                    }`}>
-                      {baselineComparison.observed_value.toFixed(1)} / hr
-                    </div>
-                  </div>
-                </div>
-
-                <p className="text-[11px] text-[#94A3B8] leading-relaxed italic">
-                  &ldquo;{baselineComparison.explanation}&rdquo;
-                </p>
-              </div>
-            )}
+            <TelemetryComparisonMatrix telemetry={telemetryComparison} />
 
             {/* Palika Municipality Census Button */}
             {onOpenPalikas && (
@@ -517,37 +449,14 @@ export default function SectorOperationsDrawer({
               </div>
             )}
 
-            {/* Tactical SAR Unit Dispatch */}
-            {sectorDispatchRec && sectorDispatchRec.available_matching_units.length > 0 && (
-              <div className="space-y-3">
-                <span className="text-[10px] text-[#94A3B8] uppercase tracking-wider font-bold">
-                  Available Response Units ({sectorDispatchRec.available_matching_units.length})
-                </span>
-                <div className="space-y-2">
-                  {sectorDispatchRec.available_matching_units.slice(0, 2).map((unit) => (
-                    <div
-                      key={unit.id}
-                      className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs"
-                    >
-                      <div>
-                        <div className="font-bold text-white">{unit.unit_name}</div>
-                        <div className="text-[10px] text-[#94A3B8]">
-                          {unit.unit_type} &bull; Base: {unit.home_base}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        disabled={isProcessingAction}
-                        onClick={() => handleQuickDispatch(unit.id)}
-                        className="py-1 px-3 rounded-lg bg-[#10B981] hover:bg-[#059669] text-white text-[10px] font-bold cursor-pointer transition-colors disabled:opacity-50"
-                      >
-                        Dispatch
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Tactical Decision Support & Emergency Supplies */}
+            <SupervisorDecisionCards
+              dispatchRecommendation={sectorDispatchRec}
+              supplyAllocation={supplyAllocation}
+              conflicts={sectorConflicts}
+              onDispatchUnit={(unitId) => handleQuickDispatch(unitId)}
+              isLoading={isProcessingAction}
+            />
 
             {/* Duty Commander Override Gate */}
             <div className="pt-3 border-t border-white/10">

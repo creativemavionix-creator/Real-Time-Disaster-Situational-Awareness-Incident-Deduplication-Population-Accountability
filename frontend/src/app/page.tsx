@@ -78,7 +78,7 @@ export default function OverviewPage() {
           <div className="space-y-6 text-center">
             <motion.div variants={fadeUpVars} className="font-mono-data text-xs text-[#E11D48] tracking-[0.4em] uppercase flex items-center justify-center gap-3">
               <span className="w-2 h-2 rounded-full bg-[#E11D48] animate-pulse" />
-              System Active &bull; T+{simulationState?.elapsed_hours || 0} Hours Elapsed
+              System Active &bull; T+{simulationState?.elapsed_hours?.toFixed(1) || "0.0"}h &bull; {simulationState?.disaster_display_name || "M7.8 Central Nepal Earthquake"}
             </motion.div>
             
             <motion.h1 variants={fadeUpVars} className="font-display-calm font-medium text-6xl sm:text-8xl tracking-tight text-white">

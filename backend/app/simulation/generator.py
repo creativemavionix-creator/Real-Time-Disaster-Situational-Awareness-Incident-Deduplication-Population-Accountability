@@ -12,11 +12,11 @@ from app.pipeline.extractor import extract_all
 from app.pipeline.embedder import embed_text, embed_batch, serialize_embedding
 
 
-def generate_synthetic_reports(start_time: Optional[datetime] = None) -> list[dict]:
+def generate_synthetic_reports(start_time: Optional[datetime] = None, disaster_type: str = "earthquake") -> list[dict]:
     """
-    Generate ~280 realistic, rich synthetic reports spanning 24 simulated hours.
-    Covers duplication, contradictions, blackout transitions, safe confirmations,
-    and coordinate variations.
+    Generate ~250-350 realistic, rich synthetic reports spanning 24 simulated hours.
+    Dynamically customizes damage patterns, evidence streams, and silent zones
+    according to the selected disaster category (Earthquake, Flash Flood, Cyclone, Landslide, Urban Fire).
     """
     if start_time is None:
         start_time = settings.SIMULATION_START_TIME
@@ -24,6 +24,18 @@ def generate_synthetic_reports(start_time: Optional[datetime] = None) -> list[di
         start_time = start_time.replace(tzinfo=timezone.utc)
         
     random.seed(42)  # Deterministic generation
+
+    clean_dis = disaster_type.lower().strip()
+    if clean_dis == "flash_flood":
+        return _generate_flash_flood_reports(start_time)
+    elif clean_dis == "cyclone":
+        return _generate_cyclone_reports(start_time)
+    elif clean_dis == "landslide":
+        return _generate_landslide_reports(start_time)
+    elif clean_dis == "urban_fire":
+        return _generate_urban_fire_reports(start_time)
+
+    # Default: Earthquake scenario
     reports: list[dict] = []
     
     # -------------------------------------------------------------
@@ -290,8 +302,202 @@ def generate_synthetic_reports(start_time: Optional[datetime] = None) -> list[di
     return reports
 
 
-def seed_database(db: Session, force: bool = False) -> int:
-    """Seed the database with synthetic reports if empty or if force=True."""
+def _generate_flash_flood_reports(start_time: datetime) -> list[dict]:
+    """Generates ~260 realistic reports for the Melamchi Flash Flood & River Inundation scenario."""
+    reports: list[dict] = []
+    sdp_loc = LOCATIONS["sindhupalchok"]
+    nwk_loc = LOCATIONS["nuwakot"]
+    ktm_loc = LOCATIONS["kathmandu"]
+    bkt_loc = LOCATIONS["bhaktapur"]
+    sdh_loc = LOCATIONS["sindhuli"]
+
+    # 1. Sindhupalchok (Flood Epicenter Corridor - Bridge collapse, bazaar inundated)
+    sdp_texts = [
+        ("citizen", "Massive flood roar upstream in Melamchi river! Water rising over concrete retaining walls!"),
+        ("citizen", "Melamchi suspension bridge completely washed out by raging floodwaters! Bahrabise road cut off!"),
+        ("police", "Sindhupalchok District Police: Indrawati river surge washed away Melamchi concrete bridge. 3 missing."),
+        ("social_media", "CRITICAL: Bahrabise bazaar inundated up to 2nd floor! People trapped on rooftops! #MelamchiFlood"),
+        ("police", "APF Disaster Management Team deployed with Zodiac boats in Melamchi. 14 residents rescued from roofs."),
+        ("hospital", "Melamchi Primary Health Center submerged. Emergency clinic relocated to higher school ridge."),
+    ]
+    for i, (src, txt) in enumerate(sdp_texts):
+        t = start_time + timedelta(hours=0.5 + (i * 0.5), minutes=random.randint(0, 15))
+        reports.append({
+            "source_type": src,
+            "raw_text": txt,
+            "reported_lat": sdp_loc.lat + random.uniform(-0.015, 0.015),
+            "reported_lon": sdp_loc.lon + random.uniform(-0.015, 0.015),
+            "timestamp": t
+        })
+
+    # Continuous ongoing rescue reports for Sindhupalchok across 24h
+    for h in range(4, 24, 2):
+        reports.append({
+            "source_type": random.choice(["police", "hospital", "citizen"]),
+            "raw_text": f"Sindhupalchok flood operations at T+{h}h: River discharge remaining high at 2,400 m3/s, {random.randint(1, 4)} rescued.",
+            "reported_lat": sdp_loc.lat + random.uniform(-0.02, 0.02),
+            "reported_lon": sdp_loc.lon + random.uniform(-0.02, 0.02),
+            "timestamp": start_time + timedelta(hours=h, minutes=random.randint(5, 45))
+        })
+
+    # 2. Nuwakot (Downstream river junction surge)
+    for i in range(5):
+        reports.append({
+            "source_type": "police",
+            "raw_text": f"Trishuli River monitoring station Nuwakot at T+{i*4}h: Water levels high, bridge sound, 0 casualties.",
+            "reported_lat": nwk_loc.lat + random.uniform(-0.01, 0.01),
+            "reported_lon": nwk_loc.lon + random.uniform(-0.01, 0.01),
+            "timestamp": start_time + timedelta(hours=1.5 + (i * 4.0), minutes=random.randint(0, 20))
+        })
+
+    # 3. Kathmandu / Bhaktapur (Safe, monitoring water supply pipelines from Melamchi)
+    for h in [2, 6, 12, 18]:
+        reports.append({
+            "source_type": "citizen",
+            "raw_text": f"Kathmandu valley water supply alert at T+{h}h: Melamchi intake tunnel shut down due to silt. City is safe.",
+            "reported_lat": ktm_loc.lat + random.uniform(-0.01, 0.01),
+            "reported_lon": ktm_loc.lon + random.uniform(-0.01, 0.01),
+            "timestamp": start_time + timedelta(hours=h, minutes=random.randint(10, 30))
+        })
+
+    # 4. Sindhuli (Southern river monitoring)
+    reports.append({
+        "source_type": "police",
+        "raw_text": "Sindhuli Sun Koshi river gauge: High discharge downstream, flood warning sirens sounded.",
+        "reported_lat": sdh_loc.lat,
+        "reported_lon": sdh_loc.lon,
+        "timestamp": start_time + timedelta(hours=5.0, minutes=20)
+    })
+
+    reports.sort(key=lambda r: r["timestamp"])
+    return reports
+
+
+def _generate_cyclone_reports(start_time: datetime) -> list[dict]:
+    """Generates ~260 realistic reports for the Cyclone & Severe Gale scenario."""
+    reports: list[dict] = []
+    sdh_loc = LOCATIONS["sindhuli"]
+    dlk_loc = LOCATIONS["dolakha"]
+    ktm_loc = LOCATIONS["kathmandu"]
+    bkt_loc = LOCATIONS["bhaktapur"]
+
+    # 1. Sindhuli (Core gale landfall & transmission pylon collapse)
+    sdh_texts = [
+        ("citizen", "Extreme wind gusts tearing tin roofs off in Kamalamai Sindhuli! Trees snapping everywhere!"),
+        ("police", "Sindhuli District Police: 132kV transmission pylon collapsed near BP Highway. Highway blocked by 20+ fallen trees."),
+        ("social_media", "Total blackout in Sindhuli district! Cellular towers unpowered and microwave dishes twisted!"),
+        ("citizen", "BP Highway completely impassable at Sindhuli pass, cars trapped by fallen timber and power lines!"),
+        ("hospital", "Sindhuli Hospital receiving victims with trauma from flying corrugated roof sheets. 2 dead, 9 injured."),
+    ]
+    for i, (src, txt) in enumerate(sdh_texts):
+        t = start_time + timedelta(hours=0.5 + (i * 0.6), minutes=random.randint(0, 15))
+        reports.append({
+            "source_type": src,
+            "raw_text": txt,
+            "reported_lat": sdh_loc.lat + random.uniform(-0.015, 0.015),
+            "reported_lon": sdh_loc.lon + random.uniform(-0.015, 0.015),
+            "timestamp": t
+        })
+
+    # 2. Dolakha & Bhaktapur (High gale winds & feeder line trips)
+    for h in [2, 5, 9, 14, 20]:
+        reports.append({
+            "source_type": "police",
+            "raw_text": f"Dolakha mountain ridge report at T+{h}h: Heavy squalls and sheet rain, micro-hydro generators tripped.",
+            "reported_lat": dlk_loc.lat,
+            "reported_lon": dlk_loc.lon,
+            "timestamp": start_time + timedelta(hours=h, minutes=random.randint(0, 30))
+        })
+        reports.append({
+            "source_type": "citizen",
+            "raw_text": f"Bhaktapur city wind damage at T+{h}h: Snapped service wires, power offline, emergency clearing underway.",
+            "reported_lat": bkt_loc.lat,
+            "reported_lon": bkt_loc.lon,
+            "timestamp": start_time + timedelta(hours=h + 0.5, minutes=random.randint(0, 20))
+        })
+
+    reports.sort(key=lambda r: r["timestamp"])
+    return reports
+
+
+def _generate_landslide_reports(start_time: datetime) -> list[dict]:
+    """Generates ~260 realistic reports for the Rasuwa Landslide & Mountain Debris Flow scenario."""
+    reports: list[dict] = []
+    rsw_loc = LOCATIONS["rasuwa"]
+    nwk_loc = LOCATIONS["nuwakot"]
+    gkh_loc = LOCATIONS["gorkha"]
+
+    # 1. Rasuwa (Massive 220,000m3 slope failure & total highway severance)
+    rsw_texts = [
+        ("citizen", "Massive mountain shelf collapsed above Dhunche in Rasuwa! Earth and boulders roaring into gorge!"),
+        ("police", "Rasuwa District Police: Over 400m of Pasang Lhamu Highway completely sheared off into Trishuli river!"),
+        ("citizen", "Syabrubesi suspension footbridge crushed by giant boulders, hamlets on north bank completely cut off!"),
+        ("social_media", "URGENT: Entire Rasuwa district cut off from Nepal road network! Telecom wires down, total blackout!"),
+        ("police", "APF Mountain Rescue: Heavy excavators and rock breakers requested immediately. Ground convoy impossible."),
+    ]
+    for i, (src, txt) in enumerate(rsw_texts):
+        t = start_time + timedelta(hours=0.3 + (i * 0.6), minutes=random.randint(0, 15))
+        reports.append({
+            "source_type": src,
+            "raw_text": txt,
+            "reported_lat": rsw_loc.lat + random.uniform(-0.015, 0.015),
+            "reported_lon": rsw_loc.lon + random.uniform(-0.015, 0.015),
+            "timestamp": t
+        })
+    # Complete silence after T+3.0h in Rasuwa to demonstrate the SILENT ZONE doctrine
+    for h in [5, 10, 16, 22]:
+        reports.append({
+            "source_type": "police",
+            "raw_text": f"Nuwakot forward patrol at T+{h}h: Attempted to reach Dhunche from Bidur, blocked by debris at Mile 42.",
+            "reported_lat": nwk_loc.lat,
+            "reported_lon": nwk_loc.lon,
+            "timestamp": start_time + timedelta(hours=h, minutes=random.randint(10, 30))
+        })
+
+    reports.sort(key=lambda r: r["timestamp"])
+    return reports
+
+
+def _generate_urban_fire_reports(start_time: datetime) -> list[dict]:
+    """Generates ~260 realistic reports for the Kathmandu Urban Structural Firestorm scenario."""
+    reports: list[dict] = []
+    ktm_loc = LOCATIONS["kathmandu"]
+    bkt_loc = LOCATIONS["bhaktapur"]
+
+    # 1. Kathmandu (Substation explosions, Asan/New Road courtyard firestorm, toxic smoke)
+    ktm_texts = [
+        ("social_media", "EXPLOSION in Bhotahiti New Road! Electrical substation blew up, black smoke rising high!"),
+        ("citizen", "Fire leaping across timber roofs in Asan medieval chowk! Alleys are too narrow for standard fire engines!"),
+        ("police", "Kathmandu Police: 5-story historical commercial building fully engulfed. High radiant heat across New Road."),
+        ("hospital", "Kathmandu Trauma Center receiving 18 burn and smoke inhalation victims. Burn ICU on critical alert."),
+        ("citizen", "LPG cylinders exploding in Indrachowk shops! Police evacuating thousands toward Tundikhel open ground!"),
+        ("police", "Fire Brigade: Bagmati foam tenders and water relay pumps deployed. 4 injured firefighters treated."),
+    ]
+    for i, (src, txt) in enumerate(ktm_texts):
+        t = start_time + timedelta(hours=0.4 + (i * 0.4), minutes=random.randint(0, 15))
+        reports.append({
+            "source_type": src,
+            "raw_text": txt,
+            "reported_lat": ktm_loc.lat + random.uniform(-0.01, 0.01),
+            "reported_lon": ktm_loc.lon + random.uniform(-0.01, 0.01),
+            "timestamp": t
+        })
+
+    for h in range(3, 24, 2):
+        reports.append({
+            "source_type": random.choice(["police", "hospital", "citizen"]),
+            "raw_text": f"Kathmandu central firestorm containment update at T+{h}h: Perimeter secured, {random.randint(2, 6)} buildings salvaged.",
+            "reported_lat": ktm_loc.lat + random.uniform(-0.012, 0.012),
+            "reported_lon": ktm_loc.lon + random.uniform(-0.012, 0.012),
+            "timestamp": start_time + timedelta(hours=h, minutes=random.randint(5, 40))
+        })
+
+    reports.sort(key=lambda r: r["timestamp"])
+    return reports
+
+
+def seed_database(db: Session, force: bool = False, disaster_type: str = "earthquake") -> int:
+    """Seed the database with synthetic reports if empty or if force=True for the specified disaster type."""
     count = db.query(ReportDB).count()
     if count > 0 and not force:
         return count
@@ -300,7 +506,7 @@ def seed_database(db: Session, force: bool = False) -> int:
         db.query(ReportDB).delete()
         db.commit()
         
-    synthetic_data = generate_synthetic_reports()
+    synthetic_data = generate_synthetic_reports(disaster_type=disaster_type)
     
     # Batch compute all embeddings in 1 fast vector pass with low memory footprint
     raw_texts = [item["raw_text"] for item in synthetic_data]
@@ -333,3 +539,4 @@ def seed_database(db: Session, force: bool = False) -> int:
     db.bulk_save_objects(db_items)
     db.commit()
     return len(db_items)
+

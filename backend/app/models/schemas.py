@@ -193,6 +193,10 @@ class SimulationStateResponse(BaseModel):
     elapsed_hours: float
     total_reports_seeded: int
     reports_visible_at_current_time: int
+    disaster_type: str = "earthquake"
+    active_preset_id: str = "gorkha_earthquake"
+    disaster_display_name: str = "Seismic Rupture & Ground Motion"
+    disaster_headline: str = "M7.8 Central Himalayan Thrust Rupture"
 
 
 class SimulationAdvanceRequest(BaseModel):

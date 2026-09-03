@@ -129,3 +129,80 @@ def create_mission_dispatch(payload: MissionDispatchCreate, db: Session = Depend
         assigned_unit_id=payload.assigned_unit_id,
         justification=payload.justification,
     )
+
+
+from app.pipeline.supply_engine import (
+    compute_all_emergency_supplies,
+    compute_emergency_supplies_for_sector,
+)
+from app.pipeline.multi_source_fusion import (
+    get_all_active_conflicts,
+    detect_and_fuse_multi_source_data,
+)
+from app.simulation.clock import get_active_disaster_type
+
+
+@router.get("/supplies", summary="Get nationwide emergency supply allocation recommendations")
+def get_supply_allocations(
+    disaster_type: Optional[str] = Query(default=None, description="Disaster category"),
+    sim_time: Optional[datetime] = Query(default=None, description="Optional simulated time override"),
+    db: Session = Depends(get_db),
+):
+    """
+    Returns prioritized emergency supply allocation (drinking water, food rations, trauma kits,
+    satellite terminals, all-weather tents) with elevated priority for silent zones.
+    """
+    effective_time = sim_time or get_simulated_time(db)
+    active_type = get_active_disaster_type()
+    chosen_type = disaster_type if disaster_type else active_type
+
+    overview = compute_all_emergency_supplies(
+        disaster_type=chosen_type,
+        simulated_now=effective_time,
+    )
+    return overview.model_dump()
+
+
+@router.get("/supplies/{sector_id}", summary="Get emergency supply allocation for specific sector")
+def get_single_sector_supply_allocation(
+    sector_id: str,
+    disaster_type: Optional[str] = Query(default=None, description="Disaster category"),
+    sim_time: Optional[datetime] = Query(default=None, description="Optional simulated time override"),
+    db: Session = Depends(get_db),
+):
+    """Returns sector-specific emergency supply demands, delivery mode, and staging hub."""
+    effective_time = sim_time or get_simulated_time(db)
+    active_type = get_active_disaster_type()
+    chosen_type = disaster_type if disaster_type else active_type
+
+    allocation = compute_emergency_supplies_for_sector(
+        sector_id=sector_id,
+        disaster_type=chosen_type,
+        simulated_now=effective_time,
+    )
+    return allocation.model_dump()
+
+
+@router.get("/conflicts", summary="Get multi-source intelligence conflicts and discrepancy resolution alerts")
+def get_intelligence_conflicts(
+    sector_id: Optional[str] = Query(default=None, description="Optional sector filter"),
+    sim_time: Optional[datetime] = Query(default=None, description="Optional simulated time override"),
+    db: Session = Depends(get_db),
+):
+    """
+    Returns identified contradictions between citizen reports, social media, hospital records,
+    police radio, and satellite observations with recommended supervisor resolution strategies.
+    """
+    effective_time = sim_time or get_simulated_time(db)
+    summaries = detect_and_fuse_multi_source_data(sector_id=sector_id, simulated_now=effective_time)
+    all_conflicts = get_all_active_conflicts()
+    if sector_id:
+        all_conflicts = [c for c in all_conflicts if c.sector_id.lower() == sector_id.lower()]
+
+    return {
+        "simulated_time": effective_time.isoformat(),
+        "total_active_conflicts": len(all_conflicts),
+        "conflicts": [c.model_dump() for c in all_conflicts],
+        "sector_summaries": [s.model_dump() for s in summaries],
+    }
+

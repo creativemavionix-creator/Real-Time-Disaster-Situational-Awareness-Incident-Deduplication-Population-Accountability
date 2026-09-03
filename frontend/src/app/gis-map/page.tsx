@@ -13,12 +13,20 @@ import {
   AllPopulationExposureResponse,
   SectorPalikaBreakdown,
   advanceSimulation,
+  resetSimulation,
   H3HexagonItem,
+  DisasterCategory,
+  ScenarioPreset,
+  fetchScenarioPresets,
+  loadScenarioPreset,
+  switchDisasterType,
+  fetchPropagationPath,
 } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import InteractiveVectorMap from "@/components/InteractiveVectorMap";
 import MapLayerControl, { MapLayerVisibility } from "@/components/MapLayerControl";
 import SectorOperationsDrawer from "@/components/SectorOperationsDrawer";
+import DisasterScenarioControlBar from "@/components/DisasterScenarioControlBar";
 import { FloatingCommandBar } from "@/components/FloatingCommandBar";
 import { SectorDetailPanel } from "@/components/SectorDetailPanel";
 import { useViewMode } from "@/context/ViewModeContext";
@@ -28,6 +36,12 @@ export default function GisMapPage() {
   const [gisSectors, setGisSectors] = useState<GisSectorTelemetry[]>([]);
   const [simulationState, setSimulationState] = useState<SimulationState | null>(null);
   const [exposureData, setExposureData] = useState<AllPopulationExposureResponse | null>(null);
+
+  // Multi-Disaster & Preset State
+  const [activeDisasterType, setActiveDisasterType] = useState<DisasterCategory>("earthquake");
+  const [activePresetId, setActivePresetId] = useState<string>("gorkha_earthquake");
+  const [presets, setPresets] = useState<ScenarioPreset[]>([]);
+  const [activeWavefrontName, setActiveWavefrontName] = useState<string>("");
 
   const [selectedSectorId, setSelectedSectorId] = useState<string>("gorkha");
   const [selectedHexagon, setSelectedHexagon] = useState<H3HexagonItem | null>(null);
@@ -55,17 +69,28 @@ export default function GisMapPage() {
 
   const loadData = async () => {
     try {
-      const [locsRes, sim, gis, exp] = await Promise.all([
+      const [locsRes, sim, gis, exp, presetsRes, propRes] = await Promise.all([
         fetchAllLocationsStatus(),
         fetchSimulationState(),
         fetchGisTelemetry(),
         fetchPopulationExposure(),
+        fetchScenarioPresets().catch(() => null),
+        fetchPropagationPath(activeDisasterType).catch(() => null),
       ]);
 
       setLocations(locsRes.locations);
       setSimulationState(sim);
       setGisSectors(gis.sectors);
       setExposureData(exp);
+
+      if (presetsRes) {
+        setPresets(presetsRes.presets);
+        if (presetsRes.active_preset_id) setActivePresetId(presetsRes.active_preset_id);
+        if (presetsRes.active_disaster_type) setActiveDisasterType(presetsRes.active_disaster_type);
+      }
+      if (propRes?.active_wavefront) {
+        setActiveWavefrontName(propRes.active_wavefront.name);
+      }
 
       setInspectedLocation((prev) => {
         if (!prev) return null;
@@ -81,12 +106,57 @@ export default function GisMapPage() {
     loadData();
     const interval = setInterval(loadData, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeDisasterType]);
 
   const handleAdvanceHours = async (hours: number) => {
     setIsLoading(true);
     try {
       await advanceSimulation(hours);
+      await loadData();
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSelectDisaster = async (dType: DisasterCategory) => {
+    setIsLoading(true);
+    try {
+      setActiveDisasterType(dType);
+      await switchDisasterType(dType, true);
+      await loadData();
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSelectPreset = async (presetId: string) => {
+    setIsLoading(true);
+    try {
+      setActivePresetId(presetId);
+      const matched = presets.find((p) => p.preset_id === presetId);
+      if (matched) {
+        setActiveDisasterType(matched.disaster_type);
+        if (matched.initial_affected_sectors.length > 0) {
+          setSelectedSectorId(matched.initial_affected_sectors[0]);
+        }
+      }
+      await loadScenarioPreset(presetId, true);
+      await loadData();
+    } catch (err: any) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetSimulation = async () => {
+    setIsLoading(true);
+    try {
+      await resetSimulation();
       await loadData();
     } catch (err: any) {
       console.error(err);
@@ -137,19 +207,35 @@ export default function GisMapPage() {
 
   return (
     <div className="flex-1 w-full h-full relative overflow-hidden bg-[#090B0E] flex flex-col">
-      {/* 1. Full-Screen Interactive Operations Map */}
-      <InteractiveVectorMap
-        sectors={gisSectors}
-        selectedSectorId={selectedSectorId}
-        onSelectSector={handleSelectSector}
-        onSelectHexagon={(hex) => {
-          setSelectedHexagon(hex);
-          setSelectedSectorId(hex.sector_id);
-          setIsDrawerOpen(true);
-        }}
-        layerVisibility={mapLayers}
-        simTime={simulationState?.current_simulated_time}
+      {/* 0. Top Interactive Disaster Scenario & Timeline Control Bar */}
+      <DisasterScenarioControlBar
+        simulationState={simulationState}
+        activeDisasterType={activeDisasterType}
+        presets={presets}
+        activePresetId={activePresetId}
+        activeWavefrontName={activeWavefrontName}
+        onSelectDisaster={handleSelectDisaster}
+        onSelectPreset={handleSelectPreset}
+        onAdvanceHours={handleAdvanceHours}
+        onResetSimulation={handleResetSimulation}
+        isLoading={isLoading}
       />
+
+      <div className="flex-1 w-full h-full relative overflow-hidden">
+        {/* 1. Full-Screen Interactive Operations Map */}
+        <InteractiveVectorMap
+          sectors={gisSectors}
+          selectedSectorId={selectedSectorId}
+          onSelectSector={handleSelectSector}
+          onSelectHexagon={(hex) => {
+            setSelectedHexagon(hex);
+            setSelectedSectorId(hex.sector_id);
+            setIsDrawerOpen(true);
+          }}
+          layerVisibility={mapLayers}
+          disasterType={activeDisasterType}
+          simTime={simulationState?.current_simulated_time}
+        />
 
       {/* 2. Floating Layer Controls (Top Left) */}
       <div className="absolute top-6 left-6 z-40">
@@ -289,6 +375,7 @@ export default function GisMapPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

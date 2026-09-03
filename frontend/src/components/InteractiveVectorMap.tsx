@@ -22,6 +22,7 @@ interface InteractiveVectorMapProps {
   onSelectHexagon?: (hex: H3HexagonItem) => void;
   layerVisibility?: MapLayerVisibility;
   activeLayer?: "isolation" | "severity" | "epicenter";
+  disasterType?: string;
   simTime?: string;
   className?: string;
 }
@@ -111,6 +112,7 @@ export default function InteractiveVectorMap({
   onSelectSector,
   onSelectHexagon,
   layerVisibility = DEFAULT_LAYER_VISIBILITY,
+  disasterType = "earthquake",
   simTime,
   className = "",
 }: InteractiveVectorMapProps) {
@@ -148,20 +150,22 @@ export default function InteractiveVectorMap({
       .catch((err) => console.error("Failed to load satellite points:", err));
   }, []);
 
-  // Fetch dynamic H3 Grid, Hazard Overlays & Propagation Path on load and when simTime changes
+  // Fetch dynamic H3 Grid, Hazard Overlays & Propagation Path on load and when simTime or disasterType changes
   useEffect(() => {
+    const currentDisaster = disasterType || "earthquake";
+
     fetchH3GridTelemetry(simTime)
       .then((res) => setH3Hexagons(res.hexagons))
       .catch((err) => console.error("Failed to load H3 Grid:", err));
 
-    fetchHazardOverlays("earthquake", simTime)
+    fetchHazardOverlays(currentDisaster, simTime)
       .then((res) => setHazardOverlays(res.overlays))
       .catch((err) => console.error("Failed to load hazard overlays:", err));
 
-    fetchPropagationPath("earthquake", simTime)
+    fetchPropagationPath(currentDisaster, simTime)
       .then((res) => setPropagationData(res))
       .catch((err) => console.error("Failed to load propagation path:", err));
-  }, [simTime]);
+  }, [simTime, disasterType]);
 
   const getSectorStatusColor = useCallback((sector?: GisSectorTelemetry) => {
     if (!sector) return "#E11D48";
@@ -437,26 +441,33 @@ export default function InteractiveVectorMap({
       }).addTo(group);
     }
 
-    // B. Draw Origin Marker (Barpak Epicenter)
-    const origin = propagationData.origin;
+    // B. Draw Origin Marker (Dynamic per disaster)
+    const origin = propagationData.origin as any;
+    const originLabel = origin.name || "DISASTER ORIGIN";
+    const metricText = origin.initial_metric_label
+      ? `${origin.initial_metric_label}: ${origin.initial_metric_value}`
+      : "ORIGIN [T+0h]";
+
     const originIcon = L.divIcon({
       className: "propagation-origin-marker",
       html: `
         <div style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
-          <div style="background: rgba(0,0,0,0.9); border: 1.5px solid #EF4444; color: #EF4444; font-family: monospace; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 3px; white-space: nowrap; box-shadow: 0 0 12px rgba(239,68,68,0.6);">
-            ORIGIN: M7.8 RUPTURE [T+0h]
+          <div style="background: rgba(0,0,0,0.92); border: 1.5px solid #EF4444; color: #EF4444; font-family: monospace; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 3px; white-space: nowrap; box-shadow: 0 0 12px rgba(239,68,68,0.6);">
+            ORIGIN: ${originLabel}
           </div>
-          <div style="margin-top: 2px; width: 18px; height: 18px; background: rgba(239,68,68,0.4); border: 2px solid #EF4444; display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 900; font-size: 11px; box-shadow: 0 0 16px #EF4444; border-radius: 2px;">
-            ☒
+          <div style="margin-top: 1px; background: rgba(12,14,18,0.9); border: 1px solid #F59E0B; color: #FBBF24; font-family: monospace; font-size: 8px; padding: 1px 4px; border-radius: 2px; white-space: nowrap;">
+            ${metricText}
+          </div>
+          <div style="margin-top: 2px; width: 18px; height: 18px; background: rgba(239,68,68,0.4); border: 2px solid #EF4444; display: flex; align-items: center; justify-content: center; color: #FFF; font-weight: 900; font-size: 11px; box-shadow: 0 0 16px #EF4444; border-radius: 3px;">
+            ⨁
           </div>
         </div>
       `,
-      iconSize: [140, 40],
-      iconAnchor: [70, 36],
+      iconSize: [200, 52],
+      iconAnchor: [100, 48],
     });
 
     const originMarker = L.marker([origin.lat, origin.lon], { icon: originIcon }).addTo(group);
-    originMarker.on("click", () => onSelectSector("gorkha"));
 
     // C. Draw Propagation Waypoint Nodes
     propagationData.nodes.forEach((node) => {

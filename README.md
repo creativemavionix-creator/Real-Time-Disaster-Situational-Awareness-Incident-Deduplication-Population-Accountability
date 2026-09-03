@@ -3,7 +3,7 @@
 [![Docker Compose](https://img.shields.io/badge/docker--compose-v2.20+-blue?logo=docker&logoColor=white)](./docker-compose.yml)
 [![FastAPI Backend](https://img.shields.io/badge/FastAPI-0.115+-009688?logo=fastapi&logoColor=white)](./backend)
 [![Next.js Frontend](https://img.shields.io/badge/Next.js-16.3%20(Turbopack)-black?logo=next.js&logoColor=white)](./frontend)
-[![Pytest](https://img.shields.io/badge/pytest-88%20passed%20(100%25)-emerald?logo=pytest&logoColor=white)](./backend/tests)
+[![Pytest](https://img.shields.io/badge/pytest-102%20passed%20(100%25)-emerald?logo=pytest&logoColor=white)](./backend/tests)
 [![Python](https://img.shields.io/badge/python-3.11.9-3776AB?logo=python&logoColor=white)](./backend)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0-3178C6?logo=typescript&logoColor=white)](./frontend)
 [![Uber H3](https://img.shields.io/badge/Uber%20H3-Res%208%20Hexagons-09090B?logo=uber&logoColor=white)](https://h3geo.org)
@@ -22,7 +22,7 @@ PRATYAKSH-Ω is an enterprise-grade disaster reality reconstruction, negative ev
 4. [Comprehensive Dataset Specification & Ingestion Pipeline (RESQ-SIGHT)](#4-comprehensive-dataset-specification--ingestion-pipeline-resq-sight)
 5. [Theoretical Mathematics & Scientific Reasoning Engine](#5-theoretical-mathematics--scientific-reasoning-engine)
 6. [The 17 Core Capabilities & Operational Modules](#6-the-17-core-capabilities--operational-modules)
-7. [The 5 Canonical Hypotheses & Counterfactual Engine](#7-the-5-canonical-hypotheses--counterfactual-engine)
+7. [The 5 Canonical Hypotheses, Multi-Disaster Engine & Decision Support](#7-the-5-canonical-hypotheses-multi-disaster-engine--decision-support)
 8. [Observational Satellite Validation & Ground-Truth Calibration](#8-observational-satellite-validation--ground-truth-calibration)
 9. [Human Governance, Safety Confirmation Guardrails & Audit Ledger](#9-human-governance-safety-confirmation-guardrails--audit-ledger)
 10. [Frontend User Experience & The 10 Core Application Screens](#10-frontend-user-experience--the-10-core-application-screens)
@@ -313,27 +313,92 @@ $$\text{MatchScore} = 0.55 \cdot \text{JaroWinkler}(\text{Name}_1, \text{Name}_2
 
 ---
 
-## 7. The 5 Canonical Hypotheses & Counterfactual Engine
+## 7. The 5 Canonical Hypotheses, Multi-Disaster Engine & Decision Support
 
-PRATYAKSH-Ω models 5 mutually exclusive and collectively exhaustive physical hypotheses for every sector:
+### 7.1 The 5 Canonical Silent Zone Hypotheses
+PRATYAKSH-Ω adheres to the core doctrine: **"Silence is Not Safety"**. Absence of emergency reports does not indicate safety; instead, it triggers Bayesian inference over 5 canonical physical hypotheses:
 
 ```text
                                THE 5 CANONICAL HYPOTHESES
-┌────┬──────────────────────────────────────────────┬───────────────────────────────┬────────────────────────────────┐
-│ Code│ Hypothesis Name                              │ Core Physical State           │ Key Diagnostic Indicator       │
-├────┼──────────────────────────────────────────────┼───────────────────────────────┼────────────────────────────────┤
-│ H1 │ Area Safe / Normal Activity                  │ Structures intact, power on   │ Low call rate, normal baseline │
-│ H2 │ Telecommunications & Power Grid Failure      │ Comms severed, physical intact│ Sudden total signal drop       │
-│ H3 │ Critical Access Isolation / Road Severance   │ Bridges down, landslides cut  │ Upstream calls, zero road flow │
-│ H4 │ Population Pre-Emptively Evacuated           │ People relocated to shelters  │ Low local calls, shelter surge │
-│ H5 │ Severe Physical Disaster & Structural Collapse│ Massive structural collapse   │ Initial screams, then silence  │
-└────┴──────────────────────────────────────────────┴───────────────────────────────┴────────────────────────────────┘
+┌────┬─────────────────────────────┬────────────────────────────────┬────────────────────────────────┐
+│Code│ Canonical Hypothesis Name   │ Core Physical Reality          │ Key Diagnostic Telemetry Clues │
+├────┼─────────────────────────────┼────────────────────────────────┼────────────────────────────────┤
+│ H1 │ Communication Failure       │ Cellular BTS towers down,      │ BTS down, power trips, optical │
+│    │                             │ optical backhaul cut, grid trip│ backhaul severed; no collapse  │
+├────┼─────────────────────────────┼────────────────────────────────┼────────────────────────────────┤
+│ H2 │ Infrastructure Failure      │ Roads blocked by landslides,   │ Bridge deck collapse, highway  │
+│    │                             │ bridges sheared, pylons down   │ debris chokes, high isolation  │
+├────┼─────────────────────────────┼────────────────────────────────┼────────────────────────────────┤
+│ H3 │ Population Movement         │ Community evacuated or         │ Low local calls, shelter surge,│
+│    │                             │ relocated to open ground       │ open-ground crowd clusters     │
+├────┼─────────────────────────────┼────────────────────────────────┼────────────────────────────────┤
+│ H4 │ Data and Sensor Failure     │ Field IoT sensors/loggers down;│ Local power normal, telemetry  │
+│    │                             │ municipal servers disconnected │ packet loss, manual calls live │
+├────┼─────────────────────────────┼────────────────────────────────┼────────────────────────────────┤
+│ H5 │ Severe Local Impact         │ Catastrophic building collapse,│ Sudden initial screams/calls   │
+│    │                             │ mass trapped casualties        │ followed by total silence; SAR │
+└────┴─────────────────────────────┴────────────────────────────────┴────────────────────────────────┘
 ```
 
-### Counterfactual Assertion Engine
-For each hypothesis $H_i$, the system generates observable physical assertions and tests them against the live multi-modal evidence store:
-- *If $H_2$ (Comms Down)* $\longrightarrow$ Adjacent cell tower pings should also drop to zero; satellite optical passes should reveal standing building roofs.
-- *If $H_3$ (Access Isolated)* $\longrightarrow$ High-altitude UAV imagery should show landslide debris covering arterial roads (e.g., BP Highway, Pasang Lhamu Highway).
+### 7.2 Five Selectable Disaster Categories & Physics Profiles
+PRATYAKSH-Ω supports five distinct disaster categories, each governed by specialized spatial physics, lifeline failure modes, and recommended tactical units:
+
+1. **Earthquake (Seismic Rupture)**:
+   - *Core Physics*: Peak Ground Acceleration (PGA > 0.45g), shallow crustal depth (10–15 km), MMI VIII+ isoseismal contours.
+   - *Lifeline Impact*: Unreinforced masonry collapse, cellular tower shelter destruction, bridge shearing.
+   - *Primary Assets*: Heavy Urban Search and Rescue (USAR), hydraulic extrication shears, acoustic victim locators.
+2. **Flash Flood (Glacial Lake & River Inundation)**:
+   - *Core Physics*: Peak hydraulic discharge (8,200 m³/s), torrential orographic downpour (>120 mm/hr), riverbed velocity > 6.5 m/s.
+   - *Lifeline Impact*: Riverbank scouring, bridge pier scouring, fiber optic bridge-hung conduit severance.
+   - *Primary Assets*: Swiftwater rescue inflatable boats, high-capacity dewatering pumps, rope rescue systems.
+3. **Cyclone & Gale Storm**:
+   - *Core Physics*: Sustained gale winds (150 km/h, gusts to 190 km/h), central pressure 972 hPa.
+   - *Lifeline Impact*: Corrugated tin roof blow-offs, high-voltage transmission pylon collapse, microwave tower dish misalignment.
+   - *Primary Assets*: Heavy tree removal chainsaws, portable emergency diesel gensets, emergency canvas tarpaulins.
+4. **Mountain Landslide (Slope Debris Runout)**:
+   - *Core Physics*: Slump and debris flow volume (3.8M m³), slope gradient > 42°, velocity 45 km/h.
+   - *Lifeline Impact*: Highway corridor burial, river damming (outburst risk), buried mountain trails.
+   - *Primary Assets*: Heavy tracked excavators, armored front loaders, geological slope-stability radar.
+5. **Urban Firestorm (Dense Settlement Conflagration)**:
+   - *Core Physics*: Radiant heat flux (45 kW/m²), rapid flame spread through timber-joisted alleys, toxic smoke plume.
+   - *Lifeline Impact*: Alley impassability (width < 2m), transformer explosions, overhead cable bundles incinerated.
+   - *Primary Assets*: High-pressure foam tender apparatus, narrow-chassis attack fire engines, SCBA air bottle refilling units.
+
+### 7.3 Disaster Propagation Flow & Village Arrival Wavefront Tracking
+- **Topological Movement Vector**: Tracks the directed movement of hazard intensity across mountain ridges and valley basins.
+- **Node Arrival Schedule**: Predicts arrival timeline ($T + \Delta t$), intermediate choke impacts, and active wavefront location.
+- **Dynamic Multi-Tier Hazard Polygons**: Generates live isoseismal attenuation rings, flood inundation buffers, gale swaths, slope debris runout zones, and thermal firestorm perimeters.
+
+### 7.4 Four-Lifeline Telemetry Matrix (Historical Baseline vs Expected vs Observed)
+PRATYAKSH-Ω continuously cross-references 4 physical lifelines to compute the **Silent Zone Risk Score ($0.0–10.0$)**:
+- **📶 Mobile Connectivity**: Tracks cellular BTS tower uptime %, active cell sites vs baseline, and call attempt success.
+- **⚡ Electricity Grid**: Measures high-voltage substation active load (MW), feeder status, and transformer tripping.
+- **🌐 Internet Backbone**: Assesses ISP fiber backhaul throughput (Mbps), latency, and packet loss %.
+- **🛣️ Road Passability**: Evaluates arterial highway access passability %, bridge status, and critical choke closures.
+
+### 7.5 Multi-Source Intelligence Fusion & Emergency Supply Allocations
+- **8 Distinct Ingestion Feeds**: Citizen SMS, social media, police radio, hospital triage, UNOSAT SAR, drone recon, army helicopter passes, and municipal palika queries.
+- **Conflict Detection Engine**: Identifies contradictions between informal rumors and official first-responder records, recommending verified resolution strategies.
+- **Emergency Supply Allocation Quotas**: Computes sector-specific emergency demands for:
+  - Potable Drinking Water ($L/\text{day}$)
+  - High-Energy MRE Rations (packs)
+  - Emergency Trauma Medical Kits (sets)
+  - Satellite Handheld & LoRa Emergency Terminals (units)
+  - All-Weather Emergency Shelters & Blankets (units)
+  - Delivery logistics matching: `AIR_DROP_HELICOPTER`, `4WD_MOUNTAIN_CONVOY`, `GROUND_HEAVY_CONVOY`, or `UAV_DRONE_PAYLOAD`.
+
+### 7.6 Five Predefined Operational Scenario Presets
+PRATYAKSH-Ω ships with 5 pre-calibrated scenario presets accessible with 1-click in the UI:
+1. **Gorkha Earthquake (M7.8 Rupture)**: Barpak epicenter, severe mountain spur destruction, central valley damage.
+2. **Melamchi Glacial & River Flash Flood**: Indrawati / Melamchi riverbed scouring, bridge wipeout, and fiber severance.
+3. **Rasuwa Dhunche Landslide & Pass Blockage**: Pasang Lhamu Highway debris burial, isolating northern border districts.
+4. **Kathmandu Core Urban Firestorm**: Asan / Indra Chowk dense timber alley conflagration and power grid failure.
+5. **Terai Southern Foothill Cyclone & Gale**: Kamalamai / Sindhuli transmission pylon collapse and roof blow-offs.
+
+### 7.7 Counterfactual Assertion Testing
+For each canonical hypothesis $H_i$, the system generates observable physical assertions and tests them against the live multi-modal evidence store:
+- *If $H_1$ (Comms Down)* $\longrightarrow$ Adjacent cell tower pings should drop to zero; satellite optical passes should reveal standing building roofs.
+- *If $H_2$ (Infrastructure Failure)* $\longrightarrow$ High-altitude UAV imagery should show landslide debris covering arterial roads or bridge deck failures.
 - *If $H_5$ (Severe Disaster)* $\longrightarrow$ Sentinel-1 SAR interferometry must exhibit high phase decorrelation; hospital triage centers should report surging mass casualty intake.
 
 ---
@@ -432,7 +497,11 @@ Every data item and metric emitted by the platform carries an immutable provenan
 #### B. Analytical Tactical Command Center (`/gis-map`, `/hypotheses`, `/blackout-intel`, etc.)
 - **Visual Tone**: Obsidian graphite base (`#090B0E`), subtle borders (`rgba(255, 255, 255, 0.08)`), emergency crimson accents (`#E11D48`), tactical emerald (`#059669`), and telemetry amber (`#D97706`).
 - **Interactive Spatial Visualizers**:
-  - **Live GIS Map (`/gis-map`)**: Real-time sector status markers, silence duration clocks, and dynamic H3 hexagonal density layers.
+  - **Live GIS Map (`/gis-map`)**: Unified interactive vector operations console featuring:
+    - **`DisasterScenarioControlBar`**: 1-click switching across 5 disaster types (Earthquake, Flash Flood, Cyclone, Landslide, Urban Fire) and 5 scenario presets with time-stepped timeline scrubbing and active wavefront telemetry.
+    - **Dynamic Hazard Contours & Propagation Vectors**: Directional hazard flow lines, intermediate village arrival nodes, and active wavefront pulse.
+    - **`TelemetryComparisonMatrix`**: Live 4-lifeline comparison (Mobile, Grid, Internet, Road) comparing Historical Baseline vs Expected vs Observed.
+    - **`SupervisorDecisionCards`**: Tactical USAR dispatch queue, emergency supply allocation quotas (water, food, trauma kits, comms, tents), and multi-source conflict resolution alerts.
   - **Reality Reconstruction Console (`/hypotheses`)**: Interactive Bayesian posterior bars for $H_1..H_5$, Shannon entropy meters, and 1-click **Execute & Feed Reality** closed-loop feedback actions.
   - **Blackout Intelligence (`/blackout-intel`)**: Silence window timelines, unexpected negative gap $Z$-scores, and lost emergency call estimates.
   - **Multi-Agency Deduplication (`/deduplication`)**: Real-time 5:1 semantic cluster cards with representative text, casualty ranges, and confidence breakdowns.
@@ -527,6 +596,16 @@ backend/
 | `GET` | `/population/reconciliation-ledger` | Hybrid Jaro-Winkler missing persons matching ledger |
 | `GET` | `/dispatch/recommendations` | Linear programming tactical SAR resource dispatch |
 | `GET` | `/sitrep/latest` | Automated Situation Report generator with executive briefing |
+| `GET` | `/simulation/presets` | List all 5 predefined operational scenario presets |
+| `POST` | `/simulation/preset/{id}` | Load specific scenario preset with location centering & reseeding |
+| `POST` | `/simulation/disaster_type` | Switch active disaster type across the 5 categories |
+| `GET` | `/gis/hazard-overlays` | Dynamic multi-tier physical hazard extent geometry |
+| `GET` | `/gis/propagation-path` | Directed disaster propagation flow path and village arrival timeline |
+| `GET` | `/gis/telemetry-matrix` | 4-lifeline Expected vs Observed comparison matrix for all sectors |
+| `GET` | `/gis/telemetry-matrix/{id}` | Single sector 4-lifeline Expected vs Observed comparison |
+| `GET` | `/dispatch/supplies` | Nationwide emergency supply allocation recommendations |
+| `GET` | `/dispatch/supplies/{id}` | Sector-specific emergency supply demands, delivery mode & ETA |
+| `GET` | `/dispatch/conflicts` | Multi-source intelligence conflicts & supervisor resolution alerts |
 
 ---
 

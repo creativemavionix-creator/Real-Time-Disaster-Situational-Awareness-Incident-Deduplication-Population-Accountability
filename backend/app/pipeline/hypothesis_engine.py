@@ -1,12 +1,13 @@
 """
 Competing Hypotheses & Bayesian Belief Updating Engine for PRATYAKSH-Ω.
-Generates and maintains competing explanations for unexpected reality gaps:
-  H1 — Area is safe / normal variation
-  H2 — Communication / power grid failure
-  H3 — Critical infrastructure / access isolation
-  H4 — Population evacuated / displaced
-  H5 — Severe physical disaster & structural collapse
-Provides explainable Bayesian probability update traces and Shannon Entropy calculations.
+Implements Requirement 5: Five Silent Zone Hypotheses and AI Reasoning.
+Evaluates five competing explanations for observed communication silence:
+  H1 — Communication Failure (mobile networks, towers, backhaul down)
+  H2 — Infrastructure Failure (physical roads, bridges, transport routes severed)
+  H3 — Population Movement (evacuated, migrated, or moved away)
+  H4 — Data and Sensor Failure (sensors, gateways failed; physical area may be intact)
+  H5 — Severe Local Impact (structural destruction, high exposure, heavy casualties)
+Provides Bayesian posterior distributions, Shannon Entropy, and explainable update traces.
 """
 
 import math
@@ -25,31 +26,37 @@ from app.pipeline.blackout_risk import compute_spatial_physics
 
 CANONICAL_HYPOTHESIS_METADATA = {
     "H1": {
-        "title": "Area Safe / Normal Variation",
-        "description": "Sector experienced minimal shaking or damage. Low reporting reflects standard baseline variation.",
+        "title": "Communication Failure",
+        "description": "Failure of mobile communication networks, cellular base station towers, power backhauls, or related telecommunications infrastructure.",
+        "recommended_verification": "Deploy Mobile Satellite Cell-on-Wheels (COW) or LoRa tactical gateway.",
     },
     "H2": {
-        "title": "Telecommunications & Power Grid Failure",
-        "description": "Cellular BTS towers, power transmission, or fiber backhauls are severed, causing reporting blackout.",
+        "title": "Infrastructure Failure",
+        "description": "Failure of physical infrastructure such as arterial highways, bridges, transport corridors, and lifelines required for emergency access.",
+        "recommended_verification": "Satellite SAR interferometry & high-resolution optical bridge passability assessment.",
     },
     "H3": {
-        "title": "Critical Infrastructure & Access Isolation",
-        "description": "Key bridges, highways, or mountain passes are severed, physically trapping or isolating the community.",
+        "title": "Population Movement",
+        "description": "Population has evacuated, migrated, or moved away from the affected zone to open fields, elevated ridges, or temporary shelters.",
+        "recommended_verification": "Thermal UAV reconnaissance over municipal open grounds and evacuation staging points.",
     },
     "H4": {
-        "title": "Population Pre-Emptively Evacuated",
-        "description": "Residents self-evacuated to open fields, temporary shelters, or lower elevations before distress calls.",
+        "title": "Data and Sensor Failure",
+        "description": "Failure of environmental sensors, IoT telemetry devices, communication gateways, or data collection infrastructure while physical region may remain operational.",
+        "recommended_verification": "Direct satellite VHF radio ping to local Palika Ward Disaster Management Committee.",
     },
     "H5": {
-        "title": "Severe Physical Disaster & High Casualty Toll",
-        "description": "Widespread structural collapse, trapped individuals, and severe damage requiring immediate heavy USAR.",
+        "title": "Severe Local Impact",
+        "description": "Severe disaster impact involving widespread structural destruction, high population exposure, major infrastructure damage, and potentially large casualties.",
+        "recommended_verification": "Urgent forward tactical scout team insertion and heavy USAR helicopter air reconnaissance.",
     },
 }
 
 
 def compute_priors_for_sector(sector_id: str) -> dict[str, float]:
     """
-    Computes prior probabilities for H1..H5 based on seismic physics, structural fragility, and distance to Barpak epicenter.
+    Computes prior probabilities for H1..H5 based on physical hazard proximity,
+    structural fragility, and terrain isolation indices.
     """
     loc = get_location(sector_id)
     if not loc:
@@ -60,12 +67,13 @@ def compute_priors_for_sector(sector_id: str) -> dict[str, float]:
     fragility = physics.structural_fragility_index
     landslide = physics.landslide_susceptibility_index
 
-    # Weight initial priors from physical vulnerability
+    # Weight initial priors from physical vulnerability:
+    # High hazard -> high H5 (Severe Impact), H1 (Comms Fail), H2 (Infra Fail)
     w_h5 = 0.05 + (0.45 * epi_hazard) + (0.30 * fragility)
-    w_h2 = 0.10 + (0.35 * epi_hazard) + (0.20 * landslide)
-    w_h3 = 0.05 + (0.30 * landslide) + (0.30 * (1.0 if physics.critical_bridge_severed else 0.0))
-    w_h4 = 0.10 + (0.15 * epi_hazard)
-    w_h1 = max(0.02, 1.0 - (w_h5 + w_h2 + w_h3 + w_h4))
+    w_h1 = 0.10 + (0.35 * epi_hazard) + (0.20 * landslide)
+    w_h2 = 0.08 + (0.30 * landslide) + (0.35 * (1.0 if physics.critical_bridge_severed else 0.0))
+    w_h3 = 0.08 + (0.15 * epi_hazard)
+    w_h4 = max(0.04, 0.25 - (0.20 * epi_hazard))
 
     total = w_h1 + w_h2 + w_h3 + w_h4 + w_h5
     return {
@@ -122,68 +130,94 @@ def evaluate_sector_hypotheses(
         obs = ev.observation_type
         summary = ev.raw_payload or f"{ev.source_type}: {obs}"
 
-        # Likelihood updates based on multi-modal evidence patterns
-        if obs in ("signal_loss", "tower_down", "power_loss"):
-            # Strong evidence for H2 (Comms failure) & moderate for H5 (Disaster)
-            log_likelihoods["H2"] += 1.8 * rel
-            log_likelihoods["H5"] += 0.8 * rel
-            log_likelihoods["H1"] -= 2.2 * rel
-            traces["H2"].append(HypothesisTraceItem(
-                evidence_id=ev.evidence_id,
-                evidence_summary=summary,
-                delta_contribution=round(1.8 * rel, 3),
-                direction="SUPPORTS",
-                source_reliability=round(rel, 2),
-            ))
-            traces["H1"].append(HypothesisTraceItem(
-                evidence_id=ev.evidence_id,
-                evidence_summary=summary,
-                delta_contribution=round(-2.2 * rel, 3),
-                direction="CONTRADICTS",
-                source_reliability=round(rel, 2),
-            ))
-            supporting["H2"].append(ev.evidence_id)
-            contradicting["H1"].append(ev.evidence_id)
-
-        elif obs in ("structural_collapse", "casualty_count", "coherence_loss"):
-            # Strong evidence for H5 (Severe Disaster)
-            log_likelihoods["H5"] += 2.4 * rel
-            log_likelihoods["H1"] -= 3.0 * rel
-            traces["H5"].append(HypothesisTraceItem(
-                evidence_id=ev.evidence_id,
-                evidence_summary=summary,
-                delta_contribution=round(2.4 * rel, 3),
-                direction="SUPPORTS",
-                source_reliability=round(rel, 2),
-            ))
-            supporting["H5"].append(ev.evidence_id)
-            contradicting["H1"].append(ev.evidence_id)
-
-        elif obs in ("bridge_severance", "road_blockage", "landslide"):
-            # Strong evidence for H3 (Infrastructure isolation)
-            log_likelihoods["H3"] += 2.2 * rel
+        # Likelihood updates mapped directly to H1..H5:
+        if obs in ("signal_loss", "tower_down", "power_loss", "comms_blackout"):
+            # Strong evidence for H1 (Comms failure) & moderate for H5 (Severe impact)
+            log_likelihoods["H1"] += 2.2 * rel
             log_likelihoods["H5"] += 1.0 * rel
-            traces["H3"].append(HypothesisTraceItem(
+            log_likelihoods["H4"] -= 1.5 * rel
+            traces["H1"].append(HypothesisTraceItem(
                 evidence_id=ev.evidence_id,
                 evidence_summary=summary,
                 delta_contribution=round(2.2 * rel, 3),
                 direction="SUPPORTS",
                 source_reliability=round(rel, 2),
             ))
+            traces["H5"].append(HypothesisTraceItem(
+                evidence_id=ev.evidence_id,
+                evidence_summary=summary,
+                delta_contribution=round(1.0 * rel, 3),
+                direction="SUPPORTS",
+                source_reliability=round(rel, 2),
+            ))
+            supporting["H1"].append(ev.evidence_id)
+            supporting["H5"].append(ev.evidence_id)
+
+        elif obs in ("bridge_severance", "road_blockage", "landslide", "road_cut"):
+            # Strong evidence for H2 (Infrastructure failure) & moderate for H5
+            log_likelihoods["H2"] += 2.4 * rel
+            log_likelihoods["H5"] += 1.2 * rel
+            traces["H2"].append(HypothesisTraceItem(
+                evidence_id=ev.evidence_id,
+                evidence_summary=summary,
+                delta_contribution=round(2.4 * rel, 3),
+                direction="SUPPORTS",
+                source_reliability=round(rel, 2),
+            ))
+            supporting["H2"].append(ev.evidence_id)
+
+        elif obs in ("structural_collapse", "casualty_count", "coherence_loss", "heavy_damage"):
+            # Decisive evidence for H5 (Severe Local Impact)
+            log_likelihoods["H5"] += 2.8 * rel
+            log_likelihoods["H4"] -= 2.5 * rel
+            traces["H5"].append(HypothesisTraceItem(
+                evidence_id=ev.evidence_id,
+                evidence_summary=summary,
+                delta_contribution=round(2.8 * rel, 3),
+                direction="SUPPORTS",
+                source_reliability=round(rel, 2),
+            ))
+            supporting["H5"].append(ev.evidence_id)
+            contradicting["H4"].append(ev.evidence_id)
+
+        elif obs in ("evacuation", "population_displacement", "open_camp"):
+            # Strong evidence for H3 (Population Movement)
+            log_likelihoods["H3"] += 2.6 * rel
+            traces["H3"].append(HypothesisTraceItem(
+                evidence_id=ev.evidence_id,
+                evidence_summary=summary,
+                delta_contribution=round(2.6 * rel, 3),
+                direction="SUPPORTS",
+                source_reliability=round(rel, 2),
+            ))
             supporting["H3"].append(ev.evidence_id)
 
-        elif obs in ("normal_pings", "road_clear", "all_clear"):
-            # Supports H1 (Safe)
-            log_likelihoods["H1"] += 2.5 * rel
-            log_likelihoods["H5"] -= 2.5 * rel
-            traces["H1"].append(HypothesisTraceItem(
+        elif obs in ("sensor_glitch", "gateway_timeout", "telemetry_disconnect"):
+            # Supports H4 (Data and Sensor Failure)
+            log_likelihoods["H4"] += 2.5 * rel
+            log_likelihoods["H5"] -= 2.0 * rel
+            traces["H4"].append(HypothesisTraceItem(
                 evidence_id=ev.evidence_id,
                 evidence_summary=summary,
                 delta_contribution=round(2.5 * rel, 3),
                 direction="SUPPORTS",
                 source_reliability=round(rel, 2),
             ))
-            supporting["H1"].append(ev.evidence_id)
+            supporting["H4"].append(ev.evidence_id)
+            contradicting["H5"].append(ev.evidence_id)
+
+        elif obs in ("normal_pings", "road_clear", "all_clear"):
+            # Contradicts catastrophic H5 and H1
+            log_likelihoods["H4"] += 1.5 * rel
+            log_likelihoods["H5"] -= 2.5 * rel
+            log_likelihoods["H1"] -= 2.0 * rel
+            traces["H5"].append(HypothesisTraceItem(
+                evidence_id=ev.evidence_id,
+                evidence_summary=summary,
+                delta_contribution=round(-2.5 * rel, 3),
+                direction="CONTRADICTS",
+                source_reliability=round(rel, 2),
+            ))
             contradicting["H5"].append(ev.evidence_id)
 
     # Softmax normalization to convert log-likelihoods to valid posterior probabilities
@@ -198,14 +232,13 @@ def evaluate_sector_hypotheses(
         max_k = max(posteriors, key=posteriors.get)
         posteriors[max_k] = round(posteriors[max_k] + diff, 3)
 
-
     # Assemble hypothesis items
     hypotheses: list[CompetingHypothesisItem] = []
     for code in ["H1", "H2", "H3", "H4", "H5"]:
         post = posteriors[code]
         prior = priors[code]
 
-        if post >= 0.50:
+        if post >= 0.45:
             status = "leading"
         elif post >= 0.20:
             status = "plausible"
