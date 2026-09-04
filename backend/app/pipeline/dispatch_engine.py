@@ -130,7 +130,7 @@ def calculate_dispatch_recommendations(
         # Assigned active missions for this sector
         active_missions = db.query(DispatchMissionDB).filter(
             DispatchMissionDB.target_location_id == loc.id,
-            DispatchMissionDB.status.in_(["dispatched", "en_route", "on_scene"])
+            DispatchMissionDB.status.in_(["dispatched", "in_transit", "en_route", "on_scene", "active"])
         ).count()
 
         # Threat magnitude (0 to 100)
@@ -145,9 +145,9 @@ def calculate_dispatch_recommendations(
         # Isolation index
         isolation = blackout.spatial_physics.road_access_impedance
 
-        # Priority calculation
+        # Priority calculation: calibrated to avoid 100% saturation while reflecting threat and exposure
         raw_priority = (effective_threat * pop_weight * (1.0 + isolation)) / (active_missions + 1.0)
-        priority_score = round(min(100.0, raw_priority / 7.5), 1)
+        priority_score = round(min(98.5, max(5.0, raw_priority / 13.5)), 1)
 
         # Tailor recommended unit types
         recommended_types: list[str] = []

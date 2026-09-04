@@ -582,3 +582,23 @@ html, body {
 @media print {
   body { background: white; color: black; }
 }
+
+/* ============================================================
+   TACTICAL MAP / LEAFLET HARDWARE STABILITY
+   ============================================================ */
+
+.leaflet-container {
+  background: #090B0E !important;
+  outline: none;
+  font-family: inherit;
+}
+
+.leaflet-tile {
+  image-rendering: auto;
+}
+
+/* Prevent unwanted CSS transition lag on Leaflet marker transforms during zoom */
+.leaflet-marker-icon {
+  user-select: none;
+}
+

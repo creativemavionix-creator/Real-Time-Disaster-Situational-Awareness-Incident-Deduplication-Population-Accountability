@@ -154,9 +154,10 @@ def extract_casualties(raw_text: Optional[str]) -> Optional[int]:
         r"(?:(?:at least|approx|around|over|nearly|up to)\s+)?(\d{1,4})\s*(?:people|persons|citizens)?\s*(?:dead|killed|fatalities|deaths|deceased)",
         r"(?:(?:at least|approx|around|over|nearly|up to)\s+)?(\d{1,4})\s*(?:people|persons|citizens)?\s*(?:injured|wounded|hurt|hospitalized)",
         r"(?:(?:at least|approx|around|over|nearly|up to)\s+)?(\d{1,4})\s*(?:people|persons|citizens)?\s*(?:trapped|buried|under rubble)",
+        r"(?:(?:at least|approx|around|over|nearly|up to)\s+)?(\d{1,4})\s*(?:people|persons|citizens)?\s*(?:missing|unaccounted|isolated)",
         r"(?:(?:at least|approx|around|over|nearly|up to)\s+)?(\d{1,4})\s*(?:casualties|victims)",
-        r"(?:dead|fatalities|casualties|injured|deaths):\s*(\d{1,4})",
-        # Devanagari normalized digit patterns (e.g., "५ जना घाइते", "३ जनाको मृत्यु")
+        r"(?:dead|fatalities|casualties|injured|deaths|missing|unaccounted):\s*(\d{1,4})",
+        # Devanagari normalized digit patterns (e.g., "५ जना घाइते", "३ जनाको मृत्यु", "२ जना बेपत्ता")
         r"(\d{1,4})\s*(?:जना|व्यक्ति|मानिस)?\s*(?:मृत्यु|मरे|हताहत|मृतक|को\s+मृत्यु)",
         r"(\d{1,4})\s*(?:जना|व्यक्ति|मानिस)?\s*(?:घाइते|अस्पताल\s+भर्ना|चोटपटक)",
         r"(\d{1,4})\s*(?:जना|व्यक्ति|मानिस)?\s*(?:पुरिएका|सम्पर्कविहीन|बेपत्ता|च्यापिएका)",
@@ -170,9 +171,9 @@ def extract_casualties(raw_text: Optional[str]) -> Optional[int]:
             total_casualties += val
             found_any = True
             
-    # English word numbers e.g. "two dead", "five injured"
+    # English word numbers e.g. "two dead", "two missing", "five injured"
     if not found_any:
-        word_num_pattern = r"\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|fifty)\s+(?:people\s+)?(?:dead|killed|injured|fatalities|casualties|trapped)\b"
+        word_num_pattern = r"\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|fifteen|twenty|thirty|fifty)\s+(?:people\s+)?(?:dead|killed|injured|fatalities|casualties|trapped|missing|unaccounted)\b"
         matches = re.finditer(word_num_pattern, text_normalized)
         for m in matches:
             word = m.group(1)

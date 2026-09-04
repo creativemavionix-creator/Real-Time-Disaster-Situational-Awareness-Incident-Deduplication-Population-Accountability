@@ -48,18 +48,21 @@ export default function PopulationPage() {
   const [contactName, setContactName] = useState("");
   const [contactPhone, setContactPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [totalRegistryCount, setTotalRegistryCount] = useState<number>(0);
 
   const loadData = async () => {
     try {
-      const [expRes, missRes] = await Promise.all([
+      const [expRes, missRes, allMissRes] = await Promise.all([
         fetchPopulationExposure(),
         fetchMissingPersons(
           searchQuery || undefined,
           sectorFilter === "ALL" ? undefined : sectorFilter
         ),
+        fetchMissingPersons(undefined, undefined),
       ]);
       setExposureData(expRes);
       setMissingPersons(missRes);
+      setTotalRegistryCount(allMissRes.length);
     } catch (err: any) {
       setError(err.message || "Failed to load population data");
     }
@@ -100,7 +103,7 @@ export default function PopulationPage() {
         physical_description: description.trim() || undefined,
       });
 
-      // Clear form & refresh
+      // Clear form & reset filters so registered record is immediately visible
       setFullName("");
       setAge("");
       setGender("");
@@ -108,6 +111,8 @@ export default function PopulationPage() {
       setContactName("");
       setContactPhone("");
       setIsRegisterOpen(false);
+      setSectorFilter("ALL");
+      setSearchQuery("");
       await loadData();
     } catch (err: any) {
       setError(err.message || "Failed to register missing person");
@@ -190,7 +195,7 @@ export default function PopulationPage() {
         <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
           <span className="text-[#64748B] block text-[10px] uppercase font-bold tracking-wider">UNACCOUNTED CASES</span>
           <div className="text-3xl text-[#FB7185] font-bold">
-            <AnimatedCounter value={missingPersons.length} />
+            <AnimatedCounter value={totalRegistryCount || missingPersons.length} />
           </div>
           <span className="text-[11px] text-[#94A3B8] block">Active missing person records</span>
         </div>
@@ -257,9 +262,14 @@ export default function PopulationPage() {
             <div className="font-mono-data text-[10px] text-[#34D399] font-bold uppercase tracking-wider mb-1">
               PERSONNEL ACCOUNTABILITY
             </div>
-            <h2 className="font-display-calm font-medium text-2xl text-white">
-              Missing Persons Inquiries Registry ({missingPersons.length})
-            </h2>
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="font-display-calm font-medium text-2xl text-white">
+                Missing Persons Inquiries Registry ({missingPersons.length})
+              </h2>
+              <span className="px-2.5 py-0.5 rounded bg-blue-500/10 text-[#60A5FA] border border-blue-500/30 text-[10px] font-mono-data font-bold">
+                [▼ SORT: NEWEST REPORTED FIRST]
+              </span>
+            </div>
           </div>
 
           {/* Search Controls */}
@@ -290,6 +300,36 @@ export default function PopulationPage() {
           </div>
         </div>
 
+        {/* Active Filter Indicator Bar */}
+        {(sectorFilter !== "ALL" || searchQuery.trim() !== "") && (
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-xs font-mono-data text-[#60A5FA]">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-bold text-white uppercase text-[10px] tracking-wider px-2 py-0.5 rounded bg-blue-600">FILTER ACTIVE</span>
+              <span>Showing <strong>{missingPersons.length}</strong> of <strong>{totalRegistryCount || missingPersons.length}</strong> records</span>
+              {sectorFilter !== "ALL" && (
+                <span className="px-2 py-0.5 rounded bg-black/40 border border-white/10 text-white text-[11px]">
+                  Sector: {sectorFilter.toUpperCase()}
+                </span>
+              )}
+              {searchQuery.trim() !== "" && (
+                <span className="px-2 py-0.5 rounded bg-black/40 border border-white/10 text-white text-[11px]">
+                  Query: &ldquo;{searchQuery}&rdquo;
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSectorFilter("ALL");
+                setSearchQuery("");
+              }}
+              className="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold cursor-pointer transition-colors text-xs"
+            >
+              Clear Active Filters
+            </button>
+          </div>
+        )}
+
         {/* Missing Persons Table */}
         <div className="rounded-2xl border border-white/10 overflow-x-auto">
           <table className="w-full text-left font-mono-data text-xs">
@@ -307,7 +347,23 @@ export default function PopulationPage() {
               {missingPersons.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-[#64748B]">
-                    No missing person records found for this query.
+                    {sectorFilter !== "ALL" || searchQuery.trim() !== "" ? (
+                      <div className="space-y-3">
+                        <p>No records match active filter. ({totalRegistryCount} total records in registry)</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSectorFilter("ALL");
+                            setSearchQuery("");
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold cursor-pointer transition-colors"
+                        >
+                          Clear Filters to Show All
+                        </button>
+                      </div>
+                    ) : (
+                      "No missing person records registered yet."
+                    )}
                   </td>
                 </tr>
               ) : (

@@ -200,21 +200,26 @@ export default function InteractiveVectorMap({
     const map = L.map(mapContainerRef.current, {
       center: [27.78, 85.35],
       zoom: 8.8,
-      minZoom: 7.5,
-      maxZoom: 16,
+      minZoom: 6.5,
+      maxZoom: 18,
       zoomControl: false,
       attributionControl: false,
+      zoomAnimation: true,
+      fadeAnimation: true,
+      markerZoomAnimation: true,
     });
 
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    // Initial OpenTopoMap Tile Layer
+    // Initial OpenTopoMap Tile Layer with maxNativeZoom to prevent high-zoom tile 404 blanking
     const topoLayer = L.tileLayer(
       "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
       {
-        maxZoom: 17,
+        maxNativeZoom: 15,
+        maxZoom: 18,
         subdomains: ["a", "b", "c"],
         opacity: 0.95,
+        keepBuffer: 4,
       }
     ).addTo(map);
     baseTileLayerRef.current = topoLayer;
@@ -232,13 +237,24 @@ export default function InteractiveVectorMap({
     mapInstanceRef.current = map;
     setIsMapReady(true);
 
+    // ResizeObserver ensures layer bounds/viewport stay locked to the canvas on container layout shifts
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
+    if (mapContainerRef.current) {
+      resizeObserver.observe(mapContainerRef.current);
+    }
+
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapInstanceRef.current = null;
     };
   }, []);
 
-  // 2. Basemap Style Switcher
+  // 2. Basemap Style Switcher with safe maxNativeZoom
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return;
     const L = require("leaflet");
@@ -249,14 +265,14 @@ export default function InteractiveVectorMap({
     }
 
     let url = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
-    let options: any = { maxZoom: 17, subdomains: ["a", "b", "c"], opacity: 0.95 };
+    let options: any = { maxNativeZoom: 15, maxZoom: 18, subdomains: ["a", "b", "c"], opacity: 0.95, keepBuffer: 4 };
 
     if (layerVisibility.baseMapStyle === "satellite") {
       url = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-      options = { maxZoom: 17, opacity: 0.95 };
+      options = { maxNativeZoom: 17, maxZoom: 18, opacity: 0.95, keepBuffer: 4 };
     } else if (layerVisibility.baseMapStyle === "dark") {
       url = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
-      options = { maxZoom: 16, opacity: 0.9 };
+      options = { maxNativeZoom: 16, maxZoom: 18, opacity: 0.9, keepBuffer: 4 };
     }
 
     const newLayer = L.tileLayer(url, options).addTo(map);
@@ -642,7 +658,7 @@ export default function InteractiveVectorMap({
           cursor: pointer;
           white-space: nowrap;
           box-shadow: ${isSelected ? "0 0 20px rgba(255,255,255,0.4)" : `0 0 10px rgba(0,0,0,0.5)`};
-          transition: all 0.2s ease;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
         ">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
             <span style="font-weight: 800; font-size: 11px; letter-spacing: 0.05em; color: ${statusColor};">

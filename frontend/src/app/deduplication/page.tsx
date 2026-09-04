@@ -110,8 +110,11 @@ export default function DeduplicationPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Cluster Cards */}
           <div className="lg:col-span-7 space-y-4">
-            <motion.div variants={itemVars} className="font-mono-data text-[10px] text-[#64748B] font-bold uppercase tracking-[0.2em] flex items-center justify-between">
+            <motion.div variants={itemVars} className="font-mono-data text-[10px] text-[#64748B] font-bold uppercase tracking-[0.2em] flex flex-wrap items-center justify-between gap-2">
               <span>RESOLVED CLUSTERS // {filteredRecords.length} TOTAL</span>
+              <span className="px-2 py-0.5 rounded bg-blue-500/10 text-[#60A5FA] border border-blue-500/30">
+                [▼ SORT: CASUALTY IMPACT DESC]
+              </span>
               <span>SIMULATED: {truthData?.simulated_time ? new Date(truthData.simulated_time).toLocaleTimeString() : "00:00:00"}</span>
             </motion.div>
 

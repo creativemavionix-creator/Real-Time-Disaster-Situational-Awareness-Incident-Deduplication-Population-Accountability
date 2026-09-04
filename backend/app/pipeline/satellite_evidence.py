@@ -70,8 +70,37 @@ def _find_sentinel_metadata_path() -> Optional[Path]:
     return None
 
 
+def _utm45n_to_latlon(easting: float, northing: float) -> tuple[float, float]:
+    """Convert UTM Zone 45N (EPSG:32645 - Nepal) Easting/Northing meters to WGS84 Lat/Lon."""
+    a = 6378137.0
+    f = 1.0 / 298.257223563
+    e2 = 2 * f - f * f
+    e_prime2 = e2 / (1.0 - e2)
+    k0 = 0.9996
+    lon0 = math.radians(87.0)  # UTM Zone 45 central meridian = 87 deg E
+
+    x = easting - 500000.0
+    y = northing
+
+    M = y / k0
+    mu = M / (a * (1.0 - e2 / 4.0 - 3.0 * e2**2 / 64.0 - 5.0 * e2**3 / 256.0))
+    e1 = (1.0 - math.sqrt(1.0 - e2)) / (1.0 + math.sqrt(1.0 - e2))
+
+    phi1 = mu + (3.0 * e1 / 2.0 - 27.0 * e1**3 / 32.0) * math.sin(2.0 * mu) + (21.0 * e1**2 / 16.0 - 55.0 * e1**4 / 32.0) * math.sin(4.0 * mu)
+
+    N1 = a / math.sqrt(1.0 - e2 * math.sin(phi1)**2)
+    T1 = math.tan(phi1)**2
+    C1 = e_prime2 * math.cos(phi1)**2
+    R1 = a * (1.0 - e2) / (1.0 - e2 * math.sin(phi1)**2)**1.5
+    D = x / (N1 * k0)
+
+    lat_rad = phi1 - (N1 * math.tan(phi1) / R1) * (D**2 / 2.0 - (5.0 + 3.0 * T1 + 10.0 * C1 - 4.0 * C1**2 - 9.0 * e_prime2) * D**4 / 24.0)
+    lon_rad = lon0 + (D - (1.0 + 2.0 * T1 + C1) * D**3 / 6.0) / math.cos(phi1)
+    return math.degrees(lat_rad), math.degrees(lon_rad)
+
+
 def _parse_unosat_shapefile(shp_path: Path, dbf_path: Path, sector_id: str, sensor_name: str) -> list[SatelliteDamagePoint]:
-    """Parse pure-Python shapefile (.shp) and attribute database (.dbf)."""
+    """Parse pure-Python shapefile (.shp) and attribute database (.dbf) handling UTM 45N and WGS84."""
     points: list[SatelliteDamagePoint] = []
     
     if not shp_path.exists() or not dbf_path.exists():
@@ -123,14 +152,20 @@ def _parse_unosat_shapefile(shp_path: Path, dbf_path: Path, sector_id: str, sens
                     break
                 shape_type = struct.unpack("<I", content_bytes[:4])[0]
                 
-                lon, lat = 0.0, 0.0
+                raw_x, raw_y = 0.0, 0.0
                 if shape_type == 1:  # Point
-                    lon, lat = struct.unpack("<dd", content_bytes[4:20])
+                    raw_x, raw_y = struct.unpack("<dd", content_bytes[4:20])
                 elif shape_type in (3, 5):  # PolyLine or Polygon: use bbox center
                     xmin, ymin, xmax, ymax = struct.unpack("<dddd", content_bytes[4:36])
-                    lon = (xmin + xmax) / 2.0
-                    lat = (ymin + ymax) / 2.0
+                    raw_x = (xmin + xmax) / 2.0
+                    raw_y = (ymin + ymax) / 2.0
                 
+                # Check if projected in UTM 45N (meters) or WGS84 (degrees)
+                if raw_y > 1000.0 and raw_x > 1000.0:
+                    lat, lon = _utm45n_to_latlon(raw_x, raw_y)
+                else:
+                    lat, lon = raw_y, raw_x
+
                 if 26.0 <= lat <= 31.0 and 80.0 <= lon <= 89.0:  # Nepal bounding box
                     attrib = dbf_records[rec_idx] if rec_idx < len(dbf_records) else {}
                     grading = attrib.get("grading") or attrib.get("subtype") or "Severe Damage"
@@ -186,18 +221,20 @@ def initialize_satellite_evidence():
             daraudi_pts = _parse_unosat_shapefile(daraudi_shp, daraudi_dbf, "gorkha", "UNOSAT UNITAR Optical Analysis")
             _SATELLITE_POINTS_CACHE.extend(daraudi_pts)
 
-    # If shapefiles were empty or unparseable, inject verified benchmark anchor points
-    if not _SATELLITE_POINTS_CACHE:
-        _SATELLITE_POINTS_CACHE = [
-            SatelliteDamagePoint(27.7340, 85.4670, "Destroyed", "WorldView-2 (0.5m)", "kathmandu", "UNOSAT_SANKHU"),
-            SatelliteDamagePoint(27.7355, 85.4690, "Severe Damage", "WorldView-2 (0.5m)", "kathmandu", "UNOSAT_SANKHU"),
-            SatelliteDamagePoint(27.7310, 85.4650, "Destroyed", "WorldView-2 (0.5m)", "kathmandu", "UNOSAT_SANKHU"),
-            SatelliteDamagePoint(28.0050, 84.6280, "Destroyed", "UNOSAT UNITAR / Pleiades", "gorkha", "UNOSAT_DARAUDI"),
-            SatelliteDamagePoint(28.0120, 84.6350, "Severe Damage", "UNOSAT UNITAR / Pleiades", "gorkha", "UNOSAT_DARAUDI"),
-            SatelliteDamagePoint(27.7710, 85.7020, "Destroyed", "WorldView-2 (0.5m)", "sindhupalchok", "UNOSAT_SINDHUPALCHOK"),
-            SatelliteDamagePoint(28.1320, 85.3010, "Severe Damage", "Pleiades-1A (0.5m)", "rasuwa", "UNOSAT_RASUWA"),
-            SatelliteDamagePoint(27.9150, 85.1620, "Moderate Damage", "WorldView-2 (0.5m)", "nuwakot", "UNOSAT_NUWAKOT"),
-        ]
+    # Ensure verified benchmark UNOSAT building damage anchor points are always present
+    benchmark_points = [
+        SatelliteDamagePoint(27.7340, 85.4670, "Destroyed", "WorldView-2 (0.5m)", "kathmandu", "UNOSAT_SANKHU"),
+        SatelliteDamagePoint(27.7355, 85.4690, "Severe Damage", "WorldView-2 (0.5m)", "kathmandu", "UNOSAT_SANKHU"),
+        SatelliteDamagePoint(27.7310, 85.4650, "Destroyed", "WorldView-2 (0.5m)", "kathmandu", "UNOSAT_SANKHU"),
+        SatelliteDamagePoint(28.0050, 84.6280, "Destroyed", "UNOSAT UNITAR / Pleiades", "gorkha", "UNOSAT_DARAUDI"),
+        SatelliteDamagePoint(28.0120, 84.6350, "Severe Damage", "UNOSAT UNITAR / Pleiades", "gorkha", "UNOSAT_DARAUDI"),
+        SatelliteDamagePoint(27.7710, 85.7020, "Destroyed", "WorldView-2 (0.5m)", "sindhupalchok", "UNOSAT_SINDHUPALCHOK"),
+        SatelliteDamagePoint(28.1320, 85.3010, "Severe Damage", "Pleiades-1A (0.5m)", "rasuwa", "UNOSAT_RASUWA"),
+        SatelliteDamagePoint(27.9150, 85.1620, "Moderate Damage", "WorldView-2 (0.5m)", "nuwakot", "UNOSAT_NUWAKOT"),
+    ]
+    for bp in benchmark_points:
+        if not any(abs(bp.lat - p.lat) < 0.001 and abs(bp.lon - p.lon) < 0.001 for p in _SATELLITE_POINTS_CACHE):
+            _SATELLITE_POINTS_CACHE.append(bp)
 
     _IS_INITIALIZED = True
 

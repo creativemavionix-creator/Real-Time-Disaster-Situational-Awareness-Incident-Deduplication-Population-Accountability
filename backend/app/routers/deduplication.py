@@ -61,6 +61,7 @@ def get_unified_truth(
 
     trust_weights = {"hospital": 0.95, "police": 0.90, "citizen": 0.60, "social_media": 0.35}
 
+    global_cluster_id = 1
     for loc in all_locs:
         loc_reports = [r for r in report_items if r.resolved_location_id == loc.id]
         if not loc_reports:
@@ -141,7 +142,7 @@ def get_unified_truth(
 
             unified_records.append(
                 UnifiedTruthRecord(
-                    cluster_id=cluster.cluster_id,
+                    cluster_id=global_cluster_id,
                     sector_id=loc.id,
                     sector_name=loc.name,
                     consensus_damage_type=cluster.damage_type,
@@ -159,6 +160,10 @@ def get_unified_truth(
                     satellite_evidence_summary=sat_evidence["satellite_evidence_summary"],
                 )
             )
+            global_cluster_id += 1
+
+    # Standardize sort order descending by casualty impact & confidence
+    unified_records.sort(key=lambda r: (r.unified_casualty_estimate, r.confidence_score), reverse=True)
 
     return UnifiedTruthResponse(
         simulated_time=effective_time,

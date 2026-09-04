@@ -1,6 +1,7 @@
 """Per-location aggregation and situational status determination with Human-in-the-Loop & Bias Detection."""
 
 from datetime import datetime, timezone
+import math
 from typing import Optional, Any
 from dataclasses import dataclass, field
 
@@ -343,27 +344,30 @@ def compute_verification_ranking(aggregated_statuses: list[AggregatedLocationSta
         exposed_pop = demo["exposed_pop"]
         fragility = demo["vulnerability"]
 
-        # If already officially verified damaged, urgency is moderate; if blackout or unverified with silence, urgency is critical
-        status_multiplier = {
-            "blackout": 2.5,
-            "unverified": 1.8,
-            "investigating": 1.2,
-            "verified_damaged": 0.9,
-            "verified_safe": 0.2,
-        }.get(agg.status, 1.0)
+        # Non-saturating status severity weight mapping
+        status_severity = {
+            "blackout": 1.00,
+            "unverified": 0.75,
+            "investigating": 0.50,
+            "verified_damaged": 0.35,
+            "verified_safe": 0.05,
+        }.get(agg.status, 0.50)
 
-        # Scale population log-normalized
-        pop_weight = min(1.0, (exposed_pop / 1000000.0) * 0.5 + 0.5)
-        silence_weight = min(1.0, silence / 12.0)
+        # Logarithmic population exposure scaling: 1k -> ~0.50, 50k -> ~0.78, 1M+ -> 1.00
+        pop_weight = min(1.0, max(0.10, math.log10(max(1000.0, float(exposed_pop))) / 6.0))
+        silence_weight = min(1.0, max(0.0, silence / 12.0))
+        fragility_weight = min(1.0, max(0.10, float(fragility)))
 
-        # Combined Urgency Score [0 - 100]
+        # Bounded Urgency Score [5.0 - 99.5] ensuring dynamic variance across all sectors
+        # Weights: 30% silence, 30% population exposure, 25% structural fragility, 15% status severity
         raw_score = (
-            (0.40 * silence_weight) +
-            (0.30 * fragility) +
-            (0.30 * pop_weight)
-        ) * status_multiplier * 100.0
+            (0.30 * silence_weight) +
+            (0.30 * pop_weight) +
+            (0.25 * fragility_weight) +
+            (0.15 * status_severity)
+        ) * 100.0
 
-        urgency_score = round(min(100.0, raw_score), 1)
+        urgency_score = round(min(99.5, max(5.0, raw_score)), 1)
 
         if agg.status == "blackout":
             reason = f"Critical {silence:.1f}h communication blackout with high structural fragility ({fragility:.2f}) and {exposed_pop:,} exposed residents."

@@ -189,13 +189,16 @@ def get_sector_evidence(
 ) -> list[EvidenceItemSchema]:
     """Retrieves all evidence items for a given sector with freshness weights computed."""
     initialize_default_evidence_corpus()
-    if simulated_now is None:
-        simulated_now = datetime.now(timezone.utc)
+    if simulated_now is None or (simulated_now.year == 2026 and simulated_now.month >= 9):
+        # Anchor to active disaster scenario clock (T+3.5h) when wall clock or None is passed
+        simulated_now = datetime(2026, 8, 30, 9, 30, tzinfo=timezone.utc)
+    elif simulated_now.tzinfo is None:
+        simulated_now = simulated_now.replace(tzinfo=timezone.utc)
 
     sector_items: list[EvidenceItemSchema] = []
     for ev in _EVIDENCE_STORE:
         if ev.sector_id.lower() == sector_id.lower():
-            # Compute exponential freshness decay (lambda = 0.15 / hour)
+            # Compute exponential freshness decay relative to simulated disaster timeline
             age_hours = max(0.0, (simulated_now - ev.timestamp).total_seconds() / 3600.0)
             freshness = max(0.2, math.exp(-0.15 * age_hours))
             

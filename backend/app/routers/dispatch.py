@@ -81,7 +81,7 @@ def get_dispatch_dashboard(
         )
 
     available_count = sum(1 for u in units_schema if u.status == "available")
-    active_missions_count = sum(1 for m in missions_schema if m.status in ("dispatched", "en_route", "on_scene"))
+    active_missions_count = sum(1 for m in missions_schema if m.status in ("dispatched", "in_transit", "en_route", "on_scene", "active"))
 
     return DispatchDashboardResponse(
         simulated_time=effective_time,
