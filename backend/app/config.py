@@ -45,9 +45,8 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
-        "*",
     ]
-    CORS_ORIGIN_REGEX: str = r"^https:\/\/.*\.vercel\.app$"
+    CORS_ORIGIN_REGEX: str = r"^https:\/\/.*\.vercel\.app$|^https?:\/\/localhost(:\d+)?$|^https?:\/\/127\.0\.0\.1(:\d+)?$"
 
 
 settings = Settings()

@@ -12,6 +12,8 @@ services:
       - PORT=8000
       - DATABASE_URL=sqlite:///./disaster_fog.db
       - EMBEDDING_MODEL_NAME=all-MiniLM-L6-v2
+    volumes:
+      - ./RESQ_SIGHT_DATA:/app/RESQ_SIGHT_DATA:ro
     restart: unless-stopped
 
   frontend:

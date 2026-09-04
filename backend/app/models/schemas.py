@@ -761,3 +761,112 @@ class FeedbackLoopResultResponse(BaseModel):
     updated_hypotheses: list[CompetingHypothesisItem]
     message: str
 
+
+# ==========================================
+# Milestone 1: Scenario Domain Foundation Schemas
+# ==========================================
+
+DisasterType = Literal["earthquake", "flash_flood", "cyclone", "landslide", "urban_fire", "flood", "hurricane"]
+ScenarioStatus = Literal["READY", "RUNNING", "PAUSED", "COMPLETED", "RESET"]
+InfrastructureStatusType = Literal["OPERATIONAL", "DEGRADED", "COLLAPSED", "SEVERED", "UNKNOWN"]
+
+
+class SectorScenarioStateSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    sector_id: str
+    sector_name: str
+    silence_risk_score: float = 0.0
+    exposed_population: int = 0
+    damage_score: float = 0.0
+    telecom_status: InfrastructureStatusType = "OPERATIONAL"
+    power_status: InfrastructureStatusType = "OPERATIONAL"
+    road_status: InfrastructureStatusType = "OPERATIONAL"
+    water_status: InfrastructureStatusType = "OPERATIONAL"
+    is_silent_zone: bool = False
+    dominant_silence_cause: Optional[str] = None
+
+
+class SilentZoneCauseScoreSchema(BaseModel):
+    cause_code: str  # H1, H2, H3, H4, H5
+    cause_title: str
+    posterior_probability: float
+    confidence: float
+
+
+class SilentZoneAssessmentSchema(BaseModel):
+    sector_id: str
+    sector_name: str
+    is_silent_zone: bool
+    silence_duration_hours: float
+    leading_cause: str
+    cause_scores: list[SilentZoneCauseScoreSchema]
+    recommended_action: str
+
+
+class ScenarioPropagationPointSchema(BaseModel):
+    node_id: str
+    sector_id: str
+    name: str
+    lat: float
+    lon: float
+    arrival_time_hours: float
+    hazard_intensity: float
+    arrival_status: str
+    cumulative_exposed_population: int
+
+
+class ScenarioPropagationResponse(BaseModel):
+    scenario_id: str
+    disaster_type: str
+    simulated_time: datetime
+    active_wavefront_index: int
+    nodes: list[ScenarioPropagationPointSchema]
+
+
+class ScenarioCreateRequest(BaseModel):
+    title: str
+    disaster_type: DisasterType
+    description: str
+    center_lat: float = 27.71
+    center_lon: float = 85.32
+    default_zoom: int = 9
+    initial_affected_sectors: list[str] = Field(default_factory=list)
+    suspected_silent_zones: list[str] = Field(default_factory=list)
+    critical_lifelines_at_risk: list[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
+
+
+class ScenarioAdvanceRequest(BaseModel):
+    hours: float = 1.0
+    minutes: int = 0
+
+
+class ScenarioResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    scenario_id: str
+    title: str
+    disaster_type: str
+    description: str
+    status: ScenarioStatus
+    center_lat: float
+    center_lon: float
+    default_zoom: int = 9
+    elapsed_hours: float = 0.0
+    simulated_time: datetime
+    initial_affected_sectors: list[str] = Field(default_factory=list)
+    suspected_silent_zones: list[str] = Field(default_factory=list)
+    critical_lifelines_at_risk: list[str] = Field(default_factory=list)
+    tags: list[str] = Field(default_factory=list)
+    sector_states: list[SectorScenarioStateSchema] = Field(default_factory=list)
+    created_at: datetime
+    updated_at: datetime
+
+
+class ScenarioListResponse(BaseModel):
+    total_scenarios: int
+    active_scenario_id: str
+    scenarios: list[ScenarioResponse]
+
+

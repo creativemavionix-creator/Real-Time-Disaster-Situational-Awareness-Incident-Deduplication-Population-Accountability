@@ -116,3 +116,107 @@ def test_observability_endpoints():
     r_tel = client.get("/metrics/telemetry")
     assert r_tel.status_code == 200
     assert "active_anomalies_count" in r_tel.json()
+
+
+def test_cors_configuration_no_wildcard_with_credentials():
+    """Verify CORS origins do not contain '*' when allow_credentials is True."""
+    from app.config import settings
+    assert "*" not in settings.CORS_ORIGINS, "CORS_ORIGINS must not contain wildcard '*' when credentials are true"
+
+    # Test preflight from allowed origin
+    headers = {
+        "Origin": "https://prism-rho-three.vercel.app",
+        "Access-Control-Request-Method": "POST",
+    }
+    resp = client.options("/reports", headers=headers)
+    assert resp.status_code == 200
+    assert resp.headers.get("access-control-allow-origin") == "https://prism-rho-three.vercel.app"
+    assert resp.headers.get("access-control-allow-credentials") == "true"
+
+
+def test_rate_limiter_proxy_ip_detection():
+    """Verify get_client_ip prioritizes CF-Connecting-IP, X-Real-IP, and X-Forwarded-For."""
+    from app.security import get_client_ip
+    from starlette.requests import Request
+
+    scope = {
+        "type": "http",
+        "headers": [(b"cf-connecting-ip", b"203.0.113.195")],
+        "client": ("10.0.0.1", 1234),
+    }
+    req = Request(scope)
+    assert get_client_ip(req) == "203.0.113.195"
+
+    scope_xff = {
+        "type": "http",
+        "headers": [(b"x-forwarded-for", b"198.51.100.42, 10.0.0.1")],
+        "client": ("10.0.0.1", 1234),
+    }
+    req_xff = Request(scope_xff)
+    assert get_client_ip(req_xff) == "198.51.100.42"
+
+
+def test_global_exception_handler_sanitizes_stack_trace():
+    """Verify 500 internal errors do not leak Python exception messages or tracebacks."""
+    safe_client = TestClient(app, raise_server_exceptions=False)
+
+    @app.get("/test-crash-leakage-simulation")
+    def crash_endpoint():
+        raise RuntimeError("DATABASE_SECRET_KEY_LEAK_TEST_VALUE_XYZ")
+
+    resp = safe_client.get("/test-crash-leakage-simulation")
+    assert resp.status_code == 500
+    data = resp.json()
+    assert data["error"] == "Internal Server Error"
+    assert "DATABASE_SECRET_KEY_LEAK_TEST_VALUE_XYZ" not in resp.text
+    assert "details" not in data
+
+
+def test_reports_official_schema_validation_and_sanitization():
+    """Verify /reports/official enforces schema validation and sanitizes inputs."""
+    # Valid payload
+    payload = {
+        "location_id": "kathmandu",
+        "reporting_agency": "Armed Police Force (APF)",
+        "officer_name": "Insp. Thapa",
+        "badge_number": "APF-491",
+        "damage_type": "structural_collapse",
+        "casualty_count": 5,
+        "damage_grade": 4,
+        "immediate_need": "Heavy Rescue Extrication <script>alert(1)</script>",
+        "raw_notes": "Sankhu market building pancaked \x00 with 5 trapped",
+    }
+    resp = client.post("/reports/official", json=payload)
+    assert resp.status_code == 201
+    data = resp.json()
+    assert "<script>" not in data["raw_text"]
+    assert "&lt;script&gt;" in data["raw_text"]
+    assert "\x00" not in data["raw_text"]
+    assert data["extracted_casualties"] == 5
+
+    # Invalid payload (negative casualty count)
+    invalid_payload = {
+        "location_id": "kathmandu",
+        "reporting_agency": "Armed Police Force (APF)",
+        "officer_name": "Insp. Thapa",
+        "badge_number": "APF-491",
+        "damage_type": "structural_collapse",
+        "casualty_count": -99,
+        "immediate_need": "Medical",
+        "raw_notes": "Invalid negative casualty count test",
+    }
+    resp_invalid = client.post("/reports/official", json=invalid_payload)
+    assert resp_invalid.status_code == 422
+
+
+def test_raw_report_input_sanitization():
+    """Verify POST /reports sanitizes raw_text against stored XSS."""
+    payload = {
+        "source_type": "citizen",
+        "raw_text": "<img src=x onerror=alert('XSS')> Building collapsed in Patan!",
+    }
+    resp = client.post("/reports", json=payload)
+    assert resp.status_code == 201
+    data = resp.json()
+    assert "<img" not in data["raw_text"]
+    assert "&lt;img" in data["raw_text"]

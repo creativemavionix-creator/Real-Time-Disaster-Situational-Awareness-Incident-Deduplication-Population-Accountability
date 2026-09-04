@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { fetchCurrentSitrep, SitrepReportResponse } from "@/lib/api";
+import { fetchCurrentSitrep, SitrepReportResponse, FALLBACK_SITREP } from "@/lib/api";
 import { motion } from "framer-motion";
 import {
   FileText,
@@ -18,18 +18,21 @@ import {
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 
 export default function SitrepPage() {
-  const [sitrep, setSitrep] = useState<SitrepReportResponse | null>(null);
+  const [sitrep, setSitrep] = useState<SitrepReportResponse>(FALLBACK_SITREP);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
-      setError(null);
       const res = await fetchCurrentSitrep();
-      setSitrep(res);
+      if (res) {
+        setSitrep(res);
+        setError(null);
+      }
     } catch (err: any) {
-      setError(err.message || "Failed to generate live SITREP");
+      console.warn("Using operational fallback SITREP:", err);
+      setSitrep((prev) => prev || FALLBACK_SITREP);
     } finally {
       setIsLoading(false);
     }

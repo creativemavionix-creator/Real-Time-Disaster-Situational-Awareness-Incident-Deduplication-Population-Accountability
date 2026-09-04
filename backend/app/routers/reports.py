@@ -7,11 +7,17 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models.db import ReportDB
-from app.models.schemas import ReportCreateRequest, ReportResponse, ScoreBreakdownSchema
+from app.models.schemas import (
+    ReportCreateRequest,
+    OfficialReportCreateRequest,
+    ReportResponse,
+    ScoreBreakdownSchema,
+)
 from app.pipeline.extractor import extract_all
 from app.pipeline.embedder import embed_text, serialize_embedding, deserialize_embedding
 from app.pipeline.clustering import ReportItem
 from app.pipeline.scoring import compute_report_score
+from app.security import sanitize_input_text
 from app.simulation.clock import get_simulated_time
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
@@ -28,7 +34,7 @@ def create_report(payload: ReportCreateRequest, db: Session = Depends(get_db)):
     Ingest a new raw incident report, extract location/damage/casualties,
     generate sentence embedding, compute explainable reliability score, and persist.
     """
-    raw_text = payload.raw_text.strip()
+    raw_text = sanitize_input_text(payload.raw_text.strip())
     if not raw_text:
         raise HTTPException(status_code=422, detail="Report raw_text cannot be empty.")
         
@@ -169,23 +175,24 @@ def list_reports(
     summary="Structured Official First-Responder Intake (Police, APF, Hospitals)"
 )
 def create_official_report(
-    payload: dict,
+    payload: OfficialReportCreateRequest,
     db: Session = Depends(get_db)
 ):
     """
     Structured official report intake for Police, APF, and District Hospitals.
     Bypasses noisy unstructured NLP heuristics and immediately assigns 1.0 trust.
     """
-    loc_id = payload.get("location_id", "kathmandu").lower()
-    agency = payload.get("reporting_agency", "Nepal Police")
-    officer_name = payload.get("officer_name", "Duty Officer")
-    badge_number = payload.get("badge_number", "NP-000")
-    damage_type = payload.get("damage_type", "structural_collapse")
-    casualties = int(payload.get("casualty_count", 0))
-    immediate_need = payload.get("immediate_need", "Tactical Support")
-    raw_notes = payload.get("raw_notes", f"Official dispatch from {agency} ({officer_name} / {badge_number})")
-    lat = payload.get("reported_lat")
-    lon = payload.get("reported_lon")
+    loc_id = sanitize_input_text(payload.location_id).lower()
+    agency = sanitize_input_text(payload.reporting_agency)
+    officer_name = sanitize_input_text(payload.officer_name)
+    badge_number = sanitize_input_text(payload.badge_number)
+    damage_type = sanitize_input_text(payload.damage_type)
+    casualties = payload.casualty_count
+    immediate_need = sanitize_input_text(payload.immediate_need)
+    default_notes = f"Official dispatch from {agency} ({officer_name} / {badge_number})"
+    raw_notes = sanitize_input_text(payload.raw_notes) if payload.raw_notes else default_notes
+    lat = payload.reported_lat
+    lon = payload.reported_lon
 
     formatted_text = f"[OFFICIAL DISPATCH - {agency.upper()}] Officer: {officer_name} (Badge: {badge_number}). Damage: {damage_type}. Casualties: {casualties}. Priority Need: {immediate_need}. Notes: {raw_notes}"
 

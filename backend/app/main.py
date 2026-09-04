@@ -64,13 +64,16 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
         
-    # 3. Preload SentenceTransformer embedding model in memory
+    # 3. Preload SentenceTransformer embedding model in memory (if enabled)
     try:
-        logger.info("Pre-warming SentenceTransformer model...")
         get_model()
-        logger.info("Model pre-warming complete.")
     except Exception as e:
         logger.warning(f"Model pre-warm note: {e}")
+        
+    # Free temporary memory structures allocated during startup
+    import gc
+    gc.collect()
+    logger.info("Render Free Tier memory baseline established: GC collected.")
         
     yield
     
@@ -92,8 +95,12 @@ app = FastAPI(
 )
 
 from app.security import SecurityHeadersMiddleware, RateLimiterMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
-# Enable CORS for Vercel production domains, preview branches, and local development
+# 1. GZip compression for fast response transfers on low-bandwidth cloud connections
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
+# 2. Enable CORS for Vercel production domains, preview branches, and local development
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -125,14 +132,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    """Fallback handler to prevent unhandled crashes."""
+    """Fallback handler to prevent unhandled crashes without leaking internal traces or state."""
     logger.error(f"Unhandled error on {request.url.path}: {str(exc)}", exc_info=True)
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={
             "error": "Internal Server Error",
-            "message": "An unexpected error occurred in the pipeline. Check logs for details.",
-            "details": str(exc),
+            "message": "An unexpected error occurred in the pipeline. Please check server logs for reference.",
         },
     )
 

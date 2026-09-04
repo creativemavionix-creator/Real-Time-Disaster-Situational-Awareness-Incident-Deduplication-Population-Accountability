@@ -2,6 +2,7 @@
 System Observability, Health Checks, Readiness, and Telemetry Metrics Router.
 """
 
+import logging
 from datetime import datetime, timezone
 import time
 from fastapi import APIRouter, status
@@ -14,6 +15,7 @@ from app.pipeline.negative_evidence import get_negative_evidence_overview
 from app.pipeline.hypothesis_engine import get_all_sectors_hypotheses
 from app.pipeline.evidence_model import get_all_evidence_items
 
+logger = logging.getLogger("disaster_fog.observability")
 router = APIRouter(prefix="", tags=["System Observability & Health"])
 
 _START_TIME = datetime.now(timezone.utc)
@@ -36,7 +38,8 @@ def health_check():
             db.execute(text("SELECT 1"))
         db_latency_ms = round((time.perf_counter() - start_db) * 1000, 2)
     except Exception as e:
-        db_status = f"DEGRADED: {str(e)}"
+        logger.error(f"Health check database query failed: {e}")
+        db_status = "DEGRADED: Database connectivity unavailable"
 
     evidence_count = len(get_all_evidence_items())
 
@@ -71,9 +74,10 @@ def readiness_probe():
             db.execute(text("SELECT 1"))
         return {"ready": True, "timestamp": datetime.now(timezone.utc).isoformat()}
     except Exception as e:
+        logger.error(f"Readiness probe database check failed: {e}")
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"ready": False, "error": str(e)},
+            content={"ready": False, "error": "Database connectivity check failed"},
         )
 
 

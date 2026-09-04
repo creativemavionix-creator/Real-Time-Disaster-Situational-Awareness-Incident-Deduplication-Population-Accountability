@@ -25,25 +25,67 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         return response
 
 
+def get_client_ip(request: Request) -> str:
+    """Extract real client IP behind reverse proxies (Cloudflare, Render, ALB, Nginx)."""
+    # 1. Cloudflare connecting IP
+    cf_ip = request.headers.get("cf-connecting-ip")
+    if cf_ip and cf_ip.strip():
+        return cf_ip.strip()
+
+    # 2. X-Real-IP
+    real_ip = request.headers.get("x-real-ip")
+    if real_ip and real_ip.strip():
+        return real_ip.strip()
+
+    # 3. X-Forwarded-For (leftmost entry is original client)
+    xff = request.headers.get("x-forwarded-for")
+    if xff and xff.strip():
+        first_ip = xff.split(",")[0].strip()
+        if first_ip:
+            return first_ip
+
+    # 4. Fallback to direct client host
+    if request.client and request.client.host:
+        return request.client.host
+
+    return "127.0.0.1"
+
+
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     """
     Sliding window in-memory rate limiter to protect computationally expensive AI and mutation endpoints.
-    Allows 120 requests/minute per client IP generally, and 30 requests/minute on expensive endpoints.
+    Allows 180 requests/minute per client IP generally, and 40 requests/minute on expensive endpoints.
+    Includes memory leak prevention by pruning stale IP histories.
     """
 
     def __init__(self, app, max_requests_per_minute: int = 180):
         super().__init__(app)
         self.max_requests = max_requests_per_minute
         self.request_history: dict[str, list[float]] = defaultdict(list)
+        self._last_cleanup = time.time()
+
+    def _prune_stale_records(self, now: float, window_start: float):
+        """Prunes stale IP entries to prevent memory exhaustion."""
+        if len(self.request_history) > 1000 or (now - self._last_cleanup) > 300.0:
+            stale_keys = [
+                ip for ip, timestamps in self.request_history.items()
+                if not timestamps or timestamps[-1] <= window_start
+            ]
+            for ip in stale_keys:
+                self.request_history.pop(ip, None)
+            self._last_cleanup = now
 
     async def dispatch(self, request: Request, call_next):
-        client_ip = request.client.host if request.client else "127.0.0.1"
+        client_ip = get_client_ip(request)
         now = time.time()
         window_start = now - 60.0
 
         # Clean history older than 60s
         history = [t for t in self.request_history[client_ip] if t > window_start]
         self.request_history[client_ip] = history
+
+        # Periodic dictionary memory pruning
+        self._prune_stale_records(now, window_start)
 
         # Exempt or allow high throughput for automated test runners
         if client_ip in ("testclient", "testserver") or request.headers.get("X-Test-Runner") == "true":

@@ -255,3 +255,99 @@ class LocationOverrideDB(Base):
     timestamp = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
 
 
+# ==========================================
+# Milestone 1: Scenario Domain Foundation ORM Models
+# ==========================================
+
+class DisasterScenarioDB(Base):
+    """Persistent Disaster Scenario record."""
+    __tablename__ = "disaster_scenarios"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    scenario_id = Column(String(64), unique=True, nullable=False, index=True)
+    title = Column(String(128), nullable=False)
+    disaster_type = Column(String(64), nullable=False, index=True)
+    description = Column(Text, nullable=False)
+    status = Column(String(32), nullable=False, default="READY")  # READY, RUNNING, PAUSED, COMPLETED, RESET
+    center_lat = Column(Float, nullable=False, default=27.71)
+    center_lon = Column(Float, nullable=False, default=85.32)
+    default_zoom = Column(Integer, nullable=False, default=9)
+    initial_affected_sectors_json = Column(Text, nullable=True)
+    suspected_silent_zones_json = Column(Text, nullable=True)
+    critical_lifelines_at_risk_json = Column(Text, nullable=True)
+    config_json = Column(Text, nullable=True)
+    elapsed_hours = Column(Float, nullable=False, default=0.0)
+    simulated_time = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class SectorScenarioStateDB(Base):
+    """Dynamic per-sector state within a specific disaster scenario."""
+    __tablename__ = "sector_scenario_states"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    scenario_id = Column(String(64), nullable=False, index=True)
+    sector_id = Column(String(64), nullable=False, index=True)
+    silence_risk_score = Column(Float, nullable=False, default=0.0)
+    exposed_population = Column(Integer, nullable=False, default=0)
+    damage_score = Column(Float, nullable=False, default=0.0)
+    telecom_status = Column(String(32), nullable=False, default="OPERATIONAL")
+    power_status = Column(String(32), nullable=False, default="OPERATIONAL")
+    road_status = Column(String(32), nullable=False, default="OPERATIONAL")
+    water_status = Column(String(32), nullable=False, default="OPERATIONAL")
+    is_silent_zone = Column(Boolean, nullable=False, default=False)
+    dominant_silence_cause = Column(String(64), nullable=True)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class InfrastructureStatusDB(Base):
+    """Individual infrastructure lifeline status per sector in a scenario."""
+    __tablename__ = "infrastructure_statuses"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    scenario_id = Column(String(64), nullable=False, index=True)
+    infrastructure_id = Column(String(64), nullable=False, index=True)
+    sector_id = Column(String(64), nullable=False, index=True)
+    infrastructure_type = Column(String(64), nullable=False)  # telecom_tower, power_substation, bridge, highway_shelf, hospital
+    name = Column(String(128), nullable=False)
+    status = Column(String(32), nullable=False, default="OPERATIONAL")  # OPERATIONAL, DEGRADED, COLLAPSED, SEVERED, UNKNOWN
+    capacity_pct = Column(Float, nullable=False, default=100.0)
+    isolation_impact_score = Column(Float, nullable=False, default=0.0)
+    notes = Column(Text, nullable=True)
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class ScenarioEventDB(Base):
+    """Chronological event emitted during a disaster scenario run."""
+    __tablename__ = "scenario_events"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    scenario_id = Column(String(64), nullable=False, index=True)
+    event_code = Column(String(64), nullable=False)
+    sector_id = Column(String(64), nullable=True)
+    elapsed_hours = Column(Float, nullable=False, default=0.0)
+    event_type = Column(String(64), nullable=False)
+    severity = Column(String(32), nullable=False, default="HIGH")
+    description = Column(Text, nullable=False)
+    timestamp = Column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+
+
+class SilentZoneAssessmentDB(Base):
+    """Ranked five-cause silence hypothesis diagnosis per sector."""
+    __tablename__ = "silent_zone_assessments"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    scenario_id = Column(String(64), nullable=False, index=True)
+    sector_id = Column(String(64), nullable=False, index=True)
+    h1_sensor_failure_score = Column(Float, nullable=False, default=0.2)
+    h2_comm_blackout_score = Column(Float, nullable=False, default=0.2)
+    h3_evacuation_score = Column(Float, nullable=False, default=0.2)
+    h4_total_destruction_score = Column(Float, nullable=False, default=0.2)
+    h5_low_population_score = Column(Float, nullable=False, default=0.2)
+    leading_cause = Column(String(64), nullable=False, default="h2_comm_blackout")
+    recommendation_action = Column(String(128), nullable=False, default="drone_uav_recon")
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+

@@ -9,6 +9,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PORT=8000 \
+    MALLOC_ARENA_MAX=2 \
     HF_HOME=/app/.cache/huggingface \
     SENTENCE_TRANSFORMERS_HOME=/app/.cache/torch/sentence_transformers \
     OMP_NUM_THREADS=1 \
@@ -48,8 +49,8 @@ USER appuser
 EXPOSE 8000
 
 # Health check to ensure service vitality
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:${PORT:-8000}/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/health || exit 1
 
-# Start Uvicorn ASGI server with dynamic PORT binding
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
+# Start Uvicorn ASGI server with dynamic PORT binding, 1 worker, and bounded concurrency
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --limit-concurrency 80 --timeout-keep-alive 5"]

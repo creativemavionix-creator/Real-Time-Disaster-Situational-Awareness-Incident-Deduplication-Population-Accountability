@@ -30,6 +30,8 @@ if "sqlite" in settings.DATABASE_URL:
         cursor.execute("PRAGMA journal_mode=WAL;")
         cursor.execute("PRAGMA synchronous=NORMAL;")
         cursor.execute("PRAGMA foreign_keys=ON;")
+        cursor.execute("PRAGMA cache_size = -4000;")  # 4MB max in-memory page cache (prevents memory ballooning)
+        cursor.execute("PRAGMA temp_store = MEMORY;")
         cursor.close()
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -41,9 +43,12 @@ def init_db() -> None:
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Dependency for obtaining database session with guaranteed close."""
+    """Dependency for obtaining database session with guaranteed rollback on exception and close."""
     db = SessionLocal()
     try:
         yield db
+    except Exception:
+        db.rollback()
+        raise
     finally:
         db.close()

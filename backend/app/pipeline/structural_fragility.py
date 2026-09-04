@@ -187,10 +187,15 @@ def get_ground_truth_dataset_summary() -> dict:
             with open(damage_csv, "r", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    g = int(row.get("damage_grade", 2))
+                    try:
+                        g = int(row.get("damage_grade", 2))
+                    except (ValueError, TypeError):
+                        g = 2
                     if g in grade_counts:
                         grade_counts[g] += 1
                     total_records += 1
+                    if total_records >= 25000:
+                        break
         except Exception as e:
             logger.warning(f"Error reading damage CSV: {e}")
 

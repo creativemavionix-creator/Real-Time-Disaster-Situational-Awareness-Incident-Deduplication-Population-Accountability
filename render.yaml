@@ -7,11 +7,29 @@ services:
     dockerContext: .
     plan: free
     region: oregon
-    healthCheckPath: /
+    healthCheckPath: /health
     envVars:
       - key: PORT
         value: 10000
       - key: DATABASE_URL
         value: sqlite:///./disaster_fog.db
+      - key: USE_TRANSFORMER_EMBEDDINGS
+        value: "false"
       - key: EMBEDDING_MODEL_NAME
         value: all-MiniLM-L6-v2
+      - key: MALLOC_ARENA_MAX
+        value: "2"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
+      - key: TOKENIZERS_PARALLELISM
+        value: "false"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: MKL_NUM_THREADS
+        value: "1"
+      - key: OPENBLAS_NUM_THREADS
+        value: "1"
+      - key: WEB_CONCURRENCY
+        value: "1"
