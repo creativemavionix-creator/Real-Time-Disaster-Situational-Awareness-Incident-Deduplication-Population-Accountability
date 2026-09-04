@@ -122,9 +122,11 @@ export default function GisMapPage() {
   };
 
   const handleSelectDisaster = async (dType: DisasterCategory) => {
+    // Update local state immediately (optimistic) so the UI reflects the
+    // selection even if the backend API call fails or is slow.
+    setActiveDisasterType(dType);
     setIsLoading(true);
     try {
-      setActiveDisasterType(dType);
       await switchDisasterType(dType, true);
       await loadData();
     } catch (err: any) {
@@ -351,9 +353,12 @@ export default function GisMapPage() {
       />
 
       {/* Floating Tactical Sector Selector & Status Filter Bar (Bottom Center) */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-2 max-w-5xl w-full px-4 pointer-events-none">
-        <div className="pointer-events-auto flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-[#0C0E12]/90 backdrop-blur-xl border border-white/15 shadow-2xl">
-          <div className="hidden sm:flex items-center gap-2 px-3 font-mono-data text-[10px] text-[#64748B] border-r border-white/10 uppercase tracking-wider">
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center gap-2 max-w-5xl w-full px-4">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-[#0C0E12]/90 backdrop-blur-xl border border-white/15 shadow-2xl">
+          <div
+            className="hidden sm:flex items-center gap-2 px-3 font-mono-data text-[10px] text-[#64748B] border-r border-white/10 uppercase tracking-wider"
+            aria-label={`Sector selector – ${locations.length} sectors`}
+          >
             <span>SECTORS ({locations.length})</span>
           </div>
 
