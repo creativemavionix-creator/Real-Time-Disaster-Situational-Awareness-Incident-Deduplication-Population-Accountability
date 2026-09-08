@@ -2,7 +2,7 @@
 
 import math
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, Any
 
 from app.config import settings
 from app.pipeline.gazetteer import LocationInfo, LOCATIONS, get_all_locations
@@ -126,6 +126,7 @@ def assess_sector_blackout_risk(
     location: LocationInfo,
     reports: list[ReportItem],
     simulated_now: Optional[datetime] = None,
+    operator_override: Optional[dict[str, Any]] = None,
 ) -> BlackoutRiskAssessment:
     """
     Evaluate blackout intelligence and compute Inferred Risk Score using spatial physics and structural fragility.
@@ -136,7 +137,12 @@ def assess_sector_blackout_risk(
     elif simulated_now.tzinfo is None:
         simulated_now = simulated_now.replace(tzinfo=timezone.utc)
 
-    agg = aggregate_location(location=location, reports=reports, simulated_now=simulated_now)
+    agg = aggregate_location(
+        location=location,
+        reports=reports,
+        simulated_now=simulated_now,
+        operator_override=operator_override,
+    )
     physics = compute_spatial_physics(location)
     
     is_blackout = (agg.status == "blackout")

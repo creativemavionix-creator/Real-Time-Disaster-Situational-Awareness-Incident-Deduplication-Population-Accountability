@@ -100,7 +100,14 @@ from fastapi.middleware.gzip import GZipMiddleware
 # 1. GZip compression for fast response transfers on low-bandwidth cloud connections
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
-# 2. Enable CORS for Vercel production domains, preview branches, and local development
+# 2. Security headers (inner)
+app.add_middleware(SecurityHeadersMiddleware)
+
+# 3. Rate limiting (inner to CORS, outermost of application logic)
+app.add_middleware(RateLimiterMiddleware, max_requests_per_minute=240)
+
+# 4. Outermost: CORSMiddleware (added last so Starlette executes it first on incoming and last on outgoing)
+# This guarantees that error responses (429, 500, 422) and OPTIONS preflight requests ALWAYS have valid CORS headers.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -111,8 +118,6 @@ app.add_middleware(
     expose_headers=["*"],
     max_age=86400,
 )
-app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(RateLimiterMiddleware, max_requests_per_minute=240)
 
 
 

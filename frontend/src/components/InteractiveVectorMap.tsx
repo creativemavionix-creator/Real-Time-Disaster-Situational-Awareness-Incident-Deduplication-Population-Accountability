@@ -13,6 +13,7 @@ import {
   PropagationPathResponse,
 } from "@/lib/api";
 import { MapLayerVisibility } from "@/components/MapLayerControl";
+import { getSectorSeverity } from "@/lib/severity";
 import "leaflet/dist/leaflet.css";
 
 interface InteractiveVectorMapProps {
@@ -96,6 +97,10 @@ const HIGHWAY_CORRIDORS: Array<[number, number][]> = [
   ],
 ];
 
+// In-memory module-level caches to eliminate redundant network roundtrips on tab/route switching
+let cachedDistrictGeoJson: any = null;
+let cachedSatellitePoints: SatelliteDamagePointItem[] | null = null;
+
 const DEFAULT_LAYER_VISIBILITY: MapLayerVisibility = {
   showH3Grid: true,
   showHazardOverlays: true,
@@ -103,7 +108,7 @@ const DEFAULT_LAYER_VISIBILITY: MapLayerVisibility = {
   showSilentHalos: true,
   showCorridors: true,
   showSatelliteLayer: true,
-  baseMapStyle: "opentopo",
+  baseMapStyle: "dark",
 };
 
 export default function InteractiveVectorMap({
@@ -131,47 +136,64 @@ export default function InteractiveVectorMap({
   const calloutsLayerGroupRef = useRef<any>(null);
 
   // Local Data Stores
-  const [geojsonData, setGeojsonData] = useState<any>(null);
+  const [geojsonData, setGeojsonData] = useState<any>(cachedDistrictGeoJson);
   const [h3Hexagons, setH3Hexagons] = useState<H3HexagonItem[]>([]);
   const [hazardOverlays, setHazardOverlays] = useState<HazardOverlayItem[]>([]);
   const [propagationData, setPropagationData] = useState<PropagationPathResponse | null>(null);
-  const [satellitePoints, setSatellitePoints] = useState<SatelliteDamagePointItem[]>([]);
+  const [satellitePoints, setSatellitePoints] = useState<SatelliteDamagePointItem[]>(cachedSatellitePoints || []);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [isMapLoading, setIsMapLoading] = useState(!cachedDistrictGeoJson);
 
-  // Fetch static boundaries once
+  // Fetch static boundaries once with in-memory caching
   useEffect(() => {
-    fetch("/data/central_nepal_districts.json")
-      .then((res) => res.json())
-      .then((data) => setGeojsonData(data))
-      .catch((err) => console.error("Failed to load district GeoJSON:", err));
+    if (cachedDistrictGeoJson) {
+      setGeojsonData(cachedDistrictGeoJson);
+    } else {
+      fetch("/data/central_nepal_districts.json")
+        .then((res) => res.json())
+        .then((data) => {
+          cachedDistrictGeoJson = data;
+          setGeojsonData(data);
+        })
+        .catch((err) => console.error("Failed to load district GeoJSON:", err));
+    }
 
-    fetchSatellitePoints()
-      .then((res) => setSatellitePoints(res.damage_points))
-      .catch((err) => console.error("Failed to load satellite points:", err));
+    if (cachedSatellitePoints) {
+      setSatellitePoints(cachedSatellitePoints);
+    } else {
+      fetchSatellitePoints()
+        .then((res) => {
+          cachedSatellitePoints = res.damage_points;
+          setSatellitePoints(res.damage_points);
+        })
+        .catch((err) => console.error("Failed to load satellite points:", err));
+    }
   }, []);
 
-  // Fetch dynamic H3 Grid, Hazard Overlays & Propagation Path on load and when simTime or disasterType changes
+  // Fetch dynamic H3 Grid, Hazard Overlays & Propagation Path concurrently with Promise.all
   useEffect(() => {
+    let isMounted = true;
     const currentDisaster = disasterType || "earthquake";
 
-    fetchH3GridTelemetry(simTime)
-      .then((res) => setH3Hexagons(res.hexagons))
-      .catch((err) => console.error("Failed to load H3 Grid:", err));
+    Promise.all([
+      fetchH3GridTelemetry(simTime).catch(() => ({ hexagons: [] })),
+      fetchHazardOverlays(currentDisaster, simTime).catch(() => ({ overlays: [] })),
+      fetchPropagationPath(currentDisaster, simTime).catch(() => null),
+    ]).then(([h3Res, hzRes, propRes]) => {
+      if (!isMounted) return;
+      if (h3Res && "hexagons" in h3Res) setH3Hexagons(h3Res.hexagons);
+      if (hzRes && "overlays" in hzRes) setHazardOverlays(hzRes.overlays);
+      if (propRes) setPropagationData(propRes);
+    });
 
-    fetchHazardOverlays(currentDisaster, simTime)
-      .then((res) => setHazardOverlays(res.overlays))
-      .catch((err) => console.error("Failed to load hazard overlays:", err));
-
-    fetchPropagationPath(currentDisaster, simTime)
-      .then((res) => setPropagationData(res))
-      .catch((err) => console.error("Failed to load propagation path:", err));
+    return () => {
+      isMounted = false;
+    };
   }, [simTime, disasterType]);
 
   const getSectorStatusColor = useCallback((sector?: GisSectorTelemetry) => {
-    if (!sector) return "#E11D48";
-    if (sector.status === "verified_safe") return "#059669";
-    if (sector.status === "verified_damaged" || sector.status === "blackout") return "#E11D48";
-    return "#D97706";
+    if (!sector) return "#EF4444";
+    return getSectorSeverity(sector.status, sector.severity_index, sector.threat_tier).color;
   }, []);
 
   const getSectorIsolationPct = useCallback(
@@ -211,18 +233,21 @@ export default function InteractiveVectorMap({
 
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
-    // Initial OpenTopoMap Tile Layer with maxNativeZoom to prevent high-zoom tile 404 blanking
-    const topoLayer = L.tileLayer(
-      "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
-      {
-        maxNativeZoom: 15,
-        maxZoom: 18,
-        subdomains: ["a", "b", "c"],
-        opacity: 0.95,
-        keepBuffer: 4,
-      }
-    ).addTo(map);
-    baseTileLayerRef.current = topoLayer;
+    // Initialize base tile layer matching active style with edge-cached CDN and tuned buffer
+    const initialStyle = layerVisibility.baseMapStyle || "dark";
+    let initUrl = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+    let initOptions: any = { maxNativeZoom: 16, maxZoom: 18, opacity: 0.9, keepBuffer: 1, updateWhenIdle: true, updateInterval: 120 };
+
+    if (initialStyle === "satellite") {
+      initUrl = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+      initOptions = { maxNativeZoom: 17, maxZoom: 18, opacity: 0.95, keepBuffer: 1, updateWhenIdle: true, updateInterval: 120 };
+    } else if (initialStyle === "opentopo") {
+      initUrl = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
+      initOptions = { maxNativeZoom: 15, maxZoom: 18, subdomains: ["a", "b", "c"], opacity: 0.95, keepBuffer: 1, updateWhenIdle: true, updateInterval: 120 };
+    }
+
+    const initialTileLayer = L.tileLayer(initUrl, initOptions).addTo(map);
+    baseTileLayerRef.current = initialTileLayer;
 
     // Initialize 6 Synchronized Layer Groups in order of z-index
     geojsonLayerRef.current = L.layerGroup().addTo(map);
@@ -254,25 +279,25 @@ export default function InteractiveVectorMap({
     };
   }, []);
 
-  // 2. Basemap Style Switcher with safe maxNativeZoom
+  // 2. Basemap Style Switcher with safe maxNativeZoom and keepBuffer: 1
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return;
     const L = require("leaflet");
     const map = mapInstanceRef.current;
 
-    if (baseTileLayerRef.current) {
-      map.removeLayer(baseTileLayerRef.current);
-    }
-
-    let url = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
-    let options: any = { maxNativeZoom: 15, maxZoom: 18, subdomains: ["a", "b", "c"], opacity: 0.95, keepBuffer: 4 };
+    let url = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
+    let options: any = { maxNativeZoom: 16, maxZoom: 18, opacity: 0.9, keepBuffer: 1, updateWhenIdle: true, updateInterval: 120 };
 
     if (layerVisibility.baseMapStyle === "satellite") {
       url = "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
-      options = { maxNativeZoom: 17, maxZoom: 18, opacity: 0.95, keepBuffer: 4 };
-    } else if (layerVisibility.baseMapStyle === "dark") {
-      url = "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}";
-      options = { maxNativeZoom: 16, maxZoom: 18, opacity: 0.9, keepBuffer: 4 };
+      options = { maxNativeZoom: 17, maxZoom: 18, opacity: 0.95, keepBuffer: 1, updateWhenIdle: true, updateInterval: 120 };
+    } else if (layerVisibility.baseMapStyle === "opentopo") {
+      url = "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png";
+      options = { maxNativeZoom: 15, maxZoom: 18, subdomains: ["a", "b", "c"], opacity: 0.95, keepBuffer: 1, updateWhenIdle: true, updateInterval: 120 };
+    }
+
+    if (baseTileLayerRef.current) {
+      map.removeLayer(baseTileLayerRef.current);
     }
 
     const newLayer = L.tileLayer(url, options).addTo(map);
@@ -334,6 +359,7 @@ export default function InteractiveVectorMap({
         );
       },
     }).addTo(group);
+    setIsMapLoading(false);
   }, [isMapReady, geojsonData, selectedSectorId, sectors, getSectorStatusColor, onSelectSector]);
 
   // 4. Layer 4: Physical Hazard Extent Overlays (Isoseismal Rings)
@@ -530,20 +556,24 @@ export default function InteractiveVectorMap({
     if (!layerVisibility.showSilentHalos) return;
 
     sectors.forEach((sec) => {
-      const isBlackout = sec.status === "blackout" || (sec.severity_index >= 7.0 && sec.active_incidents_count === 0);
-      if (!isBlackout) return;
+      const sId = sec.sector_id.toLowerCase();
+      const coords = SECTOR_COORDS[sId] || [sec.latitude, sec.longitude];
+      const sevStyle = getSectorSeverity(sec.status, sec.severity_index, sec.threat_tier);
+      if (sevStyle.tier !== "CRITICAL" && sevStyle.tier !== "ELEVATED") return;
+      const haloColor = sevStyle.color;
+      const isCrit = sevStyle.tier === "CRITICAL";
 
       const haloIcon = L.divIcon({
         className: `silent-halo-${sec.sector_id}`,
         html: `
           <div style="position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; pointer-events: auto; cursor: pointer;">
             <!-- Radar ping halo 1 -->
-            <div style="position: absolute; inset: 0; border-radius: 9999px; background: rgba(239, 68, 68, 0.25); border: 2px solid #EF4444; animation: ping 2.5s cubic-bezier(0,0,0.2,1) infinite;"></div>
+            <div style="position: absolute; inset: 0; border-radius: 9999px; background: ${haloColor}25; border: 2px solid ${haloColor}; animation: ping 2.5s cubic-bezier(0,0,0.2,1) infinite;"></div>
             <!-- Radar ping halo 2 -->
-            <div style="position: absolute; inset: 8px; border-radius: 9999px; background: rgba(239, 68, 68, 0.35); border: 1.5px solid #EF4444; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
+            <div style="position: absolute; inset: 8px; border-radius: 9999px; background: ${haloColor}35; border: 1.5px solid ${haloColor}; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
             <!-- Center label badge -->
-            <div style="position: relative; z-index: 10; background: #000; border: 1.5px solid #EF4444; color: #EF4444; font-family: monospace; font-size: 8px; font-weight: 900; padding: 2px 4px; border-radius: 2px; white-space: nowrap; box-shadow: 0 0 12px #EF4444;">
-              SILENT ZONE
+            <div style="position: relative; z-index: 10; background: #000; border: 1.5px solid ${haloColor}; color: ${haloColor}; font-family: monospace; font-size: 8px; font-weight: 900; padding: 2px 4px; border-radius: 2px; white-space: nowrap; box-shadow: 0 0 12px ${haloColor};">
+              ${isCrit ? "SILENT ZONE" : "ELEVATED"}
             </div>
           </div>
         `,
@@ -551,10 +581,10 @@ export default function InteractiveVectorMap({
         iconAnchor: [32, 32],
       });
 
-      const marker = L.marker([sec.latitude, sec.longitude], { icon: haloIcon }).addTo(group);
+      const marker = L.marker(coords, { icon: haloIcon }).addTo(group);
       marker.bindTooltip(
-        `<div style="font-family: monospace; font-size: 11px; padding: 6px 10px; background: #0C0E12; color: #F87171; border-radius: 6px; border: 1px solid #EF4444;">
-          <strong>CRITICAL BLACKOUT: ${sec.sector_name.toUpperCase()}</strong><br/>
+        `<div style="font-family: monospace; font-size: 11px; padding: 6px 10px; background: #0C0E12; color: ${haloColor}; border-radius: 6px; border: 1px solid ${haloColor};">
+          <strong>${sevStyle.label}: ${sec.sector_name.toUpperCase()}</strong><br/>
           <span style="color: #FFF; font-size: 10px;">Zero incoming reports detected. Telecom &amp; physical isolation inferred.</span>
         </div>`,
         { direction: "top", offset: [0, -16], opacity: 0.95 }
@@ -641,16 +671,16 @@ export default function InteractiveVectorMap({
       const sectorId = sector.sector_id.toLowerCase();
       const coords = SECTOR_COORDS[sectorId] || [sector.latitude, sector.longitude];
       const isSelected = selectedSectorId?.toLowerCase() === sectorId;
-      const statusColor = getSectorStatusColor(sector);
-      const isoPct = getSectorIsolationPct(sectorId);
-      const isBlackout = sector.status === "blackout";
+      const sevStyle = getSectorSeverity(sector.status, sector.severity_index, sector.threat_tier);
+      const badgeText = sevStyle.badgeText;
+      const badgeColor = sevStyle.color;
 
       const calloutHtml = `
         <div style="
           position: relative;
           background: rgba(9, 11, 14, 0.92);
           backdrop-filter: blur(12px);
-          border: ${isSelected ? `2px solid #FFFFFF` : `1.5px solid ${statusColor}`};
+          border: ${isSelected ? `2px solid #FFFFFF` : `1.5px solid ${badgeColor}`};
           border-radius: 6px;
           padding: 4px 8px;
           color: #F4F4F0;
@@ -661,7 +691,7 @@ export default function InteractiveVectorMap({
           transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
         ">
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-            <span style="font-weight: 800; font-size: 11px; letter-spacing: 0.05em; color: ${statusColor};">
+            <span style="font-weight: 800; font-size: 11px; letter-spacing: 0.05em; color: ${badgeColor};">
               ${sector.sector_name.toUpperCase()}
             </span>
             <span style="
@@ -669,11 +699,11 @@ export default function InteractiveVectorMap({
               font-weight: 800;
               padding: 1px 4px;
               border-radius: 3px;
-              background: ${isBlackout ? "#EF4444" : statusColor}22;
-              color: ${isBlackout ? "#EF4444" : statusColor};
-              border: 1px solid ${isBlackout ? "#EF4444" : statusColor}55;
+              background: ${badgeColor}22;
+              color: ${badgeColor};
+              border: 1px solid ${badgeColor}55;
             ">
-              ${isBlackout ? "BLACKOUT" : `${isoPct}% ISO`}
+              ${badgeText}
             </span>
           </div>
           ${
@@ -714,6 +744,20 @@ export default function InteractiveVectorMap({
   return (
     <div className={`absolute inset-0 z-0 bg-[#090B0E] ${className}`}>
       <div ref={mapContainerRef} className="w-full h-full z-0" />
+      {/* Tactical Radar Skeleton Overlay during first paint */}
+      {isMapLoading && (
+        <div className="absolute inset-0 z-20 bg-[#090B0E] flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
+          <div className="relative w-16 h-16 mb-4 flex items-center justify-center">
+            <div className="absolute inset-0 rounded-full border border-blue-500/20 animate-ping" />
+            <div className="absolute inset-2 rounded-full border border-blue-400/40 animate-pulse" />
+            <div className="w-2.5 h-2.5 rounded-full bg-[#60A5FA]" />
+          </div>
+          <div className="text-[11px] font-mono-data text-[#94A3B8] uppercase tracking-widest font-bold flex items-center gap-2">
+            <span>INITIALIZING TACTICAL MAP CANVASES</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-ping" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

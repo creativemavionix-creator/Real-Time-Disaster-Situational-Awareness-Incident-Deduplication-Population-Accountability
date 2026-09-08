@@ -58,10 +58,11 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
     Includes memory leak prevention by pruning stale IP histories.
     """
 
-    def __init__(self, app, max_requests_per_minute: int = 180):
+    def __init__(self, app, max_requests_per_minute: int = 240):
         super().__init__(app)
         self.max_requests = max_requests_per_minute
         self.request_history: dict[str, list[float]] = defaultdict(list)
+        self.mutation_history: dict[str, list[float]] = defaultdict(list)
         self._last_cleanup = time.time()
 
     def _prune_stale_records(self, now: float, window_start: float):
@@ -73,12 +74,24 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
             ]
             for ip in stale_keys:
                 self.request_history.pop(ip, None)
+                self.mutation_history.pop(ip, None)
             self._last_cleanup = now
 
     async def dispatch(self, request: Request, call_next):
+        # 1. Preflight OPTIONS requests must never be rate-limited
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         client_ip = get_client_ip(request)
         now = time.time()
         window_start = now - 60.0
+
+        # Exempt local development loopback and test runners
+        if (
+            client_ip in ("testclient", "testserver", "127.0.0.1", "::1", "localhost")
+            or request.headers.get("X-Test-Runner") == "true"
+        ):
+            return await call_next(request)
 
         # Clean history older than 60s
         history = [t for t in self.request_history[client_ip] if t > window_start]
@@ -87,15 +100,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         # Periodic dictionary memory pruning
         self._prune_stale_records(now, window_start)
 
-        # Exempt or allow high throughput for automated test runners
-        if client_ip in ("testclient", "testserver") or request.headers.get("X-Test-Runner") == "true":
-            return await call_next(request)
-
-        # Stricter limit on mutation / review / seed endpoints
-        path = request.url.path
-        limit = 40 if any(p in path for p in ["/reports", "/verification/review", "/verification/execute-and-feed", "/seed"]) else self.max_requests
-
-        if len(history) >= limit:
+        if len(history) >= self.max_requests:
             return JSONResponse(
                 status_code=429,
                 content={
@@ -105,6 +110,23 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
                 },
                 headers={"Retry-After": "15"},
             )
+
+        # Track mutation / review endpoints independently so background polling doesn't starve them
+        path = request.url.path
+        if any(p in path for p in ["/reports/official", "/verification/review", "/verification/execute-and-feed", "/seed"]):
+            mut_history = [t for t in self.mutation_history[client_ip] if t > window_start]
+            self.mutation_history[client_ip] = mut_history
+            if len(mut_history) >= 60:
+                return JSONResponse(
+                    status_code=429,
+                    content={
+                        "error": "Too Many Requests",
+                        "message": "Mutation rate limit exceeded. Please back off before retrying.",
+                        "retry_after_seconds": 15,
+                    },
+                    headers={"Retry-After": "15"},
+                )
+            self.mutation_history[client_ip].append(now)
 
         self.request_history[client_ip].append(now)
         return await call_next(request)

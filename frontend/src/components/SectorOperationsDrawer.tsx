@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getSectorSeverity } from "@/lib/severity";
 import {
   GisSectorTelemetry,
   LocationStatusItem,
@@ -51,6 +52,8 @@ interface SectorOperationsDrawerProps {
   sector: GisSectorTelemetry;
   location?: LocationStatusItem | null;
   selectedHexagon?: H3HexagonItem | null;
+  simTime?: string;
+  disasterType?: string;
   onClose: () => void;
   onRefreshData?: () => void;
   onOpenPalikas?: (sectorId: string) => void;
@@ -60,6 +63,8 @@ export default function SectorOperationsDrawer({
   sector,
   location,
   selectedHexagon,
+  simTime,
+  disasterType,
   onClose,
   onRefreshData,
   onOpenPalikas,
@@ -90,8 +95,8 @@ export default function SectorOperationsDrawer({
           fetchSectorBaselineComparison(sId),
           fetchRankedVerificationObservations(),
           fetchDispatchDashboard(),
-          fetchSectorTelemetryComparison(sId).catch(() => null),
-          fetchSectorEmergencySupply(sId).catch(() => null),
+          fetchSectorTelemetryComparison(sId, disasterType, simTime).catch(() => null),
+          fetchSectorEmergencySupply(sId, disasterType, simTime).catch(() => null),
           fetchIntelligenceConflicts(sId).catch(() => null),
         ]);
         if (isMounted) {
@@ -111,7 +116,7 @@ export default function SectorOperationsDrawer({
     return () => {
       isMounted = false;
     };
-  }, [sId]);
+  }, [sId, simTime, disasterType]);
 
   const handleExecuteAction = async (rec: VerificationActionItem) => {
     setIsProcessingAction(true);
@@ -187,26 +192,35 @@ export default function SectorOperationsDrawer({
     (r) => r.target_sector_id.toLowerCase() === sId
   );
 
+  const effectiveStatus = location?.status || sector.status;
+  const telemScore = telemetryComparison?.silent_zone_risk_score ?? 0;
+  const gisScore = sector.severity_index ?? 0;
+  const effectiveRiskScore = Math.max(gisScore, telemScore);
+  const effectiveThreatTier = (gisScore >= telemScore && sector.threat_tier)
+    ? sector.threat_tier
+    : (telemetryComparison?.silent_zone_tier ?? sector.threat_tier);
+  const severityStyle = getSectorSeverity(
+    effectiveStatus,
+    effectiveRiskScore,
+    effectiveThreatTier
+  );
+
   return (
     <motion.aside
       initial={{ x: 420, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 420, opacity: 0 }}
       transition={{ type: "spring", damping: 24, stiffness: 200 }}
-      className="fixed top-0 right-0 bottom-0 w-full sm:w-[480px] lg:w-[520px] bg-[#090B0E]/95 backdrop-blur-2xl border-l border-white/10 z-50 flex flex-col text-[#F3F4F6] shadow-2xl font-mono-data"
+      className="fixed top-0 right-0 bottom-0 h-screen max-h-screen w-full sm:w-[480px] lg:w-[520px] bg-[#090B0E]/95 backdrop-blur-2xl border-l border-white/10 z-50 flex flex-col text-[#F3F4F6] shadow-2xl font-mono-data overflow-hidden"
+      onWheel={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
     >
       {/* Header */}
       <div className="p-5 border-b border-white/10 flex items-start justify-between gap-3 bg-[#0C0E12]/80">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span
-              className={`w-2.5 h-2.5 rounded-full ${
-                sector.status === "verified_damaged" || sector.status === "blackout"
-                  ? "bg-[#EF4444] animate-ping"
-                  : sector.status === "verified_safe"
-                  ? "bg-[#10B981]"
-                  : "bg-[#F59E0B]"
-              }`}
+              className={`w-2.5 h-2.5 rounded-full ${severityStyle.dotClass}`}
             />
             <span className="text-[10px] text-[#94A3B8] uppercase tracking-widest font-bold">
               OPERATIONAL SECTOR DOSSIER
@@ -214,8 +228,8 @@ export default function SectorOperationsDrawer({
           </div>
           <h2 className="text-xl font-bold font-display-calm text-white flex items-center gap-2">
             {sector.sector_name}
-            <span className="text-xs font-mono-data px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[#60A5FA]">
-              {sector.threat_tier}
+            <span className={`text-xs font-mono-data px-2 py-0.5 rounded border ${severityStyle.badgeClass}`}>
+              {severityStyle.label}
             </span>
           </h2>
           <div className="text-[11px] text-[#94A3B8] flex items-center gap-3">
@@ -306,7 +320,7 @@ export default function SectorOperationsDrawer({
       </div>
 
       {/* Drawer Body Content */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-6">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-5 space-y-6 custom-scrollbar">
         {actionMessage && (
           <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-xs text-[#60A5FA]">
             {actionMessage}
@@ -316,7 +330,11 @@ export default function SectorOperationsDrawer({
         {/* TAB 1: TELEMETRY & LIFELINES */}
         {activeTab === "telemetry" && (
           <div className="space-y-5">
-            <TelemetryComparisonMatrix telemetry={telemetryComparison} />
+            <TelemetryComparisonMatrix
+              telemetry={telemetryComparison}
+              sector={sector}
+              location={location}
+            />
 
             {/* Palika Municipality Census Button */}
             {onOpenPalikas && (

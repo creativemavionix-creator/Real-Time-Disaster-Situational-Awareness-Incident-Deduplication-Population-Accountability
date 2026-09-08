@@ -15,7 +15,10 @@ from app.pipeline.aggregator import aggregate_location
 from app.pipeline.blackout_risk import compute_spatial_physics, assess_sector_blackout_risk
 from app.pipeline.satellite_evidence import find_satellite_evidence
 from app.pipeline.h3_grid import generate_central_nepal_h3_hexagons
-from app.simulation.clock import get_simulated_time
+from app.simulation.clock import get_simulated_time, get_active_disaster_type
+from app.pipeline.telemetry_engine import compute_sector_telemetry
+
+from app.routers.locations import _get_latest_overrides_dict
 
 router = APIRouter(prefix="/gis", tags=["GIS & Situational Telemetry"])
 
@@ -41,35 +44,67 @@ def _db_to_report_item(r: ReportDB) -> ReportItem:
 @router.get("/telemetry", response_model=GisFeatureCollection, summary="Get real-time GIS spatial telemetry for all sectors")
 def get_gis_telemetry(
     sim_time: Optional[datetime] = Query(default=None, description="Optional simulated time override"),
+    disaster_type: Optional[str] = Query(default=None, description="Optional disaster category override"),
     db: Session = Depends(get_db),
 ):
     """Retrieve full geospatial telemetry, centroid coordinates, isolation indices, and hazard ratings."""
     effective_time = sim_time or get_simulated_time(db)
+    active_type = disaster_type if disaster_type else get_active_disaster_type()
 
     db_reports = db.query(ReportDB).filter(ReportDB.timestamp <= effective_time).all()
     report_items = [_db_to_report_item(r) for r in db_reports]
 
     all_locs = get_all_locations()
+    overrides = _get_latest_overrides_dict(db)
     sectors_telemetry: list[GisSectorTelemetry] = []
 
     for loc in all_locs:
-        agg = aggregate_location(location=loc, reports=report_items, simulated_now=effective_time)
+        loc_override = overrides.get(loc.id.lower())
+        agg = aggregate_location(
+            location=loc,
+            reports=report_items,
+            simulated_now=effective_time,
+            operator_override=loc_override,
+        )
         physics = compute_spatial_physics(loc)
-        blackout = assess_sector_blackout_risk(location=loc, reports=report_items, simulated_now=effective_time)
+        blackout = assess_sector_blackout_risk(
+            location=loc,
+            reports=report_items,
+            simulated_now=effective_time,
+            operator_override=loc_override,
+        )
         sat_evidence = find_satellite_evidence(lat=loc.lat, lon=loc.lon, sector_id=loc.id)
+
+        # 4-Lifeline & Telemetry Deficit Engine
+        loc_reports_count = sum(1 for r in db_reports if r.resolved_location_id == loc.id.lower())
+        telem = compute_sector_telemetry(
+            sector_id=loc.id,
+            disaster_type=active_type,
+            simulated_now=effective_time,
+            observed_reports_count=loc_reports_count,
+            operator_override=loc_override,
+        )
 
         # Total estimated casualties in sector
         cas_sum = sum(c.casualty_estimate or 0 for c in agg.top_incidents)
 
         # Severity index (0.0 to 10.0)
-        sev_index = round(
-            (agg.confidence_score * 5.0) +
-            (physics.epicenter_distance_hazard * 3.0) +
-            (physics.landslide_susceptibility_index * 2.0),
+        cas_factor = min(2.0, round(cas_sum * 0.1, 1))
+        damage_sev = min(10.0, round(
+            (agg.confidence_score * 4.5) +
+            (physics.epicenter_distance_hazard * 2.5) +
+            (physics.landslide_susceptibility_index * 1.5) +
+            cas_factor,
             1
-        ) if agg.status == "verified_damaged" else (
-            round(blackout.inferred_risk_score / 10.0, 1) if agg.status == "blackout" else 1.5
+        )) if agg.status == "verified_damaged" else (
+            round(blackout.inferred_risk_score / 10.0, 1) if agg.status == "blackout" else (
+                0.5 if agg.status == "verified_safe" else 1.5
+            )
         )
+
+        # Unified Mathematical Risk Score & Threat Tier
+        unified_sev = max(damage_sev, telem.silent_zone_risk_score)
+        unified_tier = blackout.threat_tier if damage_sev >= telem.silent_zone_risk_score else telem.silent_zone_tier
 
         sectors_telemetry.append(
             GisSectorTelemetry(
@@ -77,8 +112,8 @@ def get_gis_telemetry(
                 sector_name=loc.name,
                 status=agg.status,
                 confidence_score=agg.confidence_score,
-                severity_index=min(10.0, max(0.0, sev_index)),
-                threat_tier=blackout.threat_tier,
+                severity_index=min(10.0, max(0.0, round(unified_sev, 1))),
+                threat_tier=unified_tier,
                 latitude=loc.lat,
                 longitude=loc.lon,
                 elevation_meters=physics.elevation_meters,
@@ -243,10 +278,12 @@ def get_telemetry_comparison(
             sec = r.resolved_location_id.lower()
             counts[sec] = counts.get(sec, 0) + 1
 
+    overrides = _get_latest_overrides_dict(db)
     sectors_data = compute_all_sectors_telemetry(
         disaster_type=chosen_type,
         simulated_now=effective_time,
         observed_counts_by_sector=counts,
+        overrides_by_sector=overrides,
     )
 
     return {
@@ -276,11 +313,15 @@ def get_single_sector_telemetry_comparison(
         ReportDB.resolved_location_id == sector_id.lower(),
     ).count()
 
+    overrides = _get_latest_overrides_dict(db)
+    loc_override = overrides.get(sector_id.lower())
+
     telemetry = compute_sector_telemetry(
         sector_id=sector_id,
         disaster_type=chosen_type,
         simulated_now=effective_time,
         observed_reports_count=db_reports,
+        operator_override=loc_override,
     )
     return telemetry.model_dump()
 

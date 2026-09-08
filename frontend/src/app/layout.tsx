@@ -66,6 +66,7 @@ export const metadata: Metadata = {
 
 import { CinematicNoise } from "@/components/CinematicNoise";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
+import "lenis/dist/lenis.css";
 
 export default function RootLayout({
   children,
@@ -76,11 +77,18 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakarta.variable} ${dmSans.variable} ${jetbrainsMono.variable} ${newsreader.variable} dark h-full antialiased`}
+      className={`${plusJakarta.variable} ${dmSans.variable} ${jetbrainsMono.variable} ${newsreader.variable} dark min-h-screen antialiased`}
     >
+      <head>
+        <link rel="preconnect" href="https://server.arcgisonline.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://basemaps.cartocdn.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://server.arcgisonline.com" />
+        <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
+        <link rel="dns-prefetch" href="https://tile.opentopomap.org" />
+      </head>
       <body
         suppressHydrationWarning
-        className="min-h-full flex flex-col"
+        className="min-h-screen flex flex-col"
         style={{ backgroundColor: "var(--bg-void)", color: "var(--fg-primary)" }}
       >
         <ThemeProvider>

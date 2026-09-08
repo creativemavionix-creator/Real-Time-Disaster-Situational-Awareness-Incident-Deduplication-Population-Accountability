@@ -31,6 +31,7 @@ import { FloatingCommandBar } from "@/components/FloatingCommandBar";
 import { SectorDetailPanel } from "@/components/SectorDetailPanel";
 import { useViewMode } from "@/context/ViewModeContext";
 import { TacticalAudio } from "@/lib/TacticalAudio";
+import { getSectorSeverity } from "@/lib/severity";
 
 export default function GisMapPage() {
   const [locations, setLocations] = useState<LocationStatusItem[]>([]);
@@ -57,7 +58,7 @@ export default function GisMapPage() {
     showSilentHalos: true,
     showCorridors: true,
     showSatelliteLayer: true,
-    baseMapStyle: "opentopo",
+    baseMapStyle: "dark",
   });
 
   // Palikas Modal State
@@ -73,7 +74,7 @@ export default function GisMapPage() {
       const [locsRes, sim, gis, exp, presetsRes, propRes] = await Promise.all([
         fetchAllLocationsStatus(),
         fetchSimulationState(),
-        fetchGisTelemetry(),
+        fetchGisTelemetry(undefined, activeDisasterType),
         fetchPopulationExposure(),
         fetchScenarioPresets().catch(() => null),
         fetchPropagationPath(activeDisasterType).catch(() => null),
@@ -199,14 +200,14 @@ export default function GisMapPage() {
     return acc;
   }, {});
 
-  const activeCriticalCount =
-    (summaryCounts.verified_damaged || 0) +
-    (summaryCounts.blackout || 0) +
-    (summaryCounts.unverified || 0);
+  const activeCriticalCount = gisSectors.filter(
+    (s) => s.status === "verified_damaged" || s.severity_index >= 7.0
+  ).length;
 
-  const worstSector = locations.find(
-    (l) => l.status === "verified_damaged" || l.status === "blackout"
-  ) || locations[0];
+  const worstSector = gisSectors.reduce((prev, curr) =>
+    (curr.severity_index > (prev?.severity_index || 0)) ? curr : prev,
+    gisSectors[0]
+  );
 
   // Tactical Keyboard Shortcuts Engine
   useEffect(() => {
@@ -313,7 +314,7 @@ export default function GisMapPage() {
           simulationState={simulationState}
           activeCriticalCount={activeCriticalCount || 0}
           totalExposedMillion={(exposureData?.total_national_exposed_population || 0) / 1000000}
-          worstSectorName={worstSector?.location_name || "Unknown"}
+          worstSectorName={worstSector?.sector_name || "Unknown"}
           onAdvanceHours={handleAdvanceHours}
           isLoading={isLoading}
         />
@@ -326,6 +327,8 @@ export default function GisMapPage() {
             sector={activeSector}
             location={activeLocation}
             selectedHexagon={selectedHexagon}
+            simTime={simulationState?.current_simulated_time}
+            disasterType={activeDisasterType}
             onClose={() => setIsDrawerOpen(false)}
             onRefreshData={loadData}
             onOpenPalikas={handleOpenPalikas}
@@ -364,7 +367,8 @@ export default function GisMapPage() {
 
           {locations.map((loc) => {
             const isSelected = loc.location_id.toLowerCase() === selectedSectorId.toLowerCase();
-            const isCrit = loc.status === "blackout" || loc.status === "verified_damaged";
+            const sec = gisSectors.find((s) => s.sector_id.toLowerCase() === loc.location_id.toLowerCase());
+            const sevStyle = getSectorSeverity(loc.status, sec?.severity_index, sec?.threat_tier);
             return (
               <button
                 key={loc.location_id}
@@ -373,24 +377,10 @@ export default function GisMapPage() {
                   TacticalAudio.playClick();
                 }}
                 className={`px-3 py-1.5 rounded-xl font-mono-data text-xs flex items-center gap-2 transition-all cursor-pointer border ${
-                  isSelected
-                    ? "bg-white/15 border-white/30 text-white font-bold shadow-lg"
-                    : isCrit
-                    ? "bg-rose-500/10 border-rose-500/20 text-[#FB7185] hover:bg-rose-500/20"
-                    : "bg-white/[0.03] border-white/5 text-[#94A3B8] hover:text-white hover:bg-white/10"
+                  isSelected ? sevStyle.selectedClass : sevStyle.pillClass
                 }`}
               >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    loc.status === "blackout"
-                      ? "bg-[#E11D48] animate-ping"
-                      : loc.status === "verified_damaged"
-                      ? "bg-rose-500"
-                      : loc.status === "unverified"
-                      ? "bg-amber-500"
-                      : "bg-emerald-500"
-                  }`}
-                />
+                <span className={`w-1.5 h-1.5 rounded-full ${sevStyle.dotClass}`} />
                 <span className="truncate max-w-[90px]">{loc.location_name}</span>
               </button>
             );

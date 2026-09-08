@@ -10,7 +10,7 @@ function getSanitizedApiUrl(): string {
   }
   if (typeof window !== "undefined") {
     if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-      return "http://localhost:8000";
+      return `http://${window.location.hostname}:8000`;
     }
   } else if (process.env.NODE_ENV === "development") {
     return "http://localhost:8000";
@@ -643,10 +643,12 @@ export async function submitReport(payload: {
 }
 
 // Capability 1: GIS & H3 Hexagonal Grid
-export async function fetchGisTelemetry(simTime?: string): Promise<GisFeatureCollection> {
-  const url = simTime
-    ? `${API_BASE_URL}/gis/telemetry?sim_time=${encodeURIComponent(simTime)}`
-    : `${API_BASE_URL}/gis/telemetry`;
+export async function fetchGisTelemetry(simTime?: string, disasterType?: string): Promise<GisFeatureCollection> {
+  const params = new URLSearchParams();
+  if (simTime) params.append("sim_time", simTime);
+  if (disasterType) params.append("disaster_type", disasterType);
+  const query = params.toString();
+  const url = query ? `${API_BASE_URL}/gis/telemetry?${query}` : `${API_BASE_URL}/gis/telemetry`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch GIS telemetry`);
   return res.json();
@@ -1213,6 +1215,7 @@ export interface AuditTrailResponse {
 
 export interface ExecutionResultPayload {
   recommendation_id: string;
+  sector_id?: string;
   observed_finding: string;
   evidence_direction: "positive" | "negative";
   damage_confirmed: boolean;
@@ -1271,6 +1274,12 @@ export async function fetchSectorCounterfactuals(sectorId: string): Promise<Sect
 export async function fetchRankedVerificationObservations(): Promise<RankedObservationsResponse> {
   const res = await fetch(`${API_BASE_URL}/verification/next-best-observations`, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch ranked verification observations`);
+  return res.json();
+}
+
+export async function fetchSectorVerificationActions(sectorId: string): Promise<VerificationActionItem[]> {
+  const res = await fetch(`${API_BASE_URL}/verification/sector/${encodeURIComponent(sectorId)}`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}: Failed to fetch sector verification actions for ${sectorId}`);
   return res.json();
 }
 
