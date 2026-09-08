@@ -7,13 +7,13 @@
 
 @layer base {
   :root {
-    /* SURFACE RAMP (perceived-lightness spaced, not flat) */
-    --bg-void:     #06080B;
-    --bg-base:     #0A0D12;
-    --bg-recessed: #0E1219;
-    --bg-surface:  #131820;
-    --bg-raised:   #1A2030;
-    --bg-overlay:  #222B3A;
+    /* SURFACE RAMP (warm tactical slate, perceived-lightness spaced, not flat black) */
+    --bg-void:     #080B0F;
+    --bg-base:     #0D1117;
+    --bg-recessed: #111620;
+    --bg-surface:  #161C28;
+    --bg-raised:   #1D2536;
+    --bg-overlay:  #242E42;
 
     /* PRIMARY BRAND ACCENT: SIGNAL CRIMSON */
     --crimson-50:  #FFF0F2;
@@ -581,11 +581,39 @@ html, body {
 }
 
 /* ============================================================
-   PRINT
+   PRINT & EXECUTIVE PDF EXPORT STYLES
    ============================================================ */
 
 @media print {
-  body { background: white; color: black; }
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+
+  header, footer, nav, .no-print {
+    display: none !important;
+  }
+
+  .printable-document {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+  }
+
+  .printable-document * {
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+    background: transparent !important;
+  }
+
+  .print-page-break {
+    page-break-before: always;
+  }
 }
 
 /* ============================================================

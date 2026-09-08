@@ -243,24 +243,34 @@ export function BayesianEntropyChamber() {
                 { code: "H3", name: "Spontaneous Evacuation", p: probs.H3, desc: "Villages assembled in open football grounds" },
                 { code: "H4", name: "Sensor Telemetry Fault", p: probs.H4, desc: "Data loggers depowered; normal human activity" },
                 { code: "H5", name: "Catastrophic Structural Rupture", p: probs.H5, desc: "Widespread collapse, trapped casualties in silent zone", dominant: probs.H5 > 0.5 },
-              ].map((h) => {
+              ].map((h, idx) => {
                 const percentage = Math.round(h.p * 100);
                 return (
-                  <div key={h.code} className="space-y-1.5 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+                  <div
+                    key={h.code}
+                    className={`space-y-1.5 p-3 rounded-xl border transition-all ${
+                      h.dominant
+                        ? "bg-rose-950/20 border-rose-500/40 shadow-lg shadow-rose-950/20"
+                        : "bg-white/[0.02] border-white/5"
+                    }`}
+                  >
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`px-1.5 py-0.5 rounded font-bold text-[10px] ${
+                          className={`px-1.5 py-0.5 rounded font-bold text-[10px] font-mono-data ${
                             h.dominant
-                              ? "bg-[#E11D48] text-white"
-                              : "bg-white/10 text-[#94A3B8]"
+                              ? "bg-[#E11D48] text-white shadow-sm"
+                              : "bg-white/10 text-[#9AAABE]"
                           }`}
                         >
                           {h.code}
                         </span>
-                        <span className="text-white font-medium">{h.name}</span>
+                        <span className="text-white font-medium flex items-center gap-1.5">
+                          {h.dominant && <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping" />}
+                          {h.name}
+                        </span>
                       </div>
-                      <span className={`font-bold ${h.dominant ? "text-[#FB7185]" : "text-[#94A3B8]"}`}>
+                      <span className={`font-mono-data font-bold tabular-nums ${h.dominant ? "text-rose-400 text-sm" : "text-[#9AAABE]"}`}>
                         {percentage}%
                       </span>
                     </div>
@@ -270,12 +280,18 @@ export function BayesianEntropyChamber() {
                         className={`h-full rounded-full ${
                           h.dominant ? "bg-[#E11D48]" : "bg-white/30"
                         }`}
+                        initial={{ width: 0 }}
                         animate={{ width: `${percentage}%` }}
-                        transition={{ type: "spring", stiffness: 120, damping: 20 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 100,
+                          damping: 18,
+                          delay: idx * 0.07, // Staggered sequenced reveal like incoming telemetry
+                        }}
                       />
                     </div>
 
-                    <div className="text-[10px] text-[#64748B]">{h.desc}</div>
+                    <div className="font-body-prose text-[10px] text-[#5C6E84]">{h.desc}</div>
                   </div>
                 );
               })}

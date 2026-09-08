@@ -141,26 +141,57 @@ export function StickyStackFallacy() {
                   Immediately following seismic rupture, connected urban citizens flooded emergency dispatch with duplicate social media posts and calls regarding non-structural cosmetic drywall cracks.
                 </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono-data text-xs">
-                  <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
-                    <span className="text-[#64748B] uppercase">Incoming 911 Calls</span>
-                    <div className="text-3xl font-bold text-white">4,820 / hr</div>
-                    <span className="text-[11px] text-[#94A3B8]">Cosmetic cracking & minor panics</span>
+                <p className="font-body-prose text-sm text-[#9AAABE] max-w-3xl leading-relaxed">
+                  Immediately following the rupture, connected urban citizens flooded emergency dispatch with calls regarding minor cosmetic plaster cracks and perimeter wall tremors.
+                </p>
+
+                {/* Asymmetric editorial split instead of 3 uniform bordered cards */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                  {/* Left: Unboxed dominant telemetry numbers */}
+                  <div className="lg:col-span-7 flex flex-col justify-between p-6 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
+                    <div className="flex items-center justify-between font-mono-data text-xs border-b border-white/10 pb-3">
+                      <span className="text-[#5C6E84] uppercase tracking-wider">Observed Signal Flooding</span>
+                      <span className="text-[#38BDF8] font-bold">Backhaul 100% Operational</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="font-mono-data text-[10px] text-[#9AAABE] uppercase">Emergency Calls</div>
+                        <div className="font-display-calm text-3xl sm:text-4xl font-bold text-white tabular-nums">4,820<span className="text-xs text-[#5C6E84] font-normal">/hr</span></div>
+                        <div className="font-body-prose text-[11px] text-[#5C6E84] mt-1">Cosmetic drywall & panic traffic</div>
+                      </div>
+                      <div>
+                        <div className="font-mono-data text-[10px] text-[#9AAABE] uppercase">Social Media Telemetry</div>
+                        <div className="font-display-calm text-3xl sm:text-4xl font-bold text-white tabular-nums">38,400+</div>
+                        <div className="font-body-prose text-[11px] text-[#5C6E84] mt-1">High-bandwidth urban uploads</div>
+                      </div>
+                    </div>
+                    <div className="font-mono-data text-[11px] text-[#5C6E84] pt-2 border-t border-white/5">
+                      Signal saturation created an illusion of epicentral ground zero within Kathmandu Valley.
+                    </div>
                   </div>
-                  <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
-                    <span className="text-[#64748B] uppercase">Social Media Telemetry</span>
-                    <div className="text-3xl font-bold text-white">38,000+ Posts</div>
-                    <span className="text-[11px] text-[#94A3B8]">High cellular backhaul availability</span>
-                  </div>
-                  <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-1">
-                    <span className="text-amber-400 uppercase">Naive Dispatch Bias</span>
-                    <div className="text-2xl font-bold text-amber-300">82% FLEET DIVERTED</div>
-                    <span className="text-[11px] text-amber-400/80">Dispatched by raw call volume</span>
+
+                  {/* Right: Dominant Critical Misallocation Alert (Red / Life-Safety) */}
+                  <div className="lg:col-span-5 p-6 rounded-2xl bg-rose-950/30 border border-rose-500/30 flex flex-col justify-between space-y-3">
+                    <div className="flex items-center gap-2 font-mono-data text-[10px] font-bold text-rose-400 uppercase tracking-wider">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                      CRITICAL DISPATCH MISALLOCATION
+                    </div>
+                    <div>
+                      <div className="font-display-calm text-4xl sm:text-5xl font-black text-rose-200 tracking-tight">
+                        82% FLEET
+                      </div>
+                      <div className="font-mono-data text-xs text-rose-300 font-bold uppercase mt-1">
+                        Diverted Away from Actual Epicenter
+                      </div>
+                    </div>
+                    <p className="font-body-prose text-xs text-rose-200/80 leading-relaxed">
+                      Conventional CAD systems prioritized dispatch queues by raw volume, sending ambulances to non-structural incidents while the true epicenter remained unserved.
+                    </p>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-white/10 flex items-center justify-between font-mono-data text-xs">
-                  <span className="text-[#64748B]">Conventional dashboards mistake volume for severity.</span>
+                  <span className="text-[#5C6E84]">Conventional dashboards mistake volume for severity.</span>
                   <button
                     onClick={handleNext}
                     className="btn-action-primary text-xs py-2 px-4 rounded-xl flex items-center gap-2 cursor-pointer"
@@ -179,11 +210,12 @@ export function StickyStackFallacy() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -14 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                className="rounded-3xl bg-[#0C0E12] border border-rose-500/30 p-6 sm:p-10 space-y-8 shadow-2xl"
+                className="rounded-3xl bg-[#0D1117] border border-rose-500/30 p-6 sm:p-10 space-y-8 shadow-2xl"
               >
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5">
                   <div className="space-y-1">
-                    <span className="font-mono-data text-[10px] text-[#E11D48] tracking-widest uppercase">
+                    <span className="font-mono-data text-[10px] text-[#E11D48] tracking-widest uppercase flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                       STAGE 02 &bull; HIGH MOUNTAIN DECAPITATION
                     </span>
                     <h3 className="font-display-calm text-2xl sm:text-3xl text-white font-medium">
@@ -193,32 +225,43 @@ export function StickyStackFallacy() {
                   <span className="chip-critical text-xs">Total Telecom Blackout</span>
                 </div>
 
-                <p className="font-body-prose text-sm text-[#94A3B8] max-w-3xl leading-relaxed">
-                  28km away at the epicenter, stone-masonry homes collapsed completely. But because BTS backup batteries drained and transmission pylons severed, <strong className="text-white">zero calls could escape the gorge</strong>.
+                <p className="font-body-prose text-sm text-[#9AAABE] max-w-3xl leading-relaxed">
+                  28km away at the epicenter, stone-masonry homes collapsed completely. But because BTS backup batteries drained and transmission pylons severed, <strong className="text-white">zero communications could escape the gorge</strong>.
                 </p>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono-data text-xs">
-                  <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
-                    <span className="text-[#64748B] uppercase">Incoming 911 Calls</span>
-                    <div className="text-3xl font-bold text-[#FB7185]">0 Calls</div>
-                    <span className="text-[11px] text-[#94A3B8]">BTS towers and optical links severed</span>
+                {/* Asymmetric contrast display */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                  <div className="lg:col-span-6 p-6 rounded-2xl bg-black/40 border border-white/10 space-y-4">
+                    <div className="font-mono-data text-[10px] text-[#5C6E84] uppercase tracking-wider">
+                      Ground Physical Shock
+                    </div>
+                    <div className="font-display-calm text-3xl font-bold text-white">
+                      MMI IX <span className="text-rose-400 text-lg font-mono-data font-normal">(PGA &gt; 0.48g)</span>
+                    </div>
+                    <p className="font-body-prose text-xs text-[#9AAABE] leading-relaxed">
+                      Catastrophic shaking crushed non-reinforced adobe masonry. 92% of residential structures experienced instantaneous collapse.
+                    </p>
                   </div>
-                  <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-1">
-                    <span className="text-[#64748B] uppercase">Social Media Signal</span>
-                    <div className="text-3xl font-bold text-[#FB7185]">0 Posts</div>
-                    <span className="text-[11px] text-[#94A3B8]">Zero internet backhaul reach</span>
-                  </div>
-                  <div className="p-5 rounded-2xl bg-rose-500/10 border border-rose-500/20 space-y-1">
-                    <span className="text-rose-400 uppercase">Legacy Algorithm Verdict</span>
-                    <div className="text-xl font-bold text-rose-300">STATUS: SAFE / CLEAR</div>
-                    <span className="text-[11px] text-rose-400">Zero search-and-rescue teams assigned</span>
+
+                  <div className="lg:col-span-6 p-6 rounded-2xl bg-rose-950/20 border border-rose-500/30 space-y-4 flex flex-col justify-between">
+                    <div>
+                      <div className="font-mono-data text-[10px] text-rose-400 uppercase tracking-wider">
+                        Observed Signal Influx
+                      </div>
+                      <div className="font-display-calm text-4xl font-extrabold text-rose-300">
+                        0 CALLS &bull; 0 POSTS
+                      </div>
+                    </div>
+                    <div className="p-3 rounded-lg bg-rose-900/30 border border-rose-500/20 font-mono-data text-xs text-rose-200">
+                      <strong>LEGACY CAD VERDICT:</strong> Flagged as Nominal / No Action Required due to zero incoming distress calls.
+                    </div>
                   </div>
                 </div>
 
                 <div className="pt-4 border-t border-white/10 flex items-center justify-between font-mono-data text-xs">
                   <button
                     onClick={handlePrev}
-                    className="text-[#94A3B8] hover:text-white flex items-center gap-1.5 cursor-pointer"
+                    className="text-[#9AAABE] hover:text-white flex items-center gap-1.5 cursor-pointer"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
                     <span>Back to Urban Trap</span>

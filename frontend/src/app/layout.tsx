@@ -68,6 +68,8 @@ import { CinematicNoise } from "@/components/CinematicNoise";
 import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import "lenis/dist/lenis.css";
 
+import { Footer } from "@/components/Footer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -97,6 +99,7 @@ export default function RootLayout({
               <CinematicNoise />
               <Navbar />
               <main className="flex-1 flex flex-col">{children}</main>
+              <Footer />
             </SmoothScrollProvider>
           </ViewModeProvider>
         </ThemeProvider>

@@ -29,6 +29,21 @@ interface NavPillar {
 
 const NAV_PILLARS: NavPillar[] = [
   {
+    id: "dossier",
+    code: "00",
+    label: "Dossier",
+    primaryHref: "/doctrine",
+    subRoutes: [
+      { label: "The Core Doctrine", href: "/doctrine", description: "Silence is Not Safety & the reporting bias trap" },
+      { label: "Six Capabilities", href: "/methodology", description: "Plain-English walkthrough of platform engines" },
+      { label: "Disaster Archetypes", href: "/disasters", description: "Physical profiles across 5 catastrophe classes" },
+      { label: "Barpak Counterfactual", href: "/scenario", description: "Conventional vs PRATYAKSH-Ω dispatch walk-through" },
+      { label: "Data Provenance", href: "/data-sources", description: "UNOSAT, Copernicus SAR, and CBS Census matrix" },
+      { label: "Operational Glossary", href: "/glossary", description: "Plain-language definitions for stakeholders" },
+      { label: "Executive Brief", href: "/brief", description: "Printable single-page overview & PDF export" },
+    ],
+  },
+  {
     id: "situation",
     code: "01",
     label: "Situation",

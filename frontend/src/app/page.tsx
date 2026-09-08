@@ -577,10 +577,10 @@ export default function OverviewPage() {
         }}
       >
         <div className="max-w-6xl mx-auto space-y-12">
-          {/* Section header — eyebrow + headline only, no redundant body beneath */}
+          {/* Section header — clean authoritative eyebrow without decorative icon */}
           <div className="space-y-4">
             <div className="type-eyebrow flex items-center gap-2">
-              <Radio className="w-3.5 h-3.5" />
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
               <span>04 // Lifeline Telemetry Matrix</span>
             </div>
             <h2
