@@ -10,7 +10,8 @@ from fastapi.exceptions import RequestValidationError
 from app.config import settings
 from app.database import init_db, SessionLocal
 from app.pipeline.embedder import get_model
-from app.simulation.clock import get_or_create_clock, get_simulated_time
+from app.models.db import ReportDB
+from app.simulation.clock import get_or_create_clock, get_simulated_time, advance_clock
 from app.simulation.generator import seed_database
 from app.pipeline.population_exposure import seed_initial_missing_persons, seed_palika_census_data
 from app.pipeline.dispatch_engine import seed_initial_resource_units
@@ -51,11 +52,19 @@ async def lifespan(app: FastAPI):
     # 2. Initialize simulation clock, seed synthetic reports, missing persons, census palikas, and tactical units
     db = SessionLocal()
     try:
-        get_or_create_clock(db)
+        clock = get_or_create_clock(db)
         seeded_count = seed_database(db, force=False)
         mp_count = seed_initial_missing_persons(db)
         palika_count = seed_palika_census_data(db)
         units_count = seed_initial_resource_units(db)
+        
+        # Default Startup Timeline: advance to active crisis window if clock is at T0 with 0 active reports
+        active_count = db.query(ReportDB).filter(ReportDB.timestamp <= clock.current_sim_time).count()
+        if active_count == 0 and clock.current_sim_time <= clock.start_time:
+            advance_clock(db, hours=settings.DEFAULT_STARTUP_ELAPSED_HOURS)
+            clock = get_or_create_clock(db)
+            logger.info(f"Default startup timeline applied: advanced to T+{settings.DEFAULT_STARTUP_ELAPSED_HOURS}h")
+
         sim_time = get_simulated_time(db)
         logger.info(
             f"Database initialized. Reports: {seeded_count}, Missing Persons: {mp_count}, "

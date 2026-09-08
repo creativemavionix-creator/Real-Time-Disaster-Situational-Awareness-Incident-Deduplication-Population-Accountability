@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     # Default Simulation Clock Time
     SIMULATION_START_TIME: datetime = datetime(2026, 8, 30, 6, 0, 0, tzinfo=timezone.utc)
     SIMULATION_DURATION_HOURS: float = 24.0
+    DEFAULT_STARTUP_ELAPSED_HOURS: float = 3.0  # Initial crisis timeline offset on fresh startup/deploy
     
     # CORS Origins (Includes Vercel Production, Previews, and Localhost)
     CORS_ORIGINS: list[str] = [

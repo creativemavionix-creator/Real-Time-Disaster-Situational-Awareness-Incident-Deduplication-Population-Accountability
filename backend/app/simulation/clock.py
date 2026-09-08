@@ -18,9 +18,10 @@ def get_or_create_clock(db: Session) -> SimulationClockDB:
         if start_t.tzinfo is None:
             start_t = start_t.replace(tzinfo=timezone.utc)
             
+        initial_sim_t = start_t + timedelta(hours=settings.DEFAULT_STARTUP_ELAPSED_HOURS)
         clock = SimulationClockDB(
             id=1,
-            current_sim_time=start_t,
+            current_sim_time=initial_sim_t,
             start_time=start_t,
             is_running=False
         )
