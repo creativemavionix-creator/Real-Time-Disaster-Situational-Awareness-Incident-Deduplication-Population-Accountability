@@ -27,17 +27,26 @@ def execute_action_and_feed_reality(
     if simulated_now is None:
         simulated_now = datetime.now(timezone.utc)
 
-    # Extract sector ID from recommendation ID prefix
-    sector_id = "gorkha"
-    parts = payload.recommendation_id.split("-")
-    if len(parts) >= 2:
-        prefix = parts[1].lower()
-        sector_mapping = {
-            "gkh": "gorkha", "rsw": "rasuwa", "sdp": "sindhupalchok",
-            "ktm": "kathmandu", "bkt": "bhaktapur", "nwk": "nuwakot",
-            "dlk": "dolakha", "sdl": "sindhuli",
-        }
-        sector_id = sector_mapping.get(prefix, "gorkha")
+    # Extract sector ID from payload directly or recommendation ID prefix
+    sector_id = getattr(payload, "sector_id", None)
+    if not sector_id:
+        parts = payload.recommendation_id.split("-")
+        if len(parts) >= 2:
+            prefix = parts[1].lower()
+            sector_mapping = {
+                "gor": "gorkha", "gkh": "gorkha",
+                "ras": "rasuwa", "rsw": "rasuwa",
+                "sdp": "sindhupalchok", "sin": "sindhuli", "sdl": "sindhuli",
+                "ktm": "kathmandu", "kat": "kathmandu",
+                "bkt": "bhaktapur", "bha": "bhaktapur",
+                "nwk": "nuwakot", "nuw": "nuwakot",
+                "dlk": "dolakha", "dol": "dolakha",
+            }
+            sector_id = sector_mapping.get(prefix, "gorkha")
+        else:
+            sector_id = "gorkha"
+
+    sector_id = sector_id.lower()
 
     # Evaluate previous hypothesis state
     prev_hyp = evaluate_sector_hypotheses(sector_id, simulated_now)
@@ -76,7 +85,14 @@ def execute_action_and_feed_reality(
     updated_entropy = updated_hyp.uncertainty_entropy
     entropy_reduction = round(max(0.0, prev_entropy - updated_entropy), 3)
 
-    # 4. Link resulting evidence to audit trail if exists
+    # 4. Link resulting evidence to audit trail if exists & update registry
+    from app.pipeline.governance import _ACTION_STATUS_REGISTRY
+    _ACTION_STATUS_REGISTRY[payload.recommendation_id] = "EXECUTED"
+    parts = payload.recommendation_id.split("-")
+    if len(parts) >= 3:
+        prefix_key = f"{parts[0]}-{parts[1]}-{parts[2]}".upper()
+        _ACTION_STATUS_REGISTRY[prefix_key] = "EXECUTED"
+
     for audit in _AUDIT_LOGS:
         if audit.recommendation_id == payload.recommendation_id:
             audit.resulting_evidence_id = new_ev.evidence_id

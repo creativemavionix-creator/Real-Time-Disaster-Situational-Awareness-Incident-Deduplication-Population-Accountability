@@ -692,7 +692,7 @@ class VerificationActionItem(BaseModel):
     eta_minutes: int
     ranking_score: float
     justification: str
-    status: Literal["PENDING_REVIEW", "APPROVED", "MODIFIED", "REJECTED", "EXECUTED"]
+    status: Literal["PENDING_REVIEW", "APPROVED", "MODIFIED", "REJECTED", "EXECUTED", "COMPLETED"]
     created_at: datetime
 
 
@@ -706,10 +706,10 @@ class RankedObservationsResponse(BaseModel):
 class ActionReviewRequest(BaseModel):
     recommendation_id: str
     decision: Literal["APPROVED", "MODIFIED", "REJECTED"]
-    reviewer_role: Literal["Viewer", "Analyst", "Officer", "Administrator", "Auditor"] = "Officer"
-    reviewer_name: str = "Duty Operations Commander"
-    justification: str
-    modifications: Optional[dict[str, Any]] = None
+    reviewer_role: Literal["Viewer", "Analyst", "Officer", "Administrator", "Auditor"]
+    reviewer_name: str
+    justification: Optional[str] = None
+    modification_notes: Optional[str] = None
 
 
 class ActionReviewResponse(BaseModel):
@@ -717,7 +717,7 @@ class ActionReviewResponse(BaseModel):
     recommendation_id: str
     decision: str
     reviewer_role: str
-    status: str
+    status: Literal["RECORDED", "FORBIDDEN", "ERROR"]
     message: str
     timestamp: datetime
 
@@ -732,8 +732,8 @@ class ActionAuditItem(BaseModel):
     decision: str
     reviewer_role: str
     reviewer_name: str
-    justification: Optional[str]
-    resulting_evidence_id: Optional[str]
+    justification: Optional[str] = None
+    resulting_evidence_id: Optional[str] = None
     timestamp: datetime
 
 
@@ -748,6 +748,7 @@ class ExecutionResultPayload(BaseModel):
     evidence_direction: Literal["positive", "negative"] = "positive"
     damage_confirmed: bool = True
     reliability: float = 0.95
+    sector_id: Optional[str] = None
 
 
 class FeedbackLoopResultResponse(BaseModel):

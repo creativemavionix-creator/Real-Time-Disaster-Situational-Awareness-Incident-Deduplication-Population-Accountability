@@ -58,9 +58,13 @@ def process_human_action_review(request: ActionReviewRequest) -> ActionReviewRes
     if len(parts) >= 2:
         prefix = parts[1].lower()
         sector_mapping = {
-            "gkh": "gorkha", "rsw": "rasuwa", "sdp": "sindhupalchok",
-            "ktm": "kathmandu", "bkt": "bhaktapur", "nwk": "nuwakot",
-            "dlk": "dolakha", "sdl": "sindhuli",
+            "gor": "gorkha", "gkh": "gorkha",
+            "ras": "rasuwa", "rsw": "rasuwa",
+            "sdp": "sindhupalchok", "sin": "sindhuli", "sdl": "sindhuli",
+            "ktm": "kathmandu", "kat": "kathmandu",
+            "bkt": "bhaktapur", "bha": "bhaktapur",
+            "nwk": "nuwakot", "nuw": "nuwakot",
+            "dlk": "dolakha", "dol": "dolakha",
         }
         sector_id = sector_mapping.get(prefix, "gorkha")
 
@@ -79,6 +83,9 @@ def process_human_action_review(request: ActionReviewRequest) -> ActionReviewRes
 
     _AUDIT_LOGS.insert(0, audit_item)
     _ACTION_STATUS_REGISTRY[request.recommendation_id] = request.decision
+    if len(parts) >= 3:
+        prefix_key = f"{parts[0]}-{parts[1]}-{parts[2]}".upper()
+        _ACTION_STATUS_REGISTRY[prefix_key] = request.decision
 
     return ActionReviewResponse(
         audit_id=audit_id,

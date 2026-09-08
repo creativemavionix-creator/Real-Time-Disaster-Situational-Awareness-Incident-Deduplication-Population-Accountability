@@ -12,6 +12,7 @@ from app.models.schemas import (
 )
 from app.pipeline.gazetteer import LOCATIONS, get_location
 from app.pipeline.hypothesis_engine import evaluate_sector_hypotheses
+from app.pipeline.governance import get_recommendation_status, _ACTION_STATUS_REGISTRY
 
 
 VERIFICATION_ACTION_TEMPLATES: list[dict] = [
@@ -77,25 +78,36 @@ VERIFICATION_ACTION_TEMPLATES: list[dict] = [
     },
 ]
 
+SECTOR_CODE_MAP = {
+    "gorkha": "GOR",
+    "rasuwa": "RSW",
+    "sindhupalchok": "SDP",
+    "kathmandu": "KTM",
+    "bhaktapur": "BKT",
+    "nuwakot": "NWK",
+    "dolakha": "DLK",
+    "sindhuli": "SDL",
+}
+
 
 def evaluate_sector_verification_actions(
     sector_id: str,
     simulated_now: Optional[datetime] = None,
 ) -> list[VerificationActionItem]:
     """
-    Evaluates candidate verification actions for a specific sector and computes multi-criteria ranking scores.
+    Evaluates candidate verification actions for a specific sector against current hypothesis uncertainty.
     """
     if simulated_now is None:
         simulated_now = datetime.now(timezone.utc)
 
-    loc = get_location(sector_id)
+    loc = get_location(sector_id.lower())
     sector_name = loc.name if loc else sector_id.title()
-    hyp_resp = evaluate_sector_hypotheses(sector_id, simulated_now)
+    hyp_resp = evaluate_sector_hypotheses(sector_id.lower(), simulated_now)
     entropy = hyp_resp.uncertainty_entropy
+    sector_code = SECTOR_CODE_MAP.get(sector_id.lower(), sector_id.upper()[:3])
 
     actions: list[VerificationActionItem] = []
-
-    for i, t in enumerate(VERIFICATION_ACTION_TEMPLATES):
+    for t in VERIFICATION_ACTION_TEMPLATES:
         # Information Gain scales with current uncertainty entropy
         raw_gain = t["info_gain"] * (entropy / 2.32)
         info_gain = round(raw_gain, 3)
@@ -110,7 +122,23 @@ def evaluate_sector_verification_actions(
         ranking = (0.50 * (info_gain / 1.0)) + (0.25 * (1.0 - risk)) + (0.15 * (1.0 - norm_cost)) + (0.10 * (1.0 - norm_eta))
         ranking_score = round(ranking * 100.0, 1)
 
-        rec_id = f"REC-{sector_id.upper()[:3]}-{t['action_type'][:4].upper()}-{simulated_now.strftime('%H%M')}"
+        rec_id = f"REC-{sector_code}-{t['action_type'][:4].upper()}-{simulated_now.strftime('%H%M')}"
+        current_status = get_recommendation_status(rec_id)
+        # Check base type status as well
+        prefix_key = f"REC-{sector_code}-{t['action_type'][:4].upper()}"
+        legacy_prefix_key = f"REC-{sector_id.upper()[:3]}-{t['action_type'][:4].upper()}"
+        for k, v in _ACTION_STATUS_REGISTRY.items():
+            if k.startswith(prefix_key) or k.startswith(legacy_prefix_key):
+                current_status = v
+                break
+
+        # Normalize status to valid schema Literal
+        if current_status not in ("PENDING_REVIEW", "APPROVED", "MODIFIED", "REJECTED", "EXECUTED", "COMPLETED"):
+            current_status = "PENDING_REVIEW"
+
+        # If already approved or completed, deprioritize so new active queries bubble up
+        if current_status in ("APPROVED", "EXECUTED", "COMPLETED"):
+            ranking_score = round(ranking_score * 0.15, 1)
 
         actions.append(
             VerificationActionItem(
@@ -126,7 +154,7 @@ def evaluate_sector_verification_actions(
                 eta_minutes=eta,
                 ranking_score=ranking_score,
                 justification=t["justification"],
-                status="PENDING_REVIEW",
+                status=current_status,
                 created_at=simulated_now,
             )
         )
@@ -150,7 +178,10 @@ def get_ranked_next_best_observations(
         all_actions.extend(evaluate_sector_verification_actions(sector_id, simulated_now))
 
     all_actions.sort(key=lambda a: a.ranking_score, reverse=True)
-    best_action = all_actions[0] if all_actions else None
+    
+    # Hero observation prioritizes the highest-ranked action that is still actionable (pending)
+    pending_actions = [a for a in all_actions if a.status in ("PENDING_REVIEW", "MODIFIED")]
+    best_action = pending_actions[0] if pending_actions else (all_actions[0] if all_actions else None)
 
     return RankedObservationsResponse(
         simulated_time=simulated_now,

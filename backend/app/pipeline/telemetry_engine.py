@@ -183,6 +183,7 @@ def compute_sector_telemetry(
     disaster_type: str = "earthquake",
     simulated_now: Optional[datetime] = None,
     observed_reports_count: int = 0,
+    operator_override: Optional[dict[str, Any]] = None,
 ) -> SectorTelemetryComparison:
     """
     Computes rigorous Historical vs Expected vs Observed comparison for all 4 lifelines.
@@ -261,7 +262,17 @@ def compute_sector_telemetry(
 
     silent_risk = min(10.0, max(0.0, round(raw_risk, 1)))
 
-    if silent_risk >= 7.5:
+    if operator_override and operator_override.get("confirmed_safe"):
+        tier = "NORMAL_TELEMETRY"
+        silent_risk = min(silent_risk, 1.5)
+        reason = f"Sector verified and confirmed safe by {operator_override.get('operator_name', 'Duty Commander')}. Lifeline telemetry monitored."
+        is_silent = False
+    elif operator_override and operator_override.get("override_status") == "blackout":
+        tier = "CRITICAL_SILENT_ZONE"
+        silent_risk = max(7.5, silent_risk)
+        reason = f"Operator confirmed critical communication blackout: {operator_override.get('justification_notes', 'Awaiting field reconnection.')}"
+        is_silent = True
+    elif silent_risk >= 7.5:
         tier = "CRITICAL_SILENT_ZONE"
         reason = (
             f"Acute Telemetry Extinction: 0 incoming reports while mobile connectivity dropped {mob_gap}% "
@@ -349,17 +360,21 @@ def compute_all_sectors_telemetry(
     disaster_type: str = "earthquake",
     simulated_now: Optional[datetime] = None,
     observed_counts_by_sector: Optional[dict[str, int]] = None,
+    overrides_by_sector: Optional[dict[str, dict[str, Any]]] = None,
 ) -> list[SectorTelemetryComparison]:
     """Computes telemetry matrix for all 8 strategic sectors."""
     counts = observed_counts_by_sector or {}
+    overrides = overrides_by_sector or {}
     results = []
     for s_id in SECTOR_BASELINES.keys():
         obs_cnt = counts.get(s_id, 0)
+        loc_override = overrides.get(s_id.lower())
         tele = compute_sector_telemetry(
             sector_id=s_id,
             disaster_type=disaster_type,
             simulated_now=simulated_now,
             observed_reports_count=obs_cnt,
+            operator_override=loc_override,
         )
         results.append(tele)
     return results

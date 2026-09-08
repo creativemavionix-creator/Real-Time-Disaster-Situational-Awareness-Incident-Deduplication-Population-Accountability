@@ -1,7 +1,13 @@
 "use client";
 
 import React from "react";
-import { SectorTelemetryComparison, LifelineMetricComparison } from "@/lib/api";
+import {
+  SectorTelemetryComparison,
+  LifelineMetricComparison,
+  GisSectorTelemetry,
+  LocationStatusItem,
+} from "@/lib/api";
+import { getSectorSeverity } from "@/lib/severity";
 import {
   Smartphone,
   Zap,
@@ -12,16 +18,21 @@ import {
   ArrowDownRight,
   CheckCircle2,
   AlertTriangle,
+  AlertCircle,
   Info,
 } from "lucide-react";
 
 interface TelemetryComparisonMatrixProps {
   telemetry: SectorTelemetryComparison | null;
+  sector?: GisSectorTelemetry;
+  location?: LocationStatusItem | null;
   isLoading?: boolean;
 }
 
 export default function TelemetryComparisonMatrix({
   telemetry,
+  sector,
+  location,
   isLoading = false,
 }: TelemetryComparisonMatrixProps) {
   if (isLoading) {
@@ -73,18 +84,35 @@ export default function TelemetryComparisonMatrix({
     },
   ];
 
-  const isCritical = telemetry.silent_zone_risk_score >= 7.0;
-  const isElevated = telemetry.silent_zone_risk_score >= 5.0 && !isCritical;
+  const effectiveStatus = location?.status || sector?.status;
+  const telemScore = telemetry.silent_zone_risk_score ?? 0;
+  const gisScore = sector?.severity_index ?? 0;
+  const effectiveRiskScore = Math.max(gisScore, telemScore);
+  const effectiveThreatTier = (gisScore >= telemScore && sector?.threat_tier)
+    ? sector.threat_tier
+    : (telemetry.silent_zone_tier ?? sector?.threat_tier ?? "MODERATE");
+
+  const sevStyle = getSectorSeverity(
+    effectiveStatus,
+    effectiveRiskScore,
+    effectiveThreatTier
+  );
+
+  const isCritical = sevStyle.tier === "CRITICAL";
+  const isElevated = sevStyle.tier === "ELEVATED";
+  const isModerate = sevStyle.tier === "MODERATE";
 
   return (
     <div className="space-y-4">
-      {/* 1. Silent Zone Severity Score Header */}
+      {/* 1. Silent Zone / Operational Damage Severity Score Header */}
       <div
         className={`p-4 rounded-xl border transition-all ${
           isCritical
             ? "bg-red-950/40 border-red-500/50 shadow-[0_0_24px_rgba(239,68,68,0.2)]"
             : isElevated
             ? "bg-amber-950/30 border-amber-500/40"
+            : isModerate
+            ? "bg-yellow-950/30 border-yellow-500/40"
             : "bg-emerald-950/20 border-emerald-500/30"
         }`}
       >
@@ -94,15 +122,19 @@ export default function TelemetryComparisonMatrix({
               <AlertOctagon className="w-5 h-5 text-red-400 animate-pulse" />
             ) : isElevated ? (
               <AlertTriangle className="w-5 h-5 text-amber-400" />
+            ) : isModerate ? (
+              <AlertCircle className="w-5 h-5 text-yellow-400" />
             ) : (
               <CheckCircle2 className="w-5 h-5 text-emerald-400" />
             )}
             <div>
               <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest block">
-                NEGATIVE EVIDENCE & SILENT ZONE RATING
+                {sector?.status === "verified_damaged"
+                  ? "VERIFIED DAMAGE & OPERATIONAL RATING"
+                  : "NEGATIVE EVIDENCE & SILENT ZONE RATING"}
               </span>
               <h4 className="text-sm font-bold text-white tracking-wide">
-                {telemetry.silent_zone_tier.replace(/_/g, " ")}
+                {sevStyle.label}
               </h4>
             </div>
           </div>
@@ -112,10 +144,16 @@ export default function TelemetryComparisonMatrix({
             <div className="flex items-baseline gap-0.5 justify-end">
               <span
                 className={`text-2xl font-black font-mono ${
-                  isCritical ? "text-red-400" : isElevated ? "text-amber-400" : "text-emerald-400"
+                  isCritical
+                    ? "text-red-400"
+                    : isElevated
+                    ? "text-amber-400"
+                    : isModerate
+                    ? "text-yellow-400"
+                    : "text-emerald-400"
                 }`}
               >
-                {telemetry.silent_zone_risk_score.toFixed(1)}
+                {effectiveRiskScore.toFixed(1)}
               </span>
               <span className="text-xs font-mono text-slate-400">/10</span>
             </div>
@@ -126,8 +164,20 @@ export default function TelemetryComparisonMatrix({
         <div className="pt-2 border-t border-white/10 text-xs text-slate-300 font-sans leading-relaxed flex items-start gap-2">
           <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
           <p>
-            <strong className="text-white">Silence != Safety: </strong>
-            {telemetry.negative_evidence_reason}
+            {sector?.status === "verified_damaged" ? (
+              <>
+                <strong className="text-white">Active Impact Corroboration: </strong>
+                {sector.estimated_casualties && sector.estimated_casualties > 0
+                  ? `Physical damage verified with ~${sector.estimated_casualties} estimated casualties across active incident clusters.`
+                  : "Ground-truth physical damage verified across sector infrastructure."}
+                {" "}Lifeline telemetry indicates operational strain.
+              </>
+            ) : (
+              <>
+                <strong className="text-white">Silence != Safety: </strong>
+                {telemetry.negative_evidence_reason}
+              </>
+            )}
           </p>
         </div>
       </div>
