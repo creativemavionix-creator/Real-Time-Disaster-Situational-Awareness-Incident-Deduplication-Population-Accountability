@@ -63,6 +63,12 @@
       "sourceType": "github",
       "skillPath": "skills/ui-ux-concept-implementation/SKILL.md",
       "computedHash": "a49deeb7a5ff913ef572922c1e0e3869d7ef5572031b59b1cfbbfe48b5a07c80"
+    },
+    "webapp-testing": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/webapp-testing/SKILL.md",
+      "computedHash": "3f14af7f5690695209c22fbf8c8d133769a86d64892602c09bb13f135e14e857"
     }
   }
 }
