@@ -95,6 +95,11 @@ export function Footer() {
           </div>
           <ul className="space-y-2 list-none p-0 m-0">
             <li>
+              <Link href="/info" className="text-[#38BDF8] hover:text-white transition-colors font-medium">
+                Platform Information &bull; Overview
+              </Link>
+            </li>
+            <li>
               <Link href="/doctrine" className="text-[#9AAABE] hover:text-white transition-colors">
                 The Core Doctrine
               </Link>

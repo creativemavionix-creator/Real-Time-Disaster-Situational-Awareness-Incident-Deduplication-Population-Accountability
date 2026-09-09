@@ -12,6 +12,8 @@ import {
   Volume2,
   VolumeX,
   Keyboard,
+  Info,
+  Radar,
 } from "lucide-react";
 import { TacticalAudio } from "@/lib/TacticalAudio";
 
@@ -32,8 +34,9 @@ const NAV_PILLARS: NavPillar[] = [
     id: "dossier",
     code: "00",
     label: "Dossier",
-    primaryHref: "/doctrine",
+    primaryHref: "/info",
     subRoutes: [
+      { label: "Platform Information", href: "/info", description: "Complete overview of what PRATYAKSH-Ω is & does" },
       { label: "The Core Doctrine", href: "/doctrine", description: "Silence is Not Safety & the reporting bias trap" },
       { label: "Six Capabilities", href: "/methodology", description: "Plain-English walkthrough of platform engines" },
       { label: "Disaster Archetypes", href: "/disasters", description: "Physical profiles across 5 catastrophe classes" },
@@ -365,18 +368,29 @@ export function Navbar() {
           {/* Right actions */}
           <div className="flex items-center gap-2.5">
             <Link
-              href="/gis-map"
-              className="hidden sm:inline-flex btn-action-secondary"
+              href="/info"
+              className="hidden sm:inline-flex items-center gap-1.5 btn-action-secondary"
               style={{ padding: "0.375rem 0.75rem", fontSize: "var(--text-xs)" }}
+              title="View Platform Information & Architecture"
             >
-              <Radio className="w-3.5 h-3.5" style={{ color: "var(--status-intel-text)" }} />
-              <span>Live Map</span>
+              <Info className="w-3.5 h-3.5 text-[#38BDF8]" />
+              <span>Info</span>
+            </Link>
+
+            <Link
+              href="/gis-map"
+              className="btn-action-primary flex items-center gap-1.5"
+              style={{ padding: "0.375rem 0.875rem", fontSize: "var(--text-xs)" }}
+              title="Launch Live Operational Platform"
+            >
+              <Radar className="w-3.5 h-3.5 text-white" />
+              <span>Launch Platform</span>
             </Link>
 
             <Link
               href="/sitrep"
-              className="btn-action-primary flex items-center gap-1.5"
-              style={{ padding: "0.375rem 0.875rem", fontSize: "var(--text-xs)" }}
+              className="hidden md:inline-flex btn-action-secondary items-center gap-1.5"
+              style={{ padding: "0.375rem 0.75rem", fontSize: "var(--text-xs)" }}
             >
               <span>SITREP</span>
               <ChevronRight className="w-3.5 h-3.5" />
