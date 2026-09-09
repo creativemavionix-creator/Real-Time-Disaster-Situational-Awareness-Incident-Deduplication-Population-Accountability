@@ -1,7 +1,17 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
+  const pathname = usePathname();
+
+  // The Live GIS Map is a full-viewport interactive tactical console; suppress footer on this route
+  if (pathname === "/gis-map" || pathname?.startsWith("/gis-map")) {
+    return null;
+  }
+
   return (
     <footer
       className="relative z-20 border-t select-none no-print"
