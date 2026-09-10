@@ -40,7 +40,7 @@ export function Footer() {
             </span>
           </div>
           <p
-            className="font-serif-editorial italic text-sm text-[#CBD5E1] m-0"
+            className="font-quote-display italic text-sm text-[#CBD5E1] m-0 pb-0.5"
             style={{ maxWidth: "60ch" }}
           >
             &ldquo;Silence is not safety. In catastrophic terrain, absence of evidence is merely evidence of broken observation channels.&rdquo;

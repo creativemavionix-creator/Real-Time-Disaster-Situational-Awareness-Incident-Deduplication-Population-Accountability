@@ -1,64 +1,52 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, DM_Sans, JetBrains_Mono, Newsreader } from "next/font/google";
+import { Space_Grotesk, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ViewModeProvider } from "@/context/ViewModeContext";
 
 /**
- * TYPOGRAPHY SYSTEM — PRATYAKSH-O
+ * MISSION-CRITICAL COMMAND TYPOGRAPHY SYSTEM — PRATYAKSH-Ω
  *
- * Display/Headline: Plus Jakarta Sans
- *   - Geometric grotesque with military authority feel
- *   - Used: display hero, section headlines, card titles, labels, buttons
- *   - NOT for body prose, NOT for data/codes
+ * 1. Display / Command Headings: Space Grotesk
+ *    - Rigorous geometric grotesk with defense/aerospace authority
+ *    - Custom tracking: -0.035em display, text-wrap: balance
+ *    - Used for: hero titles, section headlines, operational badges
  *
- * Body/Prose: DM Sans
- *   - Neutral, legible, distinct from headlines
- *   - Used: all paragraph body text, descriptions
- *   - NOT for data values, NOT for headlines
+ * 2. Body / Operational Prose: Geist
+ *    - Swiss-modern technical grotesk designed for deep legibility
+ *    - Optical sizing auto, line-height 1.625, measure capped at 65ch
+ *    - Used for: all narrative copy, descriptions, explanatory notes
  *
- * Data/Mono: JetBrains Mono
- *   - Used STRICTLY for: telemetry values, coordinates, status codes,
- *     mathematical formulas, eyebrow labels
- *   - NOT for headlines, NOT for body prose, NOT for button labels
- *
- * Serif (Newsreader): Accent only
- *   - Used exclusively for the hero manifesto quote
- *   - Justified by the editorial/manifesto brief context
+ * 3. Telemetry & Data Systems: Geist Mono
+ *    - Strict tabular figures (tabular-nums), uniform character widths
+ *    - Used STRICTLY for: coordinates, seismic amplitudes, timestamps,
+ *      telemetry deficit ratios, Bayesian probabilities
  */
 
-const plusJakarta = Plus_Jakarta_Sans({
+const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "600", "700", "800"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
-const dmSans = DM_Sans({
+const geist = Geist({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+const geistMono = Geist_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-});
-
-const newsreader = Newsreader({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  style: ["italic"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "PRATYAKSH-O — Autonomous Negative Evidence Intelligence & Disaster Reality Reconstruction",
+  title: "PRATYAKSH-Ω — Autonomous Negative Evidence Intelligence & Disaster Reality Reconstruction",
   description:
     "Autonomous disaster reality reconstruction analyzing negative evidence, silence, and information gaps across Central Nepal.",
   keywords: ["disaster awareness", "population accountability", "negative evidence", "crisis command"],
@@ -69,6 +57,7 @@ import { SmoothScrollProvider } from "@/components/SmoothScrollProvider";
 import "lenis/dist/lenis.css";
 
 import { Footer } from "@/components/Footer";
+import { AuthProvider } from "@/context/AuthContext";
 
 export default function RootLayout({
   children,
@@ -79,7 +68,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${plusJakarta.variable} ${dmSans.variable} ${jetbrainsMono.variable} ${newsreader.variable} dark min-h-screen antialiased`}
+      className={`${spaceGrotesk.variable} ${geist.variable} ${geistMono.variable} dark min-h-screen antialiased`}
     >
       <head>
         <link rel="preconnect" href="https://server.arcgisonline.com" crossOrigin="anonymous" />
@@ -93,16 +82,18 @@ export default function RootLayout({
         className="min-h-screen flex flex-col"
         style={{ backgroundColor: "var(--bg-void)", color: "var(--fg-primary)" }}
       >
-        <ThemeProvider>
-          <ViewModeProvider>
-            <SmoothScrollProvider>
-              <CinematicNoise />
-              <Navbar />
-              <main className="flex-1 flex flex-col">{children}</main>
-              <Footer />
-            </SmoothScrollProvider>
-          </ViewModeProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <ViewModeProvider>
+              <SmoothScrollProvider>
+                <CinematicNoise />
+                <Navbar />
+                <main className="flex-1 flex flex-col">{children}</main>
+                <Footer />
+              </SmoothScrollProvider>
+            </ViewModeProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

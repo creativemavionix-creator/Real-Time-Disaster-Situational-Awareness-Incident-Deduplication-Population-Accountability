@@ -77,7 +77,7 @@ export default function BriefPage() {
           <div className="font-mono-data text-xs font-bold text-rose-300 uppercase tracking-wider">
             2. The Core Doctrine
           </div>
-          <blockquote className="font-serif-editorial italic text-xl sm:text-2xl text-white leading-snug m-0">
+          <blockquote className="font-quote-display italic text-xl sm:text-2xl text-white leading-snug m-0 pb-1">
             &ldquo;Silence is not safety. In catastrophic terrain, absence of distress calls is not evidence of calm—it is authoritative evidence of infrastructure collapse.&rdquo;
           </blockquote>
           <p className="font-body-prose text-xs text-rose-200/90 leading-relaxed m-0">

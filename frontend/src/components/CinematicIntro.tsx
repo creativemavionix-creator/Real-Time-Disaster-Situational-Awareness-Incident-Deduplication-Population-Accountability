@@ -59,7 +59,7 @@ export function CinematicIntro({
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-4"
         >
-          <div className="font-serif-editorial text-lg sm:text-2xl text-[#5C6270] dark:text-[#9CA3AF] italic">
+          <div className="font-quote-display text-lg sm:text-2xl text-[#5C6270] dark:text-[#9CA3AF] italic pb-1">
             &ldquo;When the ground cannot be reached, information becomes the first response.&rdquo;
           </div>
 

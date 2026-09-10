@@ -70,7 +70,7 @@ export function StickyStackFallacy() {
             <h2 className="font-display-calm text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight font-medium">
               The Silent Zone Fallacy
             </h2>
-            <p className="font-serif-editorial italic text-base sm:text-lg text-[#94A3B8] max-w-2xl">
+            <p className="font-quote-display italic text-base sm:text-lg text-[#94A3B8] max-w-2xl pb-1">
               &ldquo;Silence is not safety. In catastrophic terrain, absence of evidence is merely evidence of broken observation channels.&rdquo;
             </p>
           </div>

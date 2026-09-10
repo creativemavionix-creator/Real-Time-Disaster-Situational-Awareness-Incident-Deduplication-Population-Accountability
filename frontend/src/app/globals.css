@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-body), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-display: var(--font-display), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
 /* ============================================================
    PRATYAKSH-O  |  Design Token System v2.0
    Theme: Dark Command / High-Stakes / Cinematic Alert
@@ -80,54 +86,54 @@
     --status-blackout-border: rgba(139, 92, 246, 0.25);
     --status-blackout-text:   #C4B5FD;
 
-    /* TYPOGRAPHY SCALE (modular ratio 1.25) */
-    --text-2xs:  0.625rem;
-    --text-xs:   0.75rem;
-    --text-sm:   0.875rem;
-    --text-base: 1rem;
-    --text-md:   1.125rem;
-    --text-lg:   1.25rem;
-    --text-xl:   1.5rem;
-    --text-2xl:  1.875rem;
-    --text-3xl:  2.25rem;
-    --text-4xl:  3rem;
-    --text-5xl:  3.75rem;
-    --text-6xl:  5rem;
-    --text-hero: clamp(4.5rem, 10vw, 8rem);
+    /* TYPOGRAPHY SCALE (modular ratio 1.25 with balanced desktop caps) */
+    --text-2xs:  0.6875rem; /* 11px */
+    --text-xs:   0.75rem;   /* 12px */
+    --text-sm:   0.875rem;  /* 14px */
+    --text-base: 1rem;      /* 16px */
+    --text-md:   1.125rem;  /* 18px */
+    --text-lg:   1.25rem;   /* 20px */
+    --text-xl:   1.5rem;    /* 24px */
+    --text-2xl:  1.875rem;  /* 30px */
+    --text-3xl:  2.25rem;   /* 36px */
+    --text-4xl:  2.75rem;   /* 44px */
+    --text-5xl:  3.5rem;    /* 56px */
+    --text-6xl:  4.25rem;   /* 68px */
+    --text-hero: clamp(2.5rem, 5.5vw, 4.5rem);
 
-    /* LINE HEIGHT */
-    --lh-tight:   1.05;
-    --lh-snug:    1.2;
-    --lh-heading: 1.1;
-    --lh-body:    1.6;
+    /* LINE HEIGHT (strict role differentiation) */
+    --lh-tight:   1.08;
+    --lh-heading: 1.15;
+    --lh-snug:    1.25;
+    --lh-body:    1.625;
     --lh-relaxed: 1.75;
 
     /* LETTER SPACING */
-    --ls-tight:   -0.03em;
+    --ls-tight:   -0.035em;
     --ls-snug:    -0.02em;
     --ls-normal:  0em;
     --ls-wide:    0.04em;
-    --ls-wider:   0.10em;
-    --ls-widest:  0.22em;
+    --ls-wider:   0.08em;
+    --ls-widest:  0.14em;
 
-    /* CORNER RADIUS */
+    /* CORNER RADIUS (consistent precision radius system) */
     --radius-sm:   4px;
     --radius-md:   8px;
     --radius-lg:   12px;
     --radius-xl:   16px;
-    --radius-2xl:  24px;
+    --radius-2xl:  20px;
     --radius-full: 9999px;
 
-    /* MOTION */
+    /* MOTION (Emil Kowalski spring & exponential physics) */
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-in-expo:  cubic-bezier(0.7, 0, 0.84, 0);
     --ease-inout:    cubic-bezier(0.45, 0, 0.55, 1);
     --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
     --dur-instant:   80ms;
-    --dur-fast:      150ms;
-    --dur-base:      250ms;
-    --dur-slow:      400ms;
-    --dur-cinematic: 700ms;
+    --dur-fast:      140ms;
+    --dur-base:      220ms;
+    --dur-slow:      350ms;
+    --dur-cinematic: 500ms;
   }
 }
 
@@ -188,15 +194,17 @@ html, body {
   font-weight: 600;
   letter-spacing: var(--ls-snug);
   line-height: var(--lh-snug);
+  text-wrap: balance;
 }
 
-/* BODY: All prose — never monospace */
+/* BODY: All prose — never monospace, capped at 65ch for optimal reading rhythm */
 .type-body {
   font-family: var(--font-body), -apple-system, sans-serif;
   font-size: var(--text-base);
   font-weight: 400;
   line-height: var(--lh-body);
-  max-width: 68ch;
+  max-width: 65ch;
+  text-wrap: pretty;
   color: var(--fg-secondary);
 }
 
@@ -205,6 +213,8 @@ html, body {
   font-size: var(--text-sm);
   font-weight: 400;
   line-height: var(--lh-body);
+  max-width: 65ch;
+  text-wrap: pretty;
   color: var(--fg-secondary);
 }
 
@@ -214,7 +224,7 @@ html, body {
   font-size: var(--text-sm);
   font-weight: 600;
   letter-spacing: var(--ls-wide);
-  line-height: 1;
+  line-height: 1.2;
 }
 
 /* DATA: Telemetry values, coordinates, codes, formulas ONLY */
@@ -234,11 +244,34 @@ html, body {
   line-height: 1;
 }
 
-/* Legacy aliases */
-.font-display-calm    { font-family: var(--font-display), -apple-system, sans-serif; letter-spacing: var(--ls-snug); }
-.font-mono-data       { font-family: var(--font-mono), ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
-.font-body-prose      { font-family: var(--font-body), -apple-system, sans-serif; line-height: var(--lh-body); }
-.font-serif-editorial { font-family: var(--font-serif), Georgia, serif; letter-spacing: -0.01em; }
+/* Legacy aliases and anti-vibe quote display */
+.font-display-calm {
+  font-family: var(--font-display), -apple-system, sans-serif;
+  letter-spacing: var(--ls-snug);
+}
+
+.font-mono-data {
+  font-family: var(--font-mono), ui-monospace, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-body-prose {
+  font-family: var(--font-body), -apple-system, sans-serif;
+  line-height: var(--lh-body);
+  max-width: 65ch;
+  text-wrap: pretty;
+}
+
+/* Anti-Slop Display Quote: Space Grotesk italic with descender clearance — replaces AI serif slop */
+.font-quote-display,
+.font-serif-editorial {
+  font-family: var(--font-display), -apple-system, sans-serif;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: var(--ls-snug);
+  line-height: 1.45;
+  padding-bottom: 0.125rem;
+}
 
 /* ============================================================
    SURFACES
@@ -560,6 +593,16 @@ html, body {
 .bg-tactical-dots {
   background-image: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
   background-size: 28px 28px;
+}
+
+/* ============================================================
+   MOBILE FORM LEGIBILITY (PREVENT IOS AUTO-ZOOM)
+   ============================================================ */
+
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* ============================================================

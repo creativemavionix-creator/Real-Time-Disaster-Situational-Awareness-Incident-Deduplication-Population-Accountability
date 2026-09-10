@@ -36,19 +36,22 @@ export default function DoctrinePage() {
 
           <h1
             className="font-display-calm font-extrabold text-4xl sm:text-6xl lg:text-7xl tracking-tight text-white"
-            style={{ lineHeight: 1.05 }}
+            style={{ lineHeight: 1.05, textWrap: "balance" }}
           >
             Silence is Not Safety.
           </h1>
 
           <blockquote
-            className="font-serif-editorial italic text-xl sm:text-2xl lg:text-3xl text-[#CBD5E1] border-l-2 pl-6 my-6 leading-relaxed"
+            className="font-quote-display italic text-xl sm:text-2xl lg:text-3xl text-[#CBD5E1] border-l-2 pl-6 my-6 leading-relaxed pb-1"
             style={{ borderColor: "var(--accent)" }}
           >
             &ldquo;In catastrophic terrain, the absence of distress signals is not evidence of safety. It is direct, empirical evidence that observation channels have been severed.&rdquo;
           </blockquote>
 
-          <p className="font-body-prose text-base sm:text-lg text-[#9AAABE] max-w-3xl leading-relaxed">
+          <p
+            className="font-body-prose text-base sm:text-lg text-[#9AAABE] max-w-[65ch] leading-relaxed"
+            style={{ textWrap: "pretty" }}
+          >
             The fundamental flaw in modern disaster management is not lack of good will or courageous personnel. It is an epistemological trap: systems listen only to those who have the voice to cry out, leaving the most severely wounded communities in complete obscurity.
           </p>
         </div>

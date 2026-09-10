@@ -17,7 +17,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
 # Distribution / Packaging
 build/
 develop-eggs/
@@ -153,6 +152,21 @@ frontend/.env.local
 *.key
 *.crt
 
+# Firebase & Cloud Service Account Keys / Credentials
+*firebase-adminsdk*.json
+*-firebase-adminsdk-*.json
+*-adminsdk-*.json
+service-account*.json
+*service_account*.json
+*credentials*.json
+client_secret*.json
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+database-debug.log*
+pubsub-debug.log*
+
 # Keep example environment templates
 !.env.example
 !backend/.env.example
@@ -185,10 +199,17 @@ Desktop.ini
 *.bak
 
 # ------------------------------------------------------------------------------
-# Temporary Files & Scratch Dumps
+# Temporary Files, Playwright & Scratch Dumps
 # ------------------------------------------------------------------------------
 scratch/
+*/scratch/
 tmp/
 temp/
 .temp/
 .system_generated/
+playwright-report/
+frontend/playwright-report/
+test-results/
+frontend/test-results/
+blob-report/
+playwright/.cache/

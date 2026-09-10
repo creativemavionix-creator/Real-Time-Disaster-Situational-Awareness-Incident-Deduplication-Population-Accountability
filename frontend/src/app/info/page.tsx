@@ -189,7 +189,8 @@ export default function InfoPage() {
             02 // THE PHILOSOPHICAL FOUNDATION
           </div>
           <blockquote
-            className="font-serif-editorial italic text-2xl sm:text-4xl text-white max-w-3xl mx-auto leading-relaxed"
+            className="font-quote-display italic text-2xl sm:text-4xl text-white max-w-3xl mx-auto leading-relaxed pb-1"
+            style={{ textWrap: "balance" }}
           >
             &ldquo;Silence is not safety. In catastrophic terrain, absence of evidence is merely evidence of broken observation channels.&rdquo;
           </blockquote>
