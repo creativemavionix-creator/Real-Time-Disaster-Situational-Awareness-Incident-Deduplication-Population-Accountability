@@ -6,20 +6,23 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { ViewModeProvider } from "@/context/ViewModeContext";
 
 /**
- * MISSION-CRITICAL COMMAND TYPOGRAPHY SYSTEM — PRATYAKSH-Ω
+ * MISSION-CRITICAL COMMAND TYPOGRAPHY SYSTEM — PRATYAKSH-Ω  v3.0
  *
- * 1. Display / Command Headings: Space Grotesk
+ * 1. Display / Command Headings: Space Grotesk (300–700)
  *    - Rigorous geometric grotesk with defense/aerospace authority
- *    - Custom tracking: -0.035em display, text-wrap: balance
+ *    - OpenType: "ss01" contextual alternates, "kern" 1, "liga" 1
+ *    - Custom tracking: -0.04em display, -0.02em headline
+ *    - text-wrap: balance, font-optical-sizing: auto
  *    - Used for: hero titles, section headlines, operational badges
  *
- * 2. Body / Operational Prose: Geist
- *    - Swiss-modern technical grotesk designed for deep legibility
- *    - Optical sizing auto, line-height 1.625, measure capped at 65ch
+ * 2. Body / Operational Prose: Geist (300–600)
+ *    - Swiss-modern technical grotesk — deep legibility at any size
+ *    - OpenType: "kern" 1, "liga" 1, "calt" 1 (contextual alternates)
+ *    - line-height 1.625, measure capped 65ch, text-wrap: pretty
  *    - Used for: all narrative copy, descriptions, explanatory notes
  *
- * 3. Telemetry & Data Systems: Geist Mono
- *    - Strict tabular figures (tabular-nums), uniform character widths
+ * 3. Telemetry & Data Systems: Geist Mono (400–600)
+ *    - Strict tabular-nums, lnum (lining figures), tnum
  *    - Used STRICTLY for: coordinates, seismic amplitudes, timestamps,
  *      telemetry deficit ratios, Bayesian probabilities
  */
@@ -27,22 +30,25 @@ import { ViewModeProvider } from "@/context/ViewModeContext";
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 const geist = Geist({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["300", "400", "500", "600"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
+  adjustFontFallback: false,
 });
 
 export const metadata: Metadata = {

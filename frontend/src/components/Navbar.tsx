@@ -38,7 +38,7 @@ const OPERATIONAL_PILLARS: NavPillar[] = [
     label: "Situation",
     primaryHref: "/situation",
     subRoutes: [
-      { label: "Overview", href: "/situation", description: "Executive briefing & crisis narrative" },
+      { label: "Situation Dashboard", href: "/situation", description: "Real-time command console & sector status matrix" },
       { label: "Live GIS Map", href: "/gis-map", description: "Geospatial radar & vector cartography" },
     ],
   },
@@ -144,8 +144,10 @@ export function Navbar() {
                 style={{
                   fontSize: "var(--text-md)",
                   color: "var(--fg-primary)",
-                  letterSpacing: "var(--ls-snug)",
+                  letterSpacing: "var(--ls-subhead)",  /* Tighter on larger display names */
                   lineHeight: 1.2,
+                  fontFeatureSettings: '"kern" 1, "ss01" 1',
+                  fontOpticalSizing: "auto",
                 }}
               >
                 PRATYAKSH-Ω
@@ -155,8 +157,9 @@ export function Navbar() {
                 style={{
                   fontSize: "var(--text-2xs)",
                   color: "var(--fg-tertiary)",
-                  letterSpacing: "var(--ls-wider)",
+                  letterSpacing: "var(--ls-eyebrow)",  /* Max positive tracking for small caps */
                   marginTop: "1px",
+                  fontFeatureSettings: '"tnum" 1',
                 }}
               >
                 {isLandingPage ? "Comprehensive System Dossier" : "Negative Evidence Intelligence"}
@@ -190,12 +193,14 @@ export function Navbar() {
                         fontSize: "var(--text-sm)",
                         fontFamily: "var(--font-display), sans-serif",
                         fontWeight: isPillarActive ? 700 : 500,
+                        letterSpacing: "var(--ls-ui)",  /* Positive tracking for nav items at 14px */
                         color: isPillarActive ? "var(--fg-primary)" : "var(--fg-secondary)",
                         background: isPillarActive ? "rgba(255,255,255,0.08)" : "transparent",
                         border: isPillarActive
                           ? "1px solid var(--border-default)"
                           : "1px solid transparent",
                         textDecoration: "none",
+                        fontFeatureSettings: '"kern" 1',
                       }}
                     >
                       <span

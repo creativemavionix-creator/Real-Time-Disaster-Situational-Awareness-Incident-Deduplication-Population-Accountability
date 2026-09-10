@@ -7,7 +7,7 @@
 }
 
 /* ============================================================
-   PRATYAKSH-O  |  Design Token System v2.0
+   PRATYAKSH-O  |  Design Token System v3.0 — Awwwards-Level
    Theme: Dark Command / High-Stakes / Cinematic Alert
    ============================================================ */
 
@@ -86,37 +86,56 @@
     --status-blackout-border: rgba(139, 92, 246, 0.25);
     --status-blackout-text:   #C4B5FD;
 
-    /* TYPOGRAPHY SCALE (modular ratio 1.25 with balanced desktop caps) */
-    --text-2xs:  0.6875rem; /* 11px */
-    --text-xs:   0.75rem;   /* 12px */
-    --text-sm:   0.875rem;  /* 14px */
-    --text-base: 1rem;      /* 16px */
-    --text-md:   1.125rem;  /* 18px */
-    --text-lg:   1.25rem;   /* 20px */
-    --text-xl:   1.5rem;    /* 24px */
-    --text-2xl:  1.875rem;  /* 30px */
-    --text-3xl:  2.25rem;   /* 36px */
-    --text-4xl:  2.75rem;   /* 44px */
-    --text-5xl:  3.5rem;    /* 56px */
-    --text-6xl:  4.25rem;   /* 68px */
-    --text-hero: clamp(2.5rem, 5.5vw, 4.5rem);
+    /* ================================================================
+       TYPOGRAPHY SCALE v3.0 — Awwwards Level
+       All fluid via clamp(). No breakpoint jumps. Modular ratio 1.25.
+       ================================================================ */
 
-    /* LINE HEIGHT (strict role differentiation) */
-    --lh-tight:   1.08;
-    --lh-heading: 1.15;
-    --lh-snug:    1.25;
-    --lh-body:    1.625;
-    --lh-relaxed: 1.75;
+    /* Utility sizes — UI elements, labels, chips */
+    --text-2xs:  0.6875rem;                              /* 11px — labels, chips, eyebrows */
+    --text-xs:   0.75rem;                               /* 12px — captions, footnotes */
+    --text-sm:   0.875rem;                              /* 14px — secondary UI */
+    --text-base: 1rem;                                  /* 16px — body baseline */
+    --text-md:   1.125rem;                              /* 18px — large body */
+    --text-lg:   1.25rem;                               /* 20px — lead text */
+    --text-xl:   1.5rem;                                /* 24px — subheadings */
+    --text-2xl:  1.875rem;                              /* 30px */
+    --text-3xl:  2.25rem;                               /* 36px */
+    --text-4xl:  2.75rem;                               /* 44px */
+    --text-5xl:  3.5rem;                                /* 56px */
+    --text-6xl:  4.25rem;                               /* 68px */
 
-    /* LETTER SPACING */
-    --ls-tight:   -0.035em;
-    --ls-snug:    -0.02em;
-    --ls-normal:  0em;
-    --ls-wide:    0.04em;
-    --ls-wider:   0.08em;
-    --ls-widest:  0.14em;
+    /* Fluid display scales — clamp(min, preferred, max) */
+    --text-hero:     clamp(2.25rem, 5.5vw + 0.5rem, 4.5rem);   /* Hero H1 */
+    --text-section:  clamp(1.75rem, 3.5vw + 0.25rem, 3rem);    /* Section H2 */
+    --text-subhead:  clamp(1.1rem,  1.8vw + 0.2rem,  1.5rem);  /* Card H3 */
+    --text-lead:     clamp(0.95rem, 1.2vw + 0.1rem,  1.125rem); /* Lead body */
 
-    /* CORNER RADIUS (consistent precision radius system) */
+    /* ================================================================
+       LINE HEIGHT — role-differentiated, unitless
+       ================================================================ */
+    --lh-tight:    1.04;   /* Hero display only — 4+ rem sizes */
+    --lh-heading:  1.12;   /* Section headings */
+    --lh-snug:     1.25;   /* Card titles, subheadings */
+    --lh-body:     1.625;  /* Prose paragraphs */
+    --lh-relaxed:  1.75;   /* Long-form editorial body */
+    --lh-ui:       1.3;    /* Buttons, labels, chips */
+
+    /* ================================================================
+       LETTER SPACING — discipline: tight on large, open on small
+       ================================================================ */
+    --ls-hero:     -0.04em;  /* 44px+ display titles */
+    --ls-headline: -0.025em; /* 28–44px section heads */
+    --ls-subhead:  -0.015em; /* 18–28px card titles */
+    --ls-normal:    0em;     /* Body copy — no tracking */
+    --ls-ui:        0.02em;  /* Buttons, nav labels */
+    --ls-label:     0.06em;  /* Small uppercase UI text */
+    --ls-mono:      0.04em;  /* Mono data labels */
+    --ls-eyebrow:   0.16em;  /* Tiny uppercase eyebrows */
+
+    /* ================================================================
+       CORNER RADIUS
+       ================================================================ */
     --radius-sm:   4px;
     --radius-md:   8px;
     --radius-lg:   12px;
@@ -124,25 +143,32 @@
     --radius-2xl:  20px;
     --radius-full: 9999px;
 
-    /* MOTION (Emil Kowalski spring & exponential physics) */
+    /* ================================================================
+       MOTION — Emil Kowalski spring & exponential physics
+       ================================================================ */
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
     --ease-in-expo:  cubic-bezier(0.7, 0, 0.84, 0);
     --ease-inout:    cubic-bezier(0.45, 0, 0.55, 1);
     --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-reveal:   cubic-bezier(0.22, 1, 0.36, 1);  /* Text reveal — slightly less overshoot */
     --dur-instant:   80ms;
     --dur-fast:      140ms;
     --dur-base:      220ms;
-    --dur-slow:      350ms;
-    --dur-cinematic: 500ms;
+    --dur-slow:      380ms;
+    --dur-cinematic: 560ms;
+    --dur-epic:      800ms;
   }
 }
 
 /* ============================================================
-   GLOBAL BASE
+   GLOBAL BASE — Awwwards-Level Rendering Foundation
    ============================================================ */
 
 html {
   color-scheme: dark;
+  font-optical-sizing: auto;          /* Enable optical sizing axis on variable fonts */
+  text-rendering: optimizeLegibility; /* Hint engine for kerning + ligatures at display sizes */
+  -webkit-text-size-adjust: 100%;     /* Prevent iOS auto-resize */
 }
 
 html.lenis,
@@ -161,51 +187,71 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-optical-sizing: auto;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1; /* Kerning + ligatures on body */
 }
 
 /* ============================================================
-   TYPOGRAPHY UTILITY CLASSES — STRICT ROLES
+   TYPOGRAPHY UTILITY CLASSES v3.0 — STRICT ROLES
+   Awwwards-level rendering: optical sizing, OpenType features,
+   fluid clamp() sizing, role-specific letter-spacing
    ============================================================ */
 
-/* DISPLAY: Hero-scale — PRATYAKSH-O mark only */
+/* ----------------------------------------------------------------
+   DISPLAY: Hero H1 only — full kinetic typographic presence
+   ---------------------------------------------------------------- */
 .type-display {
   font-family: var(--font-display), -apple-system, "Segoe UI", sans-serif;
   font-size: var(--text-hero);
   font-weight: 700;
-  letter-spacing: var(--ls-tight);
+  letter-spacing: var(--ls-hero);
   line-height: var(--lh-tight);
   text-wrap: balance;
+  font-optical-sizing: auto;
+  font-feature-settings: "kern" 1, "liga" 1, "ss01" 1; /* Space Grotesk contextual alternates */
+  text-rendering: geometricPrecision;
 }
 
-/* HEADLINE: h2-level section titles */
+/* ----------------------------------------------------------------
+   HEADLINE: Section H2 — major section titles
+   ---------------------------------------------------------------- */
 .type-headline {
   font-family: var(--font-display), -apple-system, "Segoe UI", sans-serif;
-  font-size: var(--text-4xl);
-  font-weight: 600;
-  letter-spacing: var(--ls-snug);
+  font-size: var(--text-section);
+  font-weight: 700;
+  letter-spacing: var(--ls-headline);
   line-height: var(--lh-heading);
   text-wrap: balance;
+  font-optical-sizing: auto;
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
-/* SUBHEAD: Card titles, h3 level */
+/* ----------------------------------------------------------------
+   SUBHEAD: Card titles H3 — subordinate to headline
+   ---------------------------------------------------------------- */
 .type-subhead {
   font-family: var(--font-display), -apple-system, "Segoe UI", sans-serif;
-  font-size: var(--text-xl);
+  font-size: var(--text-subhead);
   font-weight: 600;
-  letter-spacing: var(--ls-snug);
+  letter-spacing: var(--ls-subhead);
   line-height: var(--lh-snug);
   text-wrap: balance;
+  font-feature-settings: "kern" 1;
 }
 
-/* BODY: All prose — never monospace, capped at 65ch for optimal reading rhythm */
+/* ----------------------------------------------------------------
+   BODY: All narrative prose — never monospace
+   Measure capped at 65ch for optimal reading rhythm (WCAG 2.2)
+   ---------------------------------------------------------------- */
 .type-body {
   font-family: var(--font-body), -apple-system, sans-serif;
   font-size: var(--text-base);
   font-weight: 400;
   line-height: var(--lh-body);
   max-width: 65ch;
-  text-wrap: pretty;
+  text-wrap: pretty;      /* Prevent orphan words on last line */
   color: var(--fg-secondary);
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  font-variant-ligatures: common-ligatures contextual;
 }
 
 .type-body-sm {
@@ -216,43 +262,75 @@ html, body {
   max-width: 65ch;
   text-wrap: pretty;
   color: var(--fg-secondary);
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
-/* LABEL: UI text, nav, buttons — NOT monospace */
+/* ----------------------------------------------------------------
+   LEAD: Large intro paragraph — one step above body
+   ---------------------------------------------------------------- */
+.type-lead {
+  font-family: var(--font-body), -apple-system, sans-serif;
+  font-size: var(--text-lead);
+  font-weight: 400;
+  line-height: var(--lh-body);
+  max-width: 60ch;
+  text-wrap: pretty;
+  color: var(--fg-secondary);
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* ----------------------------------------------------------------
+   LABEL: UI text, nav, buttons — NOT monospace
+   Positive tracking at small size per letter-spacing discipline
+   ---------------------------------------------------------------- */
 .type-label {
   font-family: var(--font-display), -apple-system, "Segoe UI", sans-serif;
   font-size: var(--text-sm);
   font-weight: 600;
-  letter-spacing: var(--ls-wide);
-  line-height: 1.2;
+  letter-spacing: var(--ls-ui);
+  line-height: var(--lh-ui);
+  font-feature-settings: "kern" 1;
 }
 
-/* DATA: Telemetry values, coordinates, codes, formulas ONLY */
+/* ----------------------------------------------------------------
+   DATA: Telemetry values, coordinates, codes, formulas ONLY
+   Tabular + lining figures for stable column width on live values
+   ---------------------------------------------------------------- */
 .type-data {
   font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;  /* Both tabular AND lining (not oldstyle) */
+  font-feature-settings: "tnum" 1, "lnum" 1;       /* Belt + suspenders for older browsers */
+  letter-spacing: var(--ls-mono);
 }
 
-/* EYEBROW: Max 1 per 3 sections */
+/* ----------------------------------------------------------------
+   EYEBROW: Structural section markers — max 1 per 3 sections
+   ---------------------------------------------------------------- */
 .type-eyebrow {
   font-family: var(--font-mono), ui-monospace, Menlo, monospace;
   font-size: var(--text-2xs);
-  font-weight: 600;
-  letter-spacing: var(--ls-widest);
+  font-weight: 700;
+  letter-spacing: var(--ls-eyebrow);
   text-transform: uppercase;
   color: var(--accent);
   line-height: 1;
+  font-feature-settings: "tnum" 1;
 }
 
-/* Legacy aliases and anti-vibe quote display */
+/* ----------------------------------------------------------------
+   LEGACY ALIASES — preserved for backward compatibility
+   ---------------------------------------------------------------- */
 .font-display-calm {
   font-family: var(--font-display), -apple-system, sans-serif;
-  letter-spacing: var(--ls-snug);
+  letter-spacing: var(--ls-headline);
+  font-feature-settings: "kern" 1, "liga" 1, "ss01" 1;
+  font-optical-sizing: auto;
 }
 
 .font-mono-data {
   font-family: var(--font-mono), ui-monospace, Menlo, monospace;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
 .font-body-prose {
@@ -260,17 +338,19 @@ html, body {
   line-height: var(--lh-body);
   max-width: 65ch;
   text-wrap: pretty;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
 }
 
-/* Anti-Slop Display Quote: Space Grotesk italic with descender clearance — replaces AI serif slop */
+/* Anti-Slop Display Quote — same font family, italic, with descender clearance */
 .font-quote-display,
 .font-serif-editorial {
   font-family: var(--font-display), -apple-system, sans-serif;
   font-style: italic;
   font-weight: 500;
-  letter-spacing: var(--ls-snug);
+  letter-spacing: var(--ls-subhead);
   line-height: 1.45;
-  padding-bottom: 0.125rem;
+  padding-bottom: 0.15rem; /* Descender clearance for g, y, j, p, q */
+  font-feature-settings: "kern" 1, "liga" 1;
 }
 
 /* ============================================================
@@ -337,12 +417,14 @@ html, body {
   font-family: var(--font-mono), ui-monospace, Menlo, monospace;
   font-size: var(--text-2xs);
   font-weight: 700;
-  letter-spacing: var(--ls-wider);
+  letter-spacing: var(--ls-eyebrow);  /* 0.16em — max positive tracking for tiny caps */
   text-transform: uppercase;
   background-color: var(--status-critical-bg);
   color: var(--status-critical-text);
   border: 1px solid var(--status-critical-border);
-  line-height: 1.4;
+  line-height: var(--lh-ui);
+  font-feature-settings: "tnum" 1;   /* Tabular for any numeric content in chips */
+  font-variant-numeric: tabular-nums;
 }
 
 .chip-warning {
@@ -468,10 +550,11 @@ html, body {
   font-family: var(--font-display), -apple-system, sans-serif;
   font-size: var(--text-xs);
   font-weight: 700;
-  letter-spacing: var(--ls-wide);
+  letter-spacing: var(--ls-label);   /* 0.06em — appropriate positive tracking for uppercase at 12px */
   text-transform: uppercase;
   border: 1px solid transparent;
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+  font-feature-settings: "kern" 1;   /* Kerning on button text */
   transition:
     background-color var(--dur-fast) var(--ease-out-expo),
     box-shadow var(--dur-fast) var(--ease-out-expo),
@@ -503,9 +586,10 @@ html, body {
   font-family: var(--font-display), -apple-system, sans-serif;
   font-size: var(--text-xs);
   font-weight: 600;
-  letter-spacing: var(--ls-wide);
+  letter-spacing: var(--ls-label);   /* Match primary button tracking */
   text-transform: uppercase;
   border: 1px solid var(--border-default);
+  font-feature-settings: "kern" 1;
   transition:
     background-color var(--dur-fast) var(--ease-out-expo),
     border-color var(--dur-fast) var(--ease-out-expo),
@@ -542,7 +626,77 @@ html, body {
 }
 
 /* ============================================================
-   KINETIC MARQUEE
+   KINETIC TYPOGRAPHY ANIMATION SYSTEM — Awwwards-Level
+   GPU-safe: only opacity + transform animated (no layout thrash)
+   ============================================================ */
+
+/* Line-by-line reveal: each .reveal-line wraps one text line */
+@keyframes reveal-line-up {
+  0%   { opacity: 0; transform: translateY(100%); clip-path: inset(0 0 100% 0); }
+  100% { opacity: 1; transform: translateY(0);    clip-path: inset(0 0 0 0); }
+}
+
+/* Word-by-word reveal: used on individual <span> words */
+@keyframes reveal-word {
+  0%   { opacity: 0; transform: translateY(0.5em); filter: blur(2px); }
+  100% { opacity: 1; transform: translateY(0);     filter: blur(0); }
+}
+
+/* Character shimmer: used on hero accent word */
+@keyframes char-flicker {
+  0%, 90%, 100% { opacity: 1; }
+  92%, 96% { opacity: 0.6; }
+  94%, 98% { opacity: 0.85; }
+}
+
+/* Fade-in from left — for smaller prose reveals */
+@keyframes fade-in-left {
+  0%   { opacity: 0; transform: translateX(-16px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Utility classes — apply via className, control delay via style */
+.anim-reveal-line {
+  animation: reveal-line-up var(--dur-cinematic) var(--ease-reveal) both;
+  overflow: hidden;
+  display: block;
+}
+
+.anim-reveal-word {
+  display: inline-block;
+  animation: reveal-word var(--dur-cinematic) var(--ease-reveal) both;
+}
+
+.anim-char-flicker {
+  animation: char-flicker 3.5s ease-in-out infinite;
+  animation-delay: 2s; /* Start after initial load */
+}
+
+.anim-fade-left {
+  animation: fade-in-left var(--dur-slow) var(--ease-out-expo) both;
+}
+
+/* Stagger helper: CSS custom property --stagger-delay drives delay */
+.anim-stagger {
+  animation-delay: var(--stagger-delay, 0ms);
+}
+
+/* Motion guard: disable all kinetic animations for reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .anim-reveal-line,
+  .anim-reveal-word,
+  .anim-char-flicker,
+  .anim-fade-left {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
+}
+
+/* ============================================================
+   MARQUEE
    ============================================================ */
 
 @keyframes marquee {
@@ -558,6 +712,27 @@ html, body {
 
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+/* ============================================================
+   RADAR SWEEP
+   ============================================================ */
+
+@keyframes radar-sweep {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   SCROLLBAR HIDE UTILITY
+   ============================================================ */
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* ============================================================
